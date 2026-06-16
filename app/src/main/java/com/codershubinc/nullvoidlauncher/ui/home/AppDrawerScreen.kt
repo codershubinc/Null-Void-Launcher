@@ -2,7 +2,8 @@ package com.codershubinc.nullvoidlauncher.ui.home
 
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.widget.ImageView
+import android.graphics.drawable.Drawable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -27,7 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -38,39 +39,35 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
     var searchQuery by remember { mutableStateOf("") }
     var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
-    // Keyboard & Focus controls
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Fetch apps in the background
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             allApps = getInstalledApps(context)
         }
     }
 
-    // Automatically focus the text field and pop the keyboard
     LaunchedEffect(Unit) {
-        delay(150) // Slight delay waits for the slide-up animation to finish
+        delay(150)
         focusRequester.requestFocus()
         keyboardController?.show()
     }
 
-    // FILTER LOGIC: Return empty list if no search query!
-    val filteredApps = if (searchQuery.isEmpty()) {
-        emptyList()
-    } else {
-        allApps.filter {
-            it.label.startsWith(searchQuery, ignoreCase = true)
+    // Filtered list is now derived and remembered
+    val filteredApps = remember(searchQuery, allApps) {
+        if (searchQuery.isEmpty()) {
+            emptyList()
+        } else {
+            allApps.filter { it.label.startsWith(searchQuery, ignoreCase = true) }
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black) // Keeps the void intact
+            .background(Color.Black)
             .pointerInput(Unit) {
-                // Swipe DOWN anywhere on the screen to close
                 detectVerticalDragGestures { _, dragAmount ->
                     if (dragAmount > 20) {
                         keyboardController?.hide()
@@ -81,7 +78,7 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
             .statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        // --- The Drag Handle ---
+        // --- Drag Handle ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,12 +89,11 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
                 modifier = Modifier
                     .width(40.dp)
                     .height(4.dp)
-                    .clip(RoundedCornerShape(50)) // Makes it a perfect pill shape
+                    .clip(RoundedCornerShape(50))
                     .background(Color.DarkGray)
             )
         }
 
-        // --- The Search Bar ---
         BasicTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -109,7 +105,7 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
             cursorBrush = SolidColor(Color.White),
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(focusRequester) // Attach the focus requester
+                .focusRequester(focusRequester)
                 .padding(bottom = 24.dp),
             decorationBox = { innerTextField ->
                 if (searchQuery.isEmpty()) {
@@ -124,47 +120,75 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
             }
         )
 
-        // --- The App List ---
-        // Will be totally invisible until you type at least one letter
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(filteredApps) { app ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            // Launch the app
-                            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                            launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
-
-                            // Close the drawer and hide keyboard after launching
-                            keyboardController?.hide()
-                            onClose()
-                        }
-                        .padding(vertical = 12.dp)
-                ) {
-                    AndroidView(
-                        factory = { ctx ->
-                            ImageView(ctx).apply {
-                                scaleType = ImageView.ScaleType.FIT_CENTER
-                            }
-                        },
-                        update = { imageView ->
-                            imageView.setImageDrawable(app.icon)
-                        },
-                        modifier = Modifier.size(28.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Text(
-                        text = app.label.uppercase(),
-                        color = Color.LightGray,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 18.sp
-                    )
-                }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(
+                items = filteredApps,
+                key = { it.componentName.flattenToString() + it.userHandle.hashCode() }
+            ) { app ->
+                AppRow(app, context, keyboardController, onClose)
             }
+        }
+    }
+}
+
+@Composable
+fun AppRow(
+    app: AppInfo,
+    context: Context,
+    keyboardController: androidx.compose.ui.platform.SoftwareKeyboardController?,
+    onClose: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+                launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                keyboardController?.hide()
+                onClose()
+            }
+            .padding(vertical = 12.dp)
+    ) {
+        LazyAppIcon(app, context)
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = app.label.uppercase(),
+            color = Color.LightGray,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 18.sp
+        )
+    }
+}
+
+@Composable
+fun LazyAppIcon(app: AppInfo, context: Context) {
+    var icon by remember(app) { mutableStateOf<Drawable?>(null) }
+    
+    // Load icon only when the row is composed (visible)
+    LaunchedEffect(app) {
+        withContext(Dispatchers.IO) {
+            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+            val activities = launcherApps.getActivityList(app.packageName, app.userHandle)
+            val activityInfo = activities.find { it.componentName == app.componentName }
+            icon = activityInfo?.getBadgedIcon(0)
+        }
+    }
+
+    Box(modifier = Modifier.size(28.dp)) {
+        if (icon != null) {
+            Image(
+                painter = rememberAsyncImagePainter(icon),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray.copy(alpha = 0.3f)))
         }
     }
 }

@@ -13,7 +13,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NullVoidLauncherTheme {
-                // Set the root to HomeScreen
                 HomeScreen()
             }
         }
