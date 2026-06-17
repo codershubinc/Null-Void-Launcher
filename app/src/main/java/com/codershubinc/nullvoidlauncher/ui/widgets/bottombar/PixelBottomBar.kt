@@ -17,9 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.ui.home.AppInfo
-import com.codershubinc.nullvoidlauncher.ui.home.LazyAppIcon
-import com.codershubinc.nullvoidlauncher.ui.home.getInstalledApps
+import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import com.codershubinc.nullvoidlauncher.ui.widgets.music.FusedMusicWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

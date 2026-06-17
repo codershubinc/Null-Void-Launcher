@@ -1,4 +1,4 @@
-package com.codershubinc.nullvoidlauncher.ui.home
+package com.codershubinc.nullvoidlauncher.ui.homescreen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -12,7 +12,9 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.codershubinc.nullvoidlauncher.data.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawerScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
 import com.codershubinc.nullvoidlauncher.ui.widgets.WidgetScreen
@@ -25,7 +27,7 @@ fun HomeScreen() {
     val userManager = remember { UserManager(context) }
     val scope = rememberCoroutineScope()
     var githubUsername by remember { mutableStateOf(userManager.getUsername()) }
-    var clockStyle by remember { mutableStateOf(userManager.getClockStyle()) }
+    var currentTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
     var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
 
     var isDrawerOpen by remember { mutableStateOf(false) }
@@ -56,7 +58,7 @@ fun HomeScreen() {
                 )
                 1 -> WidgetScreen(
                     isDrawerOpen = isDrawerOpen,
-                    clockStyle = clockStyle,
+                    theme = currentTheme,
                     onOpenDrawer = { isDrawerOpen = true }
                 )
             }
@@ -83,8 +85,8 @@ fun HomeScreen() {
                     githubUsername = newName
                     scope.launch { userManager.fetchGithubProfile(newName, true) }
                 },
-                onClockStyleUpdated = { newStyle ->
-                    clockStyle = newStyle
+                onThemeUpdated = { newTheme ->
+                    currentTheme = newTheme
                 },
                 onWallpaperToggleUpdated = { show ->
                     showWallpaper = show

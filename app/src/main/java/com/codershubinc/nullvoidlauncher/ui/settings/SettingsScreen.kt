@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.sp
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.ClockStyle
+import com.codershubinc.nullvoidlauncher.data.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.ui.home.AppInfo
-import com.codershubinc.nullvoidlauncher.ui.home.getInstalledApps
+import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -30,13 +30,13 @@ import kotlinx.coroutines.withContext
 fun SettingsScreen(
     userManager: UserManager,
     onUsernameUpdated: (String) -> Unit,
-    onClockStyleUpdated: (ClockStyle) -> Unit,
+    onThemeUpdated: (LauncherTheme) -> Unit,
     onWallpaperToggleUpdated: (Boolean) -> Unit,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
     var inputUsername by remember { mutableStateOf(userManager.getUsername()) }
-    var selectedStyle by remember { mutableStateOf(userManager.getClockStyle()) }
+    var selectedTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
     var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
     var selectedFavorites by remember { mutableStateOf(userManager.getFavorites().toSet()) }
     
@@ -71,18 +71,18 @@ fun SettingsScreen(
                 }
             )
 
-            Text(text = "CLOCK STYLE", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
+            Text(text = "LAUNCHER THEME", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
 
-            ClockStyle.entries.forEach { style ->
-                val isSelected = selectedStyle == style
+            LauncherTheme.entries.forEach { theme ->
+                val isSelected = selectedTheme == theme
                 Text(
-                    text = if (isSelected) "[ ${style.name} ]" else "  ${style.name}",
+                    text = if (isSelected) "[ ${theme.name} ]" else "  ${theme.name}",
                     color = if (isSelected) Color.White else Color.DarkGray,
                     fontSize = 18.sp,
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { selectedStyle = style }
+                        .clickable { selectedTheme = theme }
                         .padding(vertical = 8.dp)
                 )
             }
@@ -149,12 +149,12 @@ fun SettingsScreen(
                     .align(Alignment.CenterHorizontally)
                     .clickable {
                         userManager.saveUsername(inputUsername)
-                        userManager.saveClockStyle(selectedStyle)
+                        userManager.saveLauncherTheme(selectedTheme)
                         userManager.saveShowWallpaper(showWallpaper)
                         userManager.saveFavorites(selectedFavorites.toList())
                         
                         onUsernameUpdated(inputUsername)
-                        onClockStyleUpdated(selectedStyle)
+                        onThemeUpdated(selectedTheme)
                         onWallpaperToggleUpdated(showWallpaper)
                         onClose()
                     }
