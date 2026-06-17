@@ -12,18 +12,15 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawerScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
-import com.codershubinc.nullvoidlauncher.ui.widgets.WidgetScreen
 
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
 
-    // Initialize our native data manager
     val userManager = remember { UserManager(context) }
     val scope = rememberCoroutineScope()
     var githubUsername by remember { mutableStateOf(userManager.getUsername()) }

@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun StandardMusicWidget() {
+fun ModernMusicWidget() {
     var track by remember { mutableStateOf<MusicTrack?>(null) }
     var tapCount by remember { mutableIntStateOf(0) }
 
@@ -82,19 +82,20 @@ fun StandardMusicWidget() {
                     modifier = Modifier.wrapContentWidth()
                 ) {
                     Text(
-                        text = it.title?.uppercase() ?: "",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 2.sp,
+                        text = it.title?.lowercase() ?: "",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = it.artist?.uppercase() ?: "UNKNOWN ARTIST",
-                        color = Color.DarkGray,
+                        text = it.artist?.lowercase() ?: "unknown artist",
+                        color = Color.White.copy(alpha = 0.5f),
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = FontFamily.SansSerif,
                         letterSpacing = 1.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

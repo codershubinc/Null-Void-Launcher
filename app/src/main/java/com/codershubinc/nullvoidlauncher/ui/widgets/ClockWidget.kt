@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -39,7 +38,6 @@ fun ClockWidget(style: ClockStyle) {
         val dateFormatter = SimpleDateFormat("dd MMMM, yyyy", Locale.getDefault())
         val dayOfMonthFormatter = SimpleDateFormat("dd", Locale.getDefault())
         val monthNameFormatter = SimpleDateFormat("MMMM", Locale.getDefault())
-        val currentYearFormatter = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
         
         while (true) {
             val now = Date()
@@ -49,7 +47,7 @@ fun ClockWidget(style: ClockStyle) {
             dateText = dateFormatter.format(now).uppercase()
             dayOfMonth = dayOfMonthFormatter.format(now)
             monthName = monthNameFormatter.format(now).lowercase()
-            currentYear = currentYearFormatter.format(now)
+            currentYear = SimpleDateFormat("yyyy", Locale.getDefault()).format(now)
             delay(1000.milliseconds)
         }
     }
@@ -96,6 +94,7 @@ fun ClockWidget(style: ClockStyle) {
             ClockStyle.VOID -> VoidClock(timeText)
             ClockStyle.MODERN -> ModernClock(dayText, dateText, timeText)
             ClockStyle.PIXEL -> PixelClock(dayOfMonth, monthName , weekName = dayText , year = currentYear )
+            ClockStyle.ELEGANT -> ElegantClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus)
         }
     }
 }

@@ -26,7 +26,8 @@ enum class ClockStyle {
     VERTICAL,
     VOID,
     MODERN,
-    PIXEL
+    PIXEL,
+    ELEGANT
 }
 
 enum class LauncherTheme {
@@ -36,7 +37,83 @@ enum class LauncherTheme {
     VERTICAL,
     VOID,
     MODERN,
-    PIXEL
+    PIXEL,
+    ELEGANT
+}
+
+enum class MusicStyle {
+    STANDARD,
+    MODERN,
+    FUSED,
+    ELEGANT
+}
+
+enum class FavoritesStyle {
+    STANDARD,
+    NONE,
+    ELEGANT
+}
+
+enum class BottomBarStyle {
+    STANDARD,
+    PIXEL,
+    NONE
+}
+
+data class LauncherThemeConfig(
+    val clockStyle: ClockStyle,
+    val musicStyle: MusicStyle,
+    val favoritesStyle: FavoritesStyle,
+    val bottomBarStyle: BottomBarStyle
+)
+
+fun LauncherTheme.toConfig(): LauncherThemeConfig {
+    return when (this) {
+        LauncherTheme.MINIMAL -> LauncherThemeConfig(
+            ClockStyle.MINIMAL,
+            MusicStyle.STANDARD,
+            FavoritesStyle.NONE,
+            BottomBarStyle.NONE
+        )
+        LauncherTheme.TERMINAL -> LauncherThemeConfig(
+            ClockStyle.TERMINAL, MusicStyle.STANDARD, FavoritesStyle.NONE, BottomBarStyle.NONE)
+        LauncherTheme.BOLD -> LauncherThemeConfig(
+            ClockStyle.BOLD,
+            MusicStyle.STANDARD,
+            FavoritesStyle.NONE,
+            BottomBarStyle.NONE
+        )
+        LauncherTheme.VERTICAL -> LauncherThemeConfig(
+            ClockStyle.VERTICAL,
+            MusicStyle.STANDARD,
+            FavoritesStyle.NONE,
+            BottomBarStyle.NONE
+        )
+        LauncherTheme.VOID -> LauncherThemeConfig(
+            ClockStyle.VOID,
+            MusicStyle.STANDARD,
+            FavoritesStyle.NONE,
+            BottomBarStyle.NONE
+        )
+        LauncherTheme.MODERN -> LauncherThemeConfig(
+            ClockStyle.MODERN,
+            MusicStyle.MODERN,
+            FavoritesStyle.STANDARD,
+            BottomBarStyle.NONE
+        )
+        LauncherTheme.PIXEL -> LauncherThemeConfig(
+            ClockStyle.PIXEL,
+            MusicStyle.FUSED,
+            FavoritesStyle.NONE,
+            BottomBarStyle.PIXEL
+        )
+        LauncherTheme.ELEGANT -> LauncherThemeConfig(
+            ClockStyle.ELEGANT,
+            MusicStyle.ELEGANT,
+            FavoritesStyle.ELEGANT,
+            BottomBarStyle.NONE
+        )
+    }
 }
 
 class UserManager(context: Context) {
@@ -66,6 +143,33 @@ class UserManager(context: Context) {
     fun getLauncherTheme(): LauncherTheme {
         val themeName = prefs.getString("launcher_theme", LauncherTheme.MINIMAL.name)
         return try { LauncherTheme.valueOf(themeName!!) } catch (e: Exception) { LauncherTheme.MINIMAL }
+    }
+
+    fun saveMusicStyle(style: MusicStyle) {
+        prefs.edit { putString("music_style", style.name) }
+    }
+
+    fun getMusicStyle(): MusicStyle {
+        val name = prefs.getString("music_style", MusicStyle.STANDARD.name)
+        return try { MusicStyle.valueOf(name!!) } catch (e: Exception) { MusicStyle.STANDARD }
+    }
+
+    fun saveFavoritesStyle(style: FavoritesStyle) {
+        prefs.edit { putString("favorites_style", style.name) }
+    }
+
+    fun getFavoritesStyle(): FavoritesStyle {
+        val name = prefs.getString("favorites_style", FavoritesStyle.STANDARD.name)
+        return try { FavoritesStyle.valueOf(name!!) } catch (e: Exception) { FavoritesStyle.STANDARD }
+    }
+
+    fun saveBottomBarStyle(style: BottomBarStyle) {
+        prefs.edit { putString("bottom_bar_style", style.name) }
+    }
+
+    fun getBottomBarStyle(): BottomBarStyle {
+        val name = prefs.getString("bottom_bar_style", BottomBarStyle.STANDARD.name)
+        return try { BottomBarStyle.valueOf(name!!) } catch (e: Exception) { BottomBarStyle.STANDARD }
     }
 
     fun saveFavorites(favorites: List<String>) {

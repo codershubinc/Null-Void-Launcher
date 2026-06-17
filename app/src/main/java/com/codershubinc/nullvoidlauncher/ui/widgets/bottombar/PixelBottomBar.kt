@@ -37,7 +37,7 @@ fun PixelBottomBar(onOpenDrawer: () -> Unit) {
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        val amPmTimeFormatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+        val amPmTimeFormatter = SimpleDateFormat("hh:mm", Locale.getDefault())
         val dayFormatter = SimpleDateFormat("EEEE", Locale.getDefault())
 
         while (true) {

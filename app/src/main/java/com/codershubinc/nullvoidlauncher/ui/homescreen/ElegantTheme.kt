@@ -11,30 +11,23 @@ import com.codershubinc.nullvoidlauncher.ui.widgets.FavoritesWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.MusicWidget
 
 @Composable
-fun ModernTheme(config: LauncherThemeConfig) {
-    Column(
+fun ElegantTheme(config: LauncherThemeConfig) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        Box(modifier = Modifier
-            .padding(top = 140.dp, start = 0.dp)
-        ) {
-            ClockWidget(config.clockStyle)
+        // Clock on the left
+        ClockWidget(config.clockStyle)
+
+        // Favorites on the right (bottom aligned relative to their group)
+        Box(modifier = Modifier.align(Alignment.BottomEnd)) {
+             FavoritesWidget(config.favoritesStyle)
         }
-        
-        FavoritesWidget(config.favoritesStyle)
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+
+        // Music at the very bottom
+        Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             MusicWidget(config.musicStyle)
         }
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }

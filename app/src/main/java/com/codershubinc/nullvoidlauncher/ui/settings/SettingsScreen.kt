@@ -19,8 +19,7 @@ import androidx.compose.ui.unit.sp
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.LauncherTheme
-import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.*
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import kotlinx.coroutines.Dispatchers
@@ -53,92 +52,96 @@ fun SettingsScreen(
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black).statusBarsPadding().padding(24.dp)) {
         if (!isSelectingApps) {
-            Text(text = "SETTINGS", color = Color.White, fontSize = 24.sp, fontFamily = FontFamily.Monospace, letterSpacing = 4.sp, modifier = Modifier.padding(bottom = 32.dp))
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                item {
+                    Text(text = "SETTINGS", color = Color.White, fontSize = 24.sp, fontFamily = FontFamily.Monospace, letterSpacing = 4.sp, modifier = Modifier.padding(bottom = 32.dp))
 
-            Text(text = "GITHUB USERNAME", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = "GITHUB USERNAME", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 8.dp))
 
-            BasicTextField(
-                value = inputUsername,
-                onValueChange = { inputUsername = it },
-                textStyle = TextStyle(color = Color.White, fontSize = 18.sp, fontFamily = FontFamily.Monospace),
-                cursorBrush = SolidColor(Color.White),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                decorationBox = { innerTextField ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "> ", color = Color.DarkGray, fontFamily = FontFamily.Monospace, fontSize = 18.sp)
-                        innerTextField()
+                    BasicTextField(
+                        value = inputUsername,
+                        onValueChange = { inputUsername = it },
+                        textStyle = TextStyle(color = Color.White, fontSize = 18.sp, fontFamily = FontFamily.Monospace),
+                        cursorBrush = SolidColor(Color.White),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                        decorationBox = { innerTextField ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "> ", color = Color.DarkGray, fontFamily = FontFamily.Monospace, fontSize = 18.sp)
+                                innerTextField()
+                            }
+                        }
+                    )
+
+                    Text(text = "LAUNCHER THEME", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
+
+                    LauncherTheme.entries.forEach { theme ->
+                        val isSelected = selectedTheme == theme
+                        Text(
+                            text = if (isSelected) "[ ${theme.name} ]" else "  ${theme.name}",
+                            color = if (isSelected) Color.White else Color.DarkGray,
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily.Monospace,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedTheme = theme }
+                                .padding(vertical = 8.dp)
+                        )
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(text = "WALLPAPER", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
+                    Text(
+                        text = if (showWallpaper) "[ SHOW WALLPAPER: ON ]" else "  SHOW WALLPAPER: OFF",
+                        color = if (showWallpaper) Color.White else Color.DarkGray,
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showWallpaper = !showWallpaper }
+                            .padding(vertical = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(text = "FAVORITE APPS", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
+                    Text(
+                        text = "  SELECT FAVORITES (${selectedFavorites.size})",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isSelectingApps = true }
+                            .padding(vertical = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "SYSTEM PERMISSIONS",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+
+                    Text(
+                        text = "  MUSIC SYNC ACCESS",
+                        color = Color.DarkGray,
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                            }
+                            .padding(vertical = 8.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
-            )
-
-            Text(text = "LAUNCHER THEME", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
-
-            LauncherTheme.entries.forEach { theme ->
-                val isSelected = selectedTheme == theme
-                Text(
-                    text = if (isSelected) "[ ${theme.name} ]" else "  ${theme.name}",
-                    color = if (isSelected) Color.White else Color.DarkGray,
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { selectedTheme = theme }
-                        .padding(vertical = 8.dp)
-                )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(text = "WALLPAPER", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
-            Text(
-                text = if (showWallpaper) "[ SHOW WALLPAPER: ON ]" else "  SHOW WALLPAPER: OFF",
-                color = if (showWallpaper) Color.White else Color.DarkGray,
-                fontSize = 18.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showWallpaper = !showWallpaper }
-                    .padding(vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(text = "FAVORITE APPS", color = Color.Gray, fontSize = 14.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(bottom = 12.dp))
-            Text(
-                text = "  SELECT FAVORITES (${selectedFavorites.size})",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isSelectingApps = true }
-                    .padding(vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "SYSTEM PERMISSIONS",
-                color = Color.Gray,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            Text(
-                text = "  MUSIC SYNC ACCESS",
-                color = Color.DarkGray,
-                fontSize = 18.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                    }
-                    .padding(vertical = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
 
             Text(
                 text = "[ SAVE & CLOSE ]",

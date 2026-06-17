@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import com.codershubinc.nullvoidlauncher.data.ClockStyle
 import com.codershubinc.nullvoidlauncher.data.LauncherTheme
+import com.codershubinc.nullvoidlauncher.data.toConfig
 
 @Composable
 fun WidgetScreen(isDrawerOpen: Boolean, theme: LauncherTheme, onOpenDrawer: () -> Unit) {
+    val config = theme.toConfig()
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -25,13 +27,11 @@ fun WidgetScreen(isDrawerOpen: Boolean, theme: LauncherTheme, onOpenDrawer: () -
             }
     ) {
         when (theme) {
-            LauncherTheme.VERTICAL -> VerticalTheme()
-            LauncherTheme.MODERN -> ModernTheme()
-            LauncherTheme.PIXEL -> PixelTheme(onOpenDrawer = onOpenDrawer)
-            LauncherTheme.MINIMAL -> StandardTheme(ClockStyle.MINIMAL)
-            LauncherTheme.TERMINAL -> StandardTheme(ClockStyle.TERMINAL)
-            LauncherTheme.BOLD -> StandardTheme(ClockStyle.BOLD)
-            LauncherTheme.VOID -> StandardTheme(ClockStyle.VOID)
+            LauncherTheme.VERTICAL -> VerticalTheme(config)
+            LauncherTheme.MODERN -> ModernTheme(config)
+            LauncherTheme.PIXEL -> PixelTheme(config, onOpenDrawer = onOpenDrawer)
+            LauncherTheme.ELEGANT -> ElegantTheme(config)
+            else -> StandardTheme(config)
         }
     }
 }

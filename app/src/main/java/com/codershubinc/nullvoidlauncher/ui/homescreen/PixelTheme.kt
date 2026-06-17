@@ -5,12 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.codershubinc.nullvoidlauncher.data.ClockStyle
+import com.codershubinc.nullvoidlauncher.data.LauncherThemeConfig
+import com.codershubinc.nullvoidlauncher.ui.widgets.BottomBarWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.ClockWidget
-import com.codershubinc.nullvoidlauncher.ui.widgets.bottombar.PixelBottomBar
 
 @Composable
-fun PixelTheme(onOpenDrawer: () -> Unit) {
+fun PixelTheme(config: LauncherThemeConfig, onOpenDrawer: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -20,7 +20,7 @@ fun PixelTheme(onOpenDrawer: () -> Unit) {
             .padding(top = 160.dp)
             .align(Alignment.TopStart)
         ) {
-            ClockWidget(ClockStyle.PIXEL)
+            ClockWidget(config.clockStyle)
         }
 
         Column(
@@ -29,7 +29,7 @@ fun PixelTheme(onOpenDrawer: () -> Unit) {
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PixelBottomBar(onOpenDrawer = onOpenDrawer)
+            BottomBarWidget(style = config.bottomBarStyle, onOpenDrawer = onOpenDrawer)
         }
     }
 }
