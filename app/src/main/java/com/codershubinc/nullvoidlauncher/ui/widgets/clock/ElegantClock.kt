@@ -15,6 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 
 @Composable
 fun ElegantClock(
@@ -80,8 +83,20 @@ fun ElegantClock(
                 lineHeight = 14.sp
             )
             Text(
-                text = "Battery Level is $batteryLevel% status $batteryStatus.",
-                color = Color.White.copy(alpha = 0.5f),
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
+                        append("Battery Level is ")
+                    }
+                    withStyle(style = SpanStyle(color = Color.White , fontSize = 20.sp) ) {
+                        append("$batteryLevel%")
+                    }
+                    withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
+                        append(" status ")
+                    }
+                    withStyle(style = SpanStyle(color = Color.White, fontSize = 20.sp)) {
+                        append("$batteryStatus.")
+                    }
+                },
                 fontSize = 10.sp,
                 lineHeight = 14.sp
             )
