@@ -14,6 +14,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.data.ClockStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 
@@ -61,6 +64,30 @@ fun SettingsScreen(
                     .padding(vertical = 8.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        val context = LocalContext.current
+        Text(
+            text = "SYSTEM PERMISSIONS",
+            color = Color.Gray,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Text(
+            text = "  MUSIC SYNC ACCESS",
+            color = Color.DarkGray,
+            fontSize = 18.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                }
+                .padding(vertical = 8.dp)
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 

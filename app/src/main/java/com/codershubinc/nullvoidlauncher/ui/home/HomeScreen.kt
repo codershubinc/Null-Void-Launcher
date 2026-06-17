@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
+import com.codershubinc.nullvoidlauncher.ui.widgets.WidgetScreen
 
 @Composable
 fun HomeScreen() {
@@ -49,7 +50,7 @@ fun HomeScreen() {
                         }
                     }
                 )
-                1 -> ClockScreen(
+                1 -> WidgetScreen(
                     isDrawerOpen = isDrawerOpen,
                     clockStyle = clockStyle,
                     onOpenDrawer = { isDrawerOpen = true }

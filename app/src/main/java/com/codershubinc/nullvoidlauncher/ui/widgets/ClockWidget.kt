@@ -1,54 +1,28 @@
-package com.codershubinc.nullvoidlauncher.ui.home
+package com.codershubinc.nullvoidlauncher.ui.widgets
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import android.text.Layout
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.ClockStyle
-
-@Composable
-fun ClockScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(isDrawerOpen) {
-                if (!isDrawerOpen) {
-                    detectVerticalDragGestures { change, dragAmount ->
-                        change.consume()
-                        if (dragAmount < -20) { onOpenDrawer() }
-                    }
-                }
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        ClockWidget(clockStyle)
-    }
-}
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ClockWidget(style: ClockStyle) {
@@ -102,39 +76,60 @@ fun ClockWidget(style: ClockStyle) {
                 )
                 if (batteryLevel != -1) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    val statusDisplay = if (batteryStatus.isNotEmpty() && batteryStatus != "UNKNOWN") " [$batteryStatus]" else ""
-                    Text(text = "BAT $batteryLevel%$statusDisplay", color = Color.DarkGray, fontSize = 16.sp, fontFamily = FontFamily.Monospace, letterSpacing = 2.sp)
+                    val statusDisplay =
+                        if (batteryStatus.isNotEmpty() && batteryStatus != "UNKNOWN") " [$batteryStatus]" else ""
+                    Text(
+                        text = "BAT $batteryLevel%$statusDisplay",
+                        color = Color.DarkGray,
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = 2.sp
+                    )
                 }
             }
+
             ClockStyle.TERMINAL -> {
                 Text(
                     text = "> TIME: $timeText",
-                    color = Color.Green,
+                    color = Color.White,
                     fontSize = 48.sp,
                     fontFamily = FontFamily.Monospace
                 )
                 if (batteryLevel != -1) {
-                    val statusDisplay = if (batteryStatus.isNotEmpty() && batteryStatus != "UNKNOWN") " ($batteryStatus)" else ""
+                    val statusDisplay =
+                        if (batteryStatus.isNotEmpty() && batteryStatus != "UNKNOWN") " ($batteryStatus)" else ""
                     Text(
                         text = "> BATT: $batteryLevel%$statusDisplay",
-                        color = Color.Green,
+                        color = Color.White,
                         fontSize = 18.sp,
                         fontFamily = FontFamily.Monospace,
 
-                    )
+                        )
                 }
                 Text(
                     text = "> STATUS: ONLINE",
-                    color = Color.Green,
+                    color = Color.White,
                     fontSize = 18.sp,
                     fontFamily = FontFamily.Monospace,
                     textAlign = TextAlign.Start
                 )
             }
+
             ClockStyle.BOLD -> {
-                Text(text = timeText, color = Color.White, fontSize = 110.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.SansSerif)
+                Text(
+                    text = timeText,
+                    color = Color.White,
+                    fontSize = 110.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.SansSerif
+                )
                 if (batteryLevel != -1) {
-                    Text(text = "$batteryLevel%", color = Color.White.copy(alpha = 0.5f), fontSize = 24.sp, fontWeight = FontWeight.Light)
+                    Text(
+                        text = "$batteryLevel%",
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Light
+                    )
                 }
             }
         }
