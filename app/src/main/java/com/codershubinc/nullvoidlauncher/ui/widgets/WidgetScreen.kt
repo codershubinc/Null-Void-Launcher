@@ -23,13 +23,63 @@ fun WidgetScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: ()
                         }
                     }
                 }
-            },
-        contentAlignment = Alignment.Center
+            }
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            ClockWidget(clockStyle)
-            Spacer(modifier = Modifier.height(24.dp))
-            MusicWidget()
+        when (clockStyle) {
+            ClockStyle.VERTICAL -> {
+                // Rotated Layout: Clock Top-Left, Music Centered
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                ) {
+                    Box(modifier = Modifier
+                        .padding(top = 120.dp, start = 0.dp)
+                        .align(Alignment.TopStart)
+                    ) {
+                        ClockWidget(clockStyle)
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        MusicWidget()
+                    }
+                }
+            }
+            ClockStyle.MODERN -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                ) {
+                    Box(modifier = Modifier
+                        .padding(top = 140.dp, start = 0.dp)
+                    ) {
+                        ClockWidget(clockStyle)
+                    }
+                    
+                    FavoritesWidget()
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    MusicWidget()
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+            else -> {
+                // Standard Centered Layout
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    ClockWidget(clockStyle)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    MusicWidget()
+                }
+            }
         }
     }
 }

@@ -26,6 +26,7 @@ fun HomeScreen() {
     val scope = rememberCoroutineScope()
     var githubUsername by remember { mutableStateOf(userManager.getUsername()) }
     var clockStyle by remember { mutableStateOf(userManager.getClockStyle()) }
+    var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
 
     var isDrawerOpen by remember { mutableStateOf(false) }
     var isSettingsOpen by remember { mutableStateOf(false) }
@@ -36,7 +37,10 @@ fun HomeScreen() {
         else if (isDrawerOpen) isDrawerOpen = false
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(if (showWallpaper) Color.Transparent else Color.Black)
+    ) {
 
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             when (page) {
@@ -81,6 +85,9 @@ fun HomeScreen() {
                 },
                 onClockStyleUpdated = { newStyle ->
                     clockStyle = newStyle
+                },
+                onWallpaperToggleUpdated = { show ->
+                    showWallpaper = show
                 },
                 onClose = { isSettingsOpen = false }
             )

@@ -22,7 +22,10 @@ data class GithubProfile(
 enum class ClockStyle {
     MINIMAL,
     TERMINAL,
-    BOLD
+    BOLD,
+    VERTICAL,
+    VOID,
+    MODERN
 }
 
 class UserManager(context: Context) {
@@ -43,6 +46,22 @@ class UserManager(context: Context) {
     fun getClockStyle(): ClockStyle {
         val styleName = prefs.getString("clock_style", ClockStyle.MINIMAL.name)
         return try { ClockStyle.valueOf(styleName!!) } catch (e: Exception) { ClockStyle.MINIMAL }
+    }
+
+    fun saveFavorites(favorites: List<String>) {
+        prefs.edit { putStringSet("favorite_apps", favorites.toSet()) }
+    }
+
+    fun getFavorites(): List<String> {
+        return prefs.getStringSet("favorite_apps", emptySet())?.toList() ?: emptyList()
+    }
+
+    fun saveShowWallpaper(show: Boolean) {
+        prefs.edit { putBoolean("show_wallpaper", show) }
+    }
+
+    fun getShowWallpaper(): Boolean {
+        return prefs.getBoolean("show_wallpaper", false)
     }
 
     fun saveUserInfo(info: GithubProfile) {

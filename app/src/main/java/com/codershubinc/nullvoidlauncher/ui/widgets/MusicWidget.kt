@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -59,11 +60,14 @@ fun MusicWidget() {
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .clickable(
-                        indication = null, // Removes ripple for that clean terminal look
+                        indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) {
                         tapCount++
                     }
+                    .fillMaxWidth()
+                    ,
+                horizontalArrangement = Arrangement.Center
             ) {
                 if (it.artwork != null) {
                     Image(
@@ -78,7 +82,7 @@ fun MusicWidget() {
                 }
 
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.wrapContentWidth()
                 ) {
                     Text(
                         text = it.title?.uppercase() ?: "UNKNOWN",
@@ -87,17 +91,16 @@ fun MusicWidget() {
                         fontFamily = FontFamily.Monospace,
                         letterSpacing = 2.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth(1f)
-
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = it.artist?.uppercase() ?: "UNKNOWN ARTIST",
                         color = Color.DarkGray,
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp
+                        letterSpacing = 1.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
