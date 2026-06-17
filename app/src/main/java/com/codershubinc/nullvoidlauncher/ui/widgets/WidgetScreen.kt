@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.data.ClockStyle
+import com.codershubinc.nullvoidlauncher.ui.widgets.bottombar.PixelBottomBar
 
 @Composable
 fun WidgetScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: () -> Unit) {
@@ -44,7 +45,7 @@ fun WidgetScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: ()
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        MusicWidget()
+                        MusicWidget(clockStyle)
                     }
                 }
             }
@@ -64,8 +65,31 @@ fun WidgetScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: ()
                     
                     Spacer(modifier = Modifier.weight(1f))
                     
-                    MusicWidget()
+                    MusicWidget(clockStyle)
                     Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+            ClockStyle.PIXEL -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                ) {
+                    Box(modifier = Modifier
+                        .padding(top = 160.dp)
+                        .align(Alignment.TopStart)
+                    ) {
+                        ClockWidget(clockStyle)
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        PixelBottomBar(onOpenDrawer = onOpenDrawer)
+                    }
                 }
             }
             else -> {
@@ -77,7 +101,7 @@ fun WidgetScreen(isDrawerOpen: Boolean, clockStyle: ClockStyle, onOpenDrawer: ()
                 ) {
                     ClockWidget(clockStyle)
                     Spacer(modifier = Modifier.height(24.dp))
-                    MusicWidget()
+                    MusicWidget(clockStyle)
                 }
             }
         }

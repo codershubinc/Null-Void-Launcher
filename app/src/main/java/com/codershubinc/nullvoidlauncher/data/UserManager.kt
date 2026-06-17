@@ -25,7 +25,18 @@ enum class ClockStyle {
     BOLD,
     VERTICAL,
     VOID,
-    MODERN
+    MODERN,
+    PIXEL
+}
+
+enum class LauncherTheme {
+    MINIMAL,
+    TERMINAL,
+    BOLD,
+    VERTICAL,
+    VOID,
+    MODERN,
+    PIXEL
 }
 
 class UserManager(context: Context) {
@@ -46,6 +57,15 @@ class UserManager(context: Context) {
     fun getClockStyle(): ClockStyle {
         val styleName = prefs.getString("clock_style", ClockStyle.MINIMAL.name)
         return try { ClockStyle.valueOf(styleName!!) } catch (e: Exception) { ClockStyle.MINIMAL }
+    }
+
+    fun saveLauncherTheme(theme: LauncherTheme) {
+        prefs.edit { putString("launcher_theme", theme.name) }
+    }
+
+    fun getLauncherTheme(): LauncherTheme {
+        val themeName = prefs.getString("launcher_theme", LauncherTheme.MINIMAL.name)
+        return try { LauncherTheme.valueOf(themeName!!) } catch (e: Exception) { LauncherTheme.MINIMAL }
     }
 
     fun saveFavorites(favorites: List<String>) {
