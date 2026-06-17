@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -33,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+@Preview
 @Composable
 fun AppDrawerScreen(onClose: () -> Unit = {}) {
     val context = LocalContext.current
@@ -78,7 +80,6 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
             .statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        // --- Drag Handle ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,32 +94,51 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
                     .background(Color.DarkGray)
             )
         }
+          Row (
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(bottom = 24.dp)
+          ){
+              BasicTextField(
+                  value = searchQuery,
+                  onValueChange = { searchQuery = it },
+                  textStyle = TextStyle(
+                      color = Color.White,
+                      fontSize = 22.sp,
+                      fontFamily = FontFamily.Monospace
+                  ),
+                  cursorBrush = SolidColor(Color.White),
+                  modifier = Modifier
+                      .weight(1f)
+                      .fillMaxWidth()
+                      .focusRequester(focusRequester),
+                  decorationBox = { innerTextField ->
+                      if (searchQuery.isEmpty()) {
+                          Text(
+                              text = "Search...",
+                              color = Color.DarkGray,
+                              fontFamily = FontFamily.Monospace,
+                              fontSize = 22.sp
+                          )
+                      }
+                      innerTextField()
+                  }
+              )
+              Text(
+                  text = "[X]",
+                  color = Color.DarkGray,
+                  fontSize = 18.sp,
+                  fontFamily = FontFamily.Monospace,
+                  modifier = Modifier
+                      .clickable {
+                          keyboardController?.hide()
+                          onClose()
+                      }
+              )
 
-        BasicTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            textStyle = TextStyle(
-                color = Color.White,
-                fontSize = 22.sp,
-                fontFamily = FontFamily.Monospace
-            ),
-            cursorBrush = SolidColor(Color.White),
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester)
-                .padding(bottom = 24.dp),
-            decorationBox = { innerTextField ->
-                if (searchQuery.isEmpty()) {
-                    Text(
-                        text = "SEARCH...",
-                        color = Color.DarkGray,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 22.sp
-                    )
-                }
-                innerTextField()
-            }
-        )
+          }
+
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
