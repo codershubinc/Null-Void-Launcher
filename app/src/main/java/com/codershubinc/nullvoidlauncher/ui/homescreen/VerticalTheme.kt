@@ -17,7 +17,7 @@ fun VerticalTheme(config: LauncherThemeConfig) {
             .statusBarsPadding()
     ) {
         Box(modifier = Modifier
-            .padding(top = 120.dp, start = 0.dp)
+            .padding(top = 120.dp, start = 5.dp)
             .align(Alignment.TopStart)
         ) {
             ClockWidget(config.clockStyle)

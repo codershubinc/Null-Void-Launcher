@@ -30,6 +30,14 @@ enum class ClockStyle {
     ELEGANT
 }
 
+enum class DayStyle {
+    MINIMAL,
+    MODERN,
+    PIXEL,
+    ELEGANT,
+    BRUTAL
+}
+
 enum class LauncherTheme {
     MINIMAL,
     TERMINAL,

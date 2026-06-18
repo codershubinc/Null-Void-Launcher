@@ -3,13 +3,18 @@ package com.codershubinc.nullvoidlauncher.ui.widgets.clock
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import java.util.Vector
 
 @Composable
 fun ElegantClock(
@@ -38,16 +44,20 @@ fun ElegantClock(
         Text(
             text = "$monthName $dayOfMonth".uppercase(),
             color = Color.White.copy(alpha = 0.6f),
-            fontSize = 12.sp,
+            fontSize = 18.sp,
             fontFamily = FontFamily.SansSerif,
-            letterSpacing = 2.sp
+            letterSpacing = 2.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
 
         // Large day
         Column(
-            modifier = Modifier.padding(start = 0.dp)
+            modifier = Modifier
+                .padding(start = 0.dp)
+                .rotate(-90f)
+                .requiredHeight(250.dp)
+
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -57,7 +67,7 @@ fun ElegantClock(
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Serif
                 )
-                
+
                 // Approximating outline with low alpha and a different color
                 Text(
                     text = dayText.takeLast(3).uppercase(),
@@ -75,7 +85,7 @@ fun ElegantClock(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Details text
-        Column(modifier = Modifier.padding(start = 10.dp)) {
+        Column(modifier = Modifier.padding(start = 5.dp)) {
             Text(
                 text = "Humidity is 50% with wind speed 32km/h in your locality.",
                 color = Color.White.copy(alpha = 0.5f),
@@ -87,7 +97,7 @@ fun ElegantClock(
                     withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
                         append("Battery Level is ")
                     }
-                    withStyle(style = SpanStyle(color = Color.White , fontSize = 20.sp) ) {
+                    withStyle(style = SpanStyle(color = Color.White, fontSize = 20.sp)) {
                         append("$batteryLevel%")
                     }
                     withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.5f))) {
@@ -122,22 +132,17 @@ fun ElegantClock(
 
         // Time with icon
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-               modifier = Modifier
-                   .size(16.dp)
-                   .background(Color.White, shape = androidx.compose.foundation.shape.CircleShape),
-               contentAlignment = Alignment.Center
-            ) {
-                Canvas(modifier = Modifier.size(10.dp)) {
-                    drawLine(Color.Black, center, Offset(center.x, 2.dp.toPx()), strokeWidth = 1.dp.toPx())
-                    drawLine(Color.Black, center, Offset(size.width - 2.dp.toPx(), center.y), strokeWidth = 1.dp.toPx())
-                }
-            }
+            Icon(
+                imageVector = Icons.Default.AccessTime,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = timeText,
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
         }
