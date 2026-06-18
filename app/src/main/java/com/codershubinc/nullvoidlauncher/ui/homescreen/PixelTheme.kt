@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.data.LauncherThemeConfig
 import com.codershubinc.nullvoidlauncher.ui.widgets.BottomBarWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.ClockWidget
+import com.codershubinc.nullvoidlauncher.ui.widgets.MusicWidget
 
 @Composable
 fun PixelTheme(config: LauncherThemeConfig, onOpenDrawer: () -> Unit) {
@@ -29,6 +30,7 @@ fun PixelTheme(config: LauncherThemeConfig, onOpenDrawer: () -> Unit) {
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            MusicWidget(config.musicStyle)
             BottomBarWidget(style = config.bottomBarStyle, onOpenDrawer = onOpenDrawer)
         }
     }

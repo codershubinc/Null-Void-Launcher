@@ -38,6 +38,12 @@ enum class DayStyle {
     BRUTAL
 }
 
+enum class StorageStyle {
+    STANDARD,
+    MODERN,
+    ELEGANT
+}
+
 enum class LauncherTheme {
     MINIMAL,
     TERMINAL,
@@ -111,7 +117,7 @@ fun LauncherTheme.toConfig(): LauncherThemeConfig {
         )
         LauncherTheme.PIXEL -> LauncherThemeConfig(
             ClockStyle.PIXEL,
-            MusicStyle.FUSED,
+            MusicStyle.ELEGANT,
             FavoritesStyle.NONE,
             BottomBarStyle.PIXEL
         )
@@ -119,7 +125,7 @@ fun LauncherTheme.toConfig(): LauncherThemeConfig {
             ClockStyle.ELEGANT,
             MusicStyle.ELEGANT,
             FavoritesStyle.ELEGANT,
-            BottomBarStyle.NONE
+            BottomBarStyle.PIXEL
         )
     }
 }
@@ -194,6 +200,14 @@ class UserManager(context: Context) {
 
     fun getShowWallpaper(): Boolean {
         return prefs.getBoolean("show_wallpaper", false)
+    }
+
+    fun saveWallpaperRes(resId: Int) {
+        prefs.edit { putInt("wallpaper_res_id", resId) }
+    }
+
+    fun getWallpaperRes(): Int {
+        return prefs.getInt("wallpaper_res_id", -1)
     }
 
     fun saveUserInfo(info: GithubProfile) {

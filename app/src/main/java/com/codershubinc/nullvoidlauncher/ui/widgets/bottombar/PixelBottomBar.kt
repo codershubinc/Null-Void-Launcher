@@ -69,8 +69,6 @@ fun PixelBottomBar(onOpenDrawer: () -> Unit) {
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Fused Music Pill
-        FusedMusicWidget()
         
         Spacer(modifier = Modifier.height(8.dp))
 
