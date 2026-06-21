@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import com.codershubinc.nullvoidlauncher.data.StorageStyle
 import com.codershubinc.nullvoidlauncher.ui.widgets.StorageWidget
 import java.util.Vector
 
@@ -121,7 +122,7 @@ fun ElegantClock(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Storage Info
-        StorageWidget(modifier = Modifier.padding(start = 2.dp))
+        StorageWidget(modifier = Modifier.padding(start = 2.dp) , StorageStyle.ELEGANT)
     
 
         Spacer(modifier = Modifier.height(16.dp))

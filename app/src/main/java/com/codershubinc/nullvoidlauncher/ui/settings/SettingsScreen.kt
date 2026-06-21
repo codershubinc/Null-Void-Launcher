@@ -54,7 +54,8 @@ fun SettingsScreen(
         R.drawable.wallpaper_abstract_1,
         R.drawable.wallpaper_abstract_2,
         R.drawable.wallpaper_abstract_3,
-        R.drawable.wallpaper_abstract_4
+        R.drawable.wallpaper_abstract_4,
+        R.drawable.wallpaper_train_your_dragon
     )
     
     var isSelectingApps by remember { mutableStateOf(false) }
