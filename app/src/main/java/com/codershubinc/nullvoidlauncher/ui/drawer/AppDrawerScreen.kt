@@ -28,25 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
-import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 @Composable
-fun AppDrawerScreen(onClose: () -> Unit = {}) {
+fun AppDrawerScreen(
+    allApps: List<AppInfo>,
+    onClose: () -> Unit = {}
+) {
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
-    var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            allApps = getInstalledApps(context)
-        }
-    }
 
     LaunchedEffect(Unit) {
         delay(150)
@@ -56,10 +49,11 @@ fun AppDrawerScreen(onClose: () -> Unit = {}) {
 
     // Filtered list is now derived and remembered
     val filteredApps = remember(searchQuery, allApps) {
-        if (searchQuery.isEmpty()) {
+        if (searchQuery.trim().isEmpty()) {
             emptyList()
         } else {
-            allApps.filter { it.label.startsWith(searchQuery, ignoreCase = true) }
+            val query = searchQuery.trim().lowercase()
+            allApps.filter { it.label.lowercase().contains(query) }
         }
     }
 

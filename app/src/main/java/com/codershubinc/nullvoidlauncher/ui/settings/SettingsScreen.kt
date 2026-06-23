@@ -27,13 +27,13 @@ import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.R
 import com.codershubinc.nullvoidlauncher.data.*
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
     userManager: UserManager,
+    allApps: List<AppInfo>,
     onUsernameUpdated: (String) -> Unit,
     onThemeUpdated: (LauncherTheme) -> Unit,
     onWallpaperToggleUpdated: (Boolean) -> Unit,
@@ -59,15 +59,6 @@ fun SettingsScreen(
     )
     
     var isSelectingApps by remember { mutableStateOf(false) }
-    var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
-
-    LaunchedEffect(isSelectingApps) {
-        if (isSelectingApps && allApps.isEmpty()) {
-            withContext(Dispatchers.IO) {
-                allApps = getInstalledApps(context)
-            }
-        }
-    }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black).statusBarsPadding().padding(24.dp)) {
         if (!isSelectingApps) {
@@ -242,7 +233,7 @@ fun SettingsScreen(
             }
 
             Text(
-                text = "[ DONE ]",
+                text = "[DONE]",
                 color = Color.Gray,
                 fontSize = 18.sp,
                 fontFamily = FontFamily.Monospace,
