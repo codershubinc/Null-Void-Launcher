@@ -53,7 +53,7 @@ fun AppDrawerScreen(
             emptyList()
         } else {
             val query = searchQuery.trim().lowercase()
-            allApps.filter { it.label.lowercase().contains(query) }
+            allApps.filter { it.label.lowercase().startsWith(query) }
         }
     }
 

@@ -21,11 +21,15 @@ object StorageUtils {
         return try {
             val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
             storageStatsManager.getTotalBytes(StorageManager.UUID_DEFAULT)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // Fallback to old method if there's an error
-            val path: File = Environment.getDataDirectory()
-            val stat = StatFs(path.path)
-            stat.blockSizeLong * stat.blockCountLong
+            try {
+                val path: File = Environment.getDataDirectory()
+                val stat = StatFs(path.path)
+                stat.blockSizeLong * stat.blockCountLong
+            } catch (ex: Throwable) {
+                0L
+            }
         }
     }
 
@@ -36,10 +40,14 @@ object StorageUtils {
         return try {
             val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
             storageStatsManager.getFreeBytes(StorageManager.UUID_DEFAULT)
-        } catch (e: Exception) {
-            val path: File = Environment.getDataDirectory()
-            val stat = StatFs(path.path)
-            stat.blockSizeLong * stat.availableBlocksLong
+        } catch (e: Throwable) {
+            try {
+                val path: File = Environment.getDataDirectory()
+                val stat = StatFs(path.path)
+                stat.blockSizeLong * stat.availableBlocksLong
+            } catch (ex: Throwable) {
+                0L
+            }
         }
     }
 
