@@ -40,7 +40,7 @@ fun StandardFavoritesWidget() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 32.dp, top = 60.dp),
+            .padding(start = 32.dp, top = 60.dp, end = 24.dp),
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {

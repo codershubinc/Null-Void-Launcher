@@ -22,6 +22,7 @@ fun GithubProfileScreen(
     username: String,
     userManager: UserManager,
     onOpenSettings: () -> Unit,
+    onOpenFocusMode: () -> Unit,
     onClose: () -> Unit
 ) {
     var profile by remember { mutableStateOf<GithubProfile?>(null) }
@@ -35,8 +36,9 @@ fun GithubProfileScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(text = "[ ⚙ ]", color = Color.DarkGray, fontSize = 24.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.clickable { onOpenSettings() })
+            Text(text = "[ FOCUS ]", color = Color.DarkGray, fontSize = 24.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.clickable { onOpenFocusMode() })
         }
 
         Spacer(modifier = Modifier.height(32.dp))

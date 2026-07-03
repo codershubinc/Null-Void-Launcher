@@ -56,6 +56,7 @@ fun StandardMusicWidget() {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .widthIn(max = 500.dp)
                     .padding(horizontal = 16.dp)
                     .clickable(
                         indication = null,

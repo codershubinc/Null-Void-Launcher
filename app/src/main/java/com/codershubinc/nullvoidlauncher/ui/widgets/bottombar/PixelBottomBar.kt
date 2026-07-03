@@ -65,6 +65,7 @@ fun PixelBottomBar(onOpenDrawer: () -> Unit) {
 
     Column(
         modifier = Modifier
+            .widthIn(max = 600.dp)
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally

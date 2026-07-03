@@ -58,6 +58,7 @@ fun FusedMusicWidget() {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .widthIn(max = 500.dp)
                     .background(Color.DarkGray, shape = RoundedCornerShape(24.dp))
                     .clickable(
                         indication = null,

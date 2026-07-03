@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -62,6 +63,7 @@ fun ElegantMusicWidget() {
 
     Row(
         modifier = Modifier
+            .widthIn(max = 500.dp)
             .fillMaxWidth()
             .padding(bottom = 40.dp, start = 24.dp, end = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -103,7 +105,7 @@ fun ElegantMusicWidget() {
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(CircleShape)
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
