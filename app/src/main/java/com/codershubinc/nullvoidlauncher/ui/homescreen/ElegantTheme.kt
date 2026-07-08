@@ -12,7 +12,7 @@ import com.codershubinc.nullvoidlauncher.ui.widgets.FavoritesWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.MusicWidget
 
 @Composable
-fun ElegantTheme(config: LauncherThemeConfig  ) {
+fun ElegantTheme(config: LauncherThemeConfig, onOpenDrawer: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp > 600
 

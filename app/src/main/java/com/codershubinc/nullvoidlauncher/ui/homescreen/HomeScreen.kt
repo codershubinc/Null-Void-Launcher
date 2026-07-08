@@ -27,6 +27,7 @@ import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawerScreen
 import com.codershubinc.nullvoidlauncher.ui.focus.FocusModeScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
+import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -131,10 +132,17 @@ fun HomeScreen() {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
-            AppDrawerScreen(
-                allApps = allApps,
-                onClose = { isDrawerOpen = false }
-            )
+            if (currentTheme == com.codershubinc.nullvoidlauncher.data.LauncherTheme.ELEGANT) {
+                ElegantSearchScreen(
+                    allApps = allApps,
+                    onClose = { isDrawerOpen = false }
+                )
+            } else {
+                AppDrawerScreen(
+                    allApps = allApps,
+                    onClose = { isDrawerOpen = false }
+                )
+            }
         }
 
         AnimatedVisibility(

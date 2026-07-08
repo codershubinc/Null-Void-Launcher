@@ -30,7 +30,7 @@ fun WidgetScreen(isDrawerOpen: Boolean, theme: LauncherTheme, onOpenDrawer: () -
             LauncherTheme.VERTICAL -> VerticalTheme(config)
             LauncherTheme.MODERN -> ModernTheme(config)
             LauncherTheme.PIXEL -> PixelTheme(config, onOpenDrawer = onOpenDrawer)
-            LauncherTheme.ELEGANT -> ElegantTheme(config)
+            LauncherTheme.ELEGANT -> ElegantTheme(config, onOpenDrawer = onOpenDrawer)
             else -> StandardTheme(config)
         }
     }
