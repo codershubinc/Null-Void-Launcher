@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2026- Swapnil Ingle
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.codershubinc.nullvoidlauncher.ui.about
 
 import androidx.compose.foundation.background
@@ -299,7 +316,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
                 InfoRow(
                     icon = Icons.Rounded.Description, 
                     label = "License", 
-                    value = "Apache 2.0",
+                    value = "GNU GPL v3",
                     onClick = { uriHandler.openUri("https://github.com/CodersHubInc/NullVoidLauncher/blob/main/LICENSE") }
                 )
             }
@@ -312,7 +329,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "© 2024-2026 CodersHub INC.",
+                    text = "© 2026- Swapnil Ingle",
                     color = Color.White.copy(alpha = 0.3f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
