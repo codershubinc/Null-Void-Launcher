@@ -1,6 +1,5 @@
 package com.codershubinc.nullvoidlauncher.ui.focus
 
-import android.R.attr.text
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -54,18 +54,23 @@ fun FocusModeScreen(onClose: () -> Unit) {
     var activeEvent by remember { mutableStateOf<TimelineEvent?>(null) }
     var activeProgress by remember { mutableIntStateOf(0) }
     var activeMinutesLeft by remember { mutableIntStateOf(0) }
+    var serviceStatus by remember { mutableStateOf(ServiceStatus.CONNECTING) }
 
     val scrollState = rememberScrollState()
 
-    DisposableEffect(Unit) {
-        val activePhaseService = ActivePhaseService(
-            serverUrl = "http://10.32.7.44:3000",
-            userId = "ingleswapnil2004@gmail.com"
+    val activePhaseService = remember {
+        ActivePhaseService(
+            serverUrl = "http://10.141.206.44:3000",
+            userId = "ingleswapnil2004@gmail.com",
+            onStatusChanged = { status -> serviceStatus = status }
         ) { event, progress, minutesLeft ->
             activeEvent = event
             activeProgress = progress
             activeMinutesLeft = minutesLeft
         }
+    }
+
+    DisposableEffect(Unit) {
         activePhaseService.startListening()
         onDispose { activePhaseService.stopListening() }
     }
@@ -154,6 +159,51 @@ fun FocusModeScreen(onClose: () -> Unit) {
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
                 )
+                
+                // Status Indicator
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when (serviceStatus) {
+                                ServiceStatus.CONNECTED -> Color(0xFF4CAF50)
+                                ServiceStatus.CONNECTING -> Color.Yellow
+                                ServiceStatus.FALLBACK -> Color.Cyan
+                                else -> Color.Red
+                            }
+                        )
+                )
+            }
+
+            // Reconnect Button (Shown on error or disconnect)
+            if (serviceStatus == ServiceStatus.ERROR || serviceStatus == ServiceStatus.DISCONNECTED || serviceStatus == ServiceStatus.FALLBACK) {
+                Box(
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .background(Color.Red.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .border(1.dp, Color.Red.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                        .clickable { activePhaseService.startListening() }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Retry",
+                            tint = Color.Red.copy(alpha = 0.7f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "RECONNECT",
+                            color = Color.Red.copy(alpha = 0.7f),
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             // Close Button

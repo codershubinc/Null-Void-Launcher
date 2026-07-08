@@ -72,6 +72,7 @@ class ActivePhaseService(
         val listener = object : EventSourceListener() {
             override fun onOpen(eventSource: EventSource, response: Response) {
                 println("SSE Stream Opened.")
+                mainHandler.post { onStatusChanged?.invoke(ServiceStatus.CONNECTED) }
             }
 
             override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
@@ -82,10 +83,12 @@ class ActivePhaseService(
 
             override fun onClosed(eventSource: EventSource) {
                 println("SSE Stream Closed.")
+                mainHandler.post { onStatusChanged?.invoke(ServiceStatus.DISCONNECTED) }
             }
 
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
                 System.err.println("SSE Stream Error: ${t?.message}. Activating local fallback simulator.")
+                mainHandler.post { onStatusChanged?.invoke(ServiceStatus.ERROR) }
                 startFallbackSimulator()
             }
         }
@@ -208,7 +211,8 @@ class ActivePhaseService(
     private fun startFallbackSimulator() {
         if (isUsingFallback) return
         isUsingFallback = true
-        
+        mainHandler.post { onStatusChanged?.invoke(ServiceStatus.FALLBACK) }
+
         // Overwrite the ticker if it exists, or just use it to push mock data
         scheduler?.shutdownNow()
         scheduler = Executors.newSingleThreadScheduledExecutor()
