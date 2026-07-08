@@ -28,6 +28,7 @@ import com.codershubinc.nullvoidlauncher.ui.focus.FocusModeScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
 import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
+import com.codershubinc.nullvoidlauncher.ui.about.AboutScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -75,6 +76,7 @@ fun HomeScreen() {
     var isDrawerOpen by remember { mutableStateOf(false) }
     var isSettingsOpen by remember { mutableStateOf(false) }
     var isFocusModeOpen by remember { mutableStateOf(false) }
+    var isAboutOpen by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1) { 2 }
 
     val blurRadius by remember {
@@ -84,9 +86,10 @@ fun HomeScreen() {
         }
     }
 
-    BackHandler(enabled = isDrawerOpen || isSettingsOpen || isFocusModeOpen || pagerState.currentPage == 0) {
+    BackHandler(enabled = isDrawerOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || pagerState.currentPage == 0) {
         if (isSettingsOpen) isSettingsOpen = false
         else if (isFocusModeOpen) isFocusModeOpen = false
+        else if (isAboutOpen) isAboutOpen = false
         else if (isDrawerOpen) isDrawerOpen = false
     }
 
@@ -112,6 +115,7 @@ fun HomeScreen() {
                     userManager = userManager,
                     onOpenSettings = { isSettingsOpen = true },
                     onOpenFocusMode = { isFocusModeOpen = true },
+                    onOpenAbout = { isAboutOpen = true },
                     onClose = {
                         scope.launch {
                             pagerState.animateScrollToPage(1)
@@ -178,6 +182,18 @@ fun HomeScreen() {
             modifier = Modifier.fillMaxSize()
         ) {
             FocusModeScreen(onClose = { isFocusModeOpen = false })
+        }
+
+        AnimatedVisibility(
+            visible = isAboutOpen,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            AboutScreen(
+                userManager = userManager,
+                onClose = { isAboutOpen = false }
+            )
         }
     }
 }
