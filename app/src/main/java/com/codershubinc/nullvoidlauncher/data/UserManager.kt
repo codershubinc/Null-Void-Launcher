@@ -2,6 +2,7 @@ package com.codershubinc.nullvoidlauncher.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.codershubinc.nullvoidlauncher.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -242,7 +243,7 @@ class UserManager(context: Context) {
             val url = URL("https://api.github.com/users/$username")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
-            connection.setRequestProperty("User-Agent", "NullVoidLauncher")
+            connection.setRequestProperty("User-Agent", Constants.Github.USER_AGENT)
 
             if (connection.responseCode == 200) {
                 val response = connection.inputStream.bufferedReader().use { it.readText() }

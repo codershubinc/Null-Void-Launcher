@@ -6,18 +6,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -26,12 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.R
 import com.codershubinc.nullvoidlauncher.data.*
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.ui.components.*
+import com.codershubinc.nullvoidlauncher.ui.settings.components.*
 
 @Composable
 fun SettingsScreen(
@@ -48,6 +44,7 @@ fun SettingsScreen(
     onThemeUpdated: (LauncherTheme) -> Unit,
     onWallpaperToggleUpdated: (Boolean) -> Unit,
     onWallpaperSelected: (Int) -> Unit,
+    onOpenAbout: () -> Unit,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
@@ -58,7 +55,21 @@ fun SettingsScreen(
     var selectedFavorites by remember { mutableStateOf(userManager.getFavorites().toSet()) }
     
     var isSelectingApps by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
+    if (showThemeDialog) {
+        ThemeSelectionDialog(
+            currentTheme = selectedTheme,
+            onThemeSelected = {
+                selectedTheme = it
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false }
+        )
+    }
 
     val wallpapers = listOf(
         R.drawable.wallpaper_elegant,
@@ -93,7 +104,11 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = if (isTablet) 64.dp else 24.dp)
+                .then(
+                    if (isTablet) Modifier.widthIn(max = 800.dp).align(Alignment.TopCenter)
+                    else Modifier
+                )
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -136,181 +151,210 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             if (!isSelectingApps) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(scrollState)
-                ) {
-                    // Profile Section
-                    Text(
-                        text = "Profile",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-                    )
-                    ModernCard {
-                        Text(
-                            text = "GitHub Username",
-                            color = Color.White.copy(alpha = 0.4f),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        BasicTextField(
-                            value = inputUsername,
-                            onValueChange = { inputUsername = it },
-                            textStyle = TextStyle(
+                if (isTablet) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(scrollState),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            // Profile Section
+                            Text(
+                                text = "Profile",
                                 color = Color.White,
                                 fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            cursorBrush = SolidColor(Color(0xFF3D5AFE)),
-                            modifier = Modifier.fillMaxWidth(),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-                                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                                        .padding(16.dp)
-                                ) {
-                                    if (inputUsername.isEmpty()) {
-                                        Text("Enter username", color = Color.White.copy(alpha = 0.2f))
-                                    }
-                                    innerTextField()
-                                }
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                            )
+                            ModernCard {
+                                ProfileSection(inputUsername) { inputUsername = it }
                             }
-                        )
-                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
 
-                    // Appearance Section
-                    Text(
-                        text = "Appearance",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-                    )
-                    ModernCard {
-                        SettingsRow(
-                            icon = Icons.Rounded.Palette,
-                            label = "Theme",
-                            value = selectedTheme.name,
-                            onClick = {
-                                val themes = LauncherTheme.entries
-                                val currentIndex = themes.indexOf(selectedTheme)
-                                selectedTheme = themes[(currentIndex + 1) % themes.size]
-                            }
-                        )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                        SettingsRow(
-                            icon = Icons.Rounded.Wallpaper,
-                            label = "Wallpaper",
-                            value = if (showWallpaper) "Visible" else "Hidden",
-                            onClick = { showWallpaper = !showWallpaper }
-                        )
-                        
-                        if (showWallpaper) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(wallpapers) { resId ->
-                                    Box(
-                                        modifier = Modifier
-                                            .size(60.dp, 100.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .border(
-                                                width = if (wallpaperResId == resId) 2.dp else 1.dp,
-                                                color = if (wallpaperResId == resId) Color(0xFF3D5AFE) else Color.White.copy(alpha = 0.1f),
-                                                shape = RoundedCornerShape(12.dp)
-                                            )
-                                            .clickable { wallpaperResId = resId }
-                                    ) {
-                                        androidx.compose.foundation.Image(
-                                            painter = painterResource(id = resId),
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
+                            // Navigation Section
+                            Text(
+                                text = "Navigation",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                            )
+                            ModernCard {
+                                NavigationSection(
+                                    selectedFavoritesSize = selectedFavorites.size,
+                                    onFavoritesClick = { isSelectingApps = true },
+                                    onMusicSyncClick = {
+                                        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                                     }
-                                }
+                                )
+                            }
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            // Appearance Section
+                            Text(
+                                text = "Appearance",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                            )
+                            ModernCard {
+                                AppearanceSection(
+                                    selectedTheme = selectedTheme,
+                                    showWallpaper = showWallpaper,
+                                    wallpaperResId = wallpaperResId,
+                                    wallpapers = wallpapers,
+                                    onThemeClick = { showThemeDialog = true },
+                                    onWallpaperToggle = { showWallpaper = !showWallpaper },
+                                    onWallpaperSelected = { wallpaperResId = it }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // About Section
+                            Text(
+                                text = "System",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                            )
+                            ModernCard {
+                                InfoRow(
+                                    icon = Icons.Rounded.Info,
+                                    label = "About",
+                                    value = "NullVoid Protocol",
+                                    onClick = onOpenAbout,
+                                    showChevron = true
+                                )
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Navigation Section
-                    Text(
-                        text = "Navigation",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-                    )
-                    ModernCard {
-                        SettingsRow(
-                            icon = Icons.Rounded.Star,
-                            label = "Favorites",
-                            value = "${selectedFavorites.size} Apps selected",
-                            onClick = { isSelectingApps = true }
-                        )
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                        SettingsRow(
-                            icon = Icons.Rounded.Sync,
-                            label = "Music Sync",
-                            value = "Permissions",
-                            onClick = {
-                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(40.dp))
-                    
-                    // Save Button
-                    Box(
+                } else {
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFF3D5AFE))
-                            .clickable {
-                                userManager.saveUsername(inputUsername)
-                                userManager.saveLauncherTheme(selectedTheme)
-                                userManager.saveShowWallpaper(showWallpaper)
-                                userManager.saveWallpaperRes(wallpaperResId)
-                                userManager.saveFavorites(selectedFavorites.toList())
-                                
-                                onUsernameUpdated(inputUsername)
-                                onThemeUpdated(selectedTheme)
-                                onWallpaperToggleUpdated(showWallpaper)
-                                onWallpaperSelected(wallpaperResId)
-                                onClose()
-                            }
-                            .padding(vertical = 16.dp),
-                        contentAlignment = Alignment.Center
+                            .weight(1f)
+                            .verticalScroll(scrollState)
                     ) {
+                        // Profile Section
                         Text(
-                            text = "Save Configuration",
+                            text = "Profile",
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                         )
+                        ModernCard {
+                            ProfileSection(inputUsername) { inputUsername = it }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Appearance Section
+                        Text(
+                            text = "Appearance",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        ModernCard {
+                            AppearanceSection(
+                                selectedTheme = selectedTheme,
+                                showWallpaper = showWallpaper,
+                                wallpaperResId = wallpaperResId,
+                                wallpapers = wallpapers,
+                                onThemeClick = { showThemeDialog = true },
+                                onWallpaperToggle = { showWallpaper = !showWallpaper },
+                                onWallpaperSelected = { wallpaperResId = it }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Navigation Section
+                        Text(
+                            text = "Navigation",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        ModernCard {
+                            NavigationSection(
+                                selectedFavoritesSize = selectedFavorites.size,
+                                onFavoritesClick = { isSelectingApps = true },
+                                onMusicSyncClick = {
+                                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                                }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // About Section
+                        Text(
+                            text = "System",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        ModernCard {
+                            InfoRow(
+                                icon = Icons.Rounded.Info,
+                                label = "About",
+                                value = "NullVoid Protocol",
+                                onClick = onOpenAbout,
+                                showChevron = true
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(40.dp))
                     }
-                    
-                    Spacer(modifier = Modifier.height(40.dp))
+                }
+
+                // Save Button
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 24.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF3D5AFE))
+                        .clickable {
+                            userManager.saveUsername(inputUsername)
+                            userManager.saveLauncherTheme(selectedTheme)
+                            userManager.saveShowWallpaper(showWallpaper)
+                            userManager.saveWallpaperRes(wallpaperResId)
+                            userManager.saveFavorites(selectedFavorites.toList())
+
+                            onUsernameUpdated(inputUsername)
+                            onThemeUpdated(selectedTheme)
+                            onWallpaperToggleUpdated(showWallpaper)
+                            onWallpaperSelected(wallpaperResId)
+                            onClose()
+                        }
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Save Configuration",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             } else {
                 // App Selection View
-                LazyColumn(
+                LazyVerticalGrid(
+                    columns = if (isTablet) GridCells.Fixed(2) else GridCells.Fixed(1),
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     items(allApps) { app ->
@@ -375,74 +419,5 @@ fun SettingsScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ModernCard(content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White.copy(alpha = 0.03f))
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.02f))
-                ),
-                shape = RoundedCornerShape(28.dp)
-            )
-            .padding(24.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun SettingsRow(icon: ImageVector, label: String, value: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.05f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-        
-        Spacer(modifier = Modifier.width(16.dp))
-        
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-        
-        Icon(
-            imageVector = Icons.Rounded.ChevronRight,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.2f)
-        )
     }
 }

@@ -1,22 +1,6 @@
-/*
- * Copyright (C) 2026- Swapnil Ingle
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package com.codershubinc.nullvoidlauncher.ui.about
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.GithubProfile
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.ui.components.InfoRow
+import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
+import com.codershubinc.nullvoidlauncher.ui.components.ProfileDetailRow
+import com.codershubinc.nullvoidlauncher.utils.Constants
 import com.codershubinc.nullvoidlauncher.utils.NetworkImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,21 +41,25 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+    
     var updateStatus by remember { mutableStateOf("Check for updates") }
     var isChecking by remember { mutableStateOf(false) }
-    val currentVersion = "v0.0.1"
+    val currentVersion = Constants.App.VERSION+"-"+ Constants.App.VERSION_SUFFIX
 
     var devProfile by remember { mutableStateOf<GithubProfile?>(null) }
     var isDevLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         isDevLoading = true
-        devProfile = userManager.fetchGithubProfile("CodersHubInc", false)
+        devProfile = userManager.fetchGithubProfile(Constants.Github.USERNAME, false)
         isDevLoading = false
     }
 
@@ -76,10 +68,10 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
         updateStatus = "Searching servers..."
         try {
             val result = withContext(Dispatchers.IO) {
-                val url = URL("https://api.github.com/repos/CodersHubInc/NullVoidLauncher/releases/latest")
+                val url = URL(Constants.Github.LATEST_RELEASE_API_URL)
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("User-Agent", "NullVoidLauncher")
+                connection.setRequestProperty("User-Agent", Constants.Github.USER_AGENT)
                 
                 if (connection.responseCode == 200) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
@@ -124,7 +116,11 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = if (isTablet) 64.dp else 24.dp)
+                .then(
+                    if (isTablet) Modifier.widthIn(max = 800.dp).align(Alignment.TopCenter)
+                    else Modifier
+                )
                 .verticalScroll(scrollState)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -165,160 +161,82 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // App Version Card
-            ModernCard {
+            if (isTablet) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "Current Version",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "$currentVersion-beta",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF3D5AFE))
-                            .clickable(enabled = !isChecking) {
-                                scope.launch { checkForUpdates() }
-                            }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-                        Text(
-                            text = if (isChecking) "Checking..." else "Update",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-                
-                if (updateStatus != "Check for updates") {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = updateStatus,
-                        color = if (updateStatus.contains("Available")) Color(0xFF00E676) else Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Developer Section
-            Text(
-                text = "Lead Developer",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-            )
-            
-            if (isDevLoading) {
-                ModernCard {
-                    Text(
-                        text = "Fetching developer profile...",
-                        color = Color.White.copy(alpha = 0.4f),
-                        fontSize = 14.sp
-                    )
-                }
-            } else if (devProfile != null) {
-                ModernCard(
-                    modifier = Modifier.clickable { 
-                        uriHandler.openUri("https://github.com/CodersHubInc")
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NetworkImage(
-                            url = devProfile!!.avatarUrl,
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = devProfile!!.name,
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "@${devProfile!!.login}",
-                                color = Color(0xFF3D5AFE),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                    Column(modifier = Modifier.weight(1f)) {
+                        // App Version Card
+                        AppVersionCard(currentVersion, isChecking, updateStatus) {
+                            scope.launch { checkForUpdates() }
                         }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Developer Section
+                        Text(
+                            text = "Lead Developer",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        DeveloperCard(isDevLoading, devProfile, uriHandler)
                     }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
-                    Spacer(modifier = Modifier.height(16.dp))
 
-                    ProfileDetailRow(Icons.Rounded.Description, "Bio", devProfile!!.bio)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ProfileDetailRow(Icons.Rounded.Business, "Company", devProfile!!.company)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ProfileDetailRow(Icons.Rounded.Code, "Public Repositories", devProfile!!.publicRepos.toString())
+                    Column(modifier = Modifier.weight(1f)) {
+                        // Info Sections
+                        Text(
+                            text = "System Details",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        SystemDetailsCard()
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Social/Links Section
+                        LinksCard(uriHandler)
+                    }
                 }
-            }
+            } else {
+                // Mobile Layout
+                // App Version Card
+                AppVersionCard(currentVersion, isChecking, updateStatus) {
+                    scope.launch { checkForUpdates() }
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // Info Sections
-            Text(
-                text = "System Details",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-            )
-
-            ModernCard {
-                InfoRow(Icons.Rounded.Info, "Codename", "ELEGANCE")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                InfoRow(Icons.Rounded.Business, "Organization", "CodersHub INC")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                InfoRow(Icons.Rounded.Build, "Build Type", "Release Candidate")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                InfoRow(Icons.Rounded.Code, "UI Engine", "Compose Modern")
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Social/Links Section
-            ModernCard {
-                InfoRow(
-                    icon = Icons.Rounded.Public, 
-                    label = "Source Code", 
-                    value = "GitHub/NullVoidLauncher",
-                    onClick = { uriHandler.openUri("https://github.com/CodersHubInc/NullVoidLauncher") }
+                // Developer Section
+                Text(
+                    text = "Lead Developer",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                 )
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-                InfoRow(
-                    icon = Icons.Rounded.Description, 
-                    label = "License", 
-                    value = "GNU GPL v3",
-                    onClick = { uriHandler.openUri("https://github.com/CodersHubInc/NullVoidLauncher/blob/main/LICENSE") }
+                DeveloperCard(isDevLoading, devProfile, uriHandler)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Info Sections
+                Text(
+                    text = "System Details",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                 )
+                SystemDetailsCard()
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Social/Links Section
+                LinksCard(uriHandler)
             }
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -347,95 +265,141 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
 }
 
 @Composable
-fun ModernCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White.copy(alpha = 0.03f))
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.02f))
-                ),
-                shape = RoundedCornerShape(28.dp)
-            )
-            .padding(24.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun InfoRow(icon: ImageVector, label: String, value: String, onClick: (() -> Unit)? = null) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.05f)),
-            contentAlignment = Alignment.Center
+fun AppVersionCard(currentVersion: String, isChecking: Boolean, updateStatus: String, onUpdateClick: () -> Unit) {
+    ModernCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.size(18.dp)
-            )
-        }
-        
-        Spacer(modifier = Modifier.width(16.dp))
-        
-        Column {
-            Text(
-                text = label,
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
+            Column {
+                Text(
+                    text = "Current Version",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = currentVersion,
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-@Composable
-fun ProfileDetailRow(icon: ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.3f),
-            modifier = Modifier.size(18.dp).padding(top = 2.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF3D5AFE))
+                    .clickable(enabled = !isChecking) { onUpdateClick() }
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = if (isChecking) "Checking..." else "Update",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        if (updateStatus != "Check for updates") {
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = label,
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-            Text(
-                text = value.ifEmpty { "Not specified" },
-                color = Color.White,
-                fontSize = 15.sp,
+                text = updateStatus,
+                color = if (updateStatus.contains("Available")) Color(0xFF00E676) else Color.White.copy(alpha = 0.7f),
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
         }
+    }
+}
+
+@Composable
+fun DeveloperCard(isDevLoading: Boolean, devProfile: GithubProfile?, uriHandler: androidx.compose.ui.platform.UriHandler) {
+    if (isDevLoading) {
+        ModernCard {
+            Text(
+                text = "Fetching developer profile...",
+                color = Color.White.copy(alpha = 0.4f),
+                fontSize = 14.sp
+            )
+        }
+    } else if (devProfile != null) {
+        ModernCard(
+            modifier = Modifier.clickable {
+                uriHandler.openUri(Constants.Github.BASE_URL)
+            }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                NetworkImage(
+                    url = devProfile.avatarUrl,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = devProfile.name,
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "@${devProfile.login}",
+                        color = Color(0xFF3D5AFE),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfileDetailRow(Icons.Rounded.Description, "Bio", devProfile.bio)
+            Spacer(modifier = Modifier.height(16.dp))
+            ProfileDetailRow(Icons.Rounded.Business, "Company", devProfile.company)
+            Spacer(modifier = Modifier.height(16.dp))
+            ProfileDetailRow(Icons.Rounded.Code, "Public Repositories", devProfile.publicRepos.toString())
+        }
+    }
+}
+
+@Composable
+fun SystemDetailsCard() {
+    ModernCard {
+        InfoRow(Icons.Rounded.Info, "Codename", Constants.System.CODENAME)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+        InfoRow(Icons.Rounded.Business, "Organization", Constants.System.ORGANIZATION)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+        InfoRow(Icons.Rounded.Build, "Build Type", Constants.System.BUILD_TYPE)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+        InfoRow(Icons.Rounded.Code, "UI Engine", Constants.System.UI_ENGINE)
+    }
+}
+
+@Composable
+fun LinksCard(uriHandler: androidx.compose.ui.platform.UriHandler) {
+    ModernCard {
+        InfoRow(
+            icon = Icons.Rounded.Public,
+            label = "Source Code",
+            value = "GitHub/${Constants.Github.REPO_SLUG}",
+            onClick = { uriHandler.openUri(Constants.Github.REPO_URL) }
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+        InfoRow(
+            icon = Icons.Rounded.Description,
+            label = "License",
+            value = "GNU GPL v3",
+            onClick = { uriHandler.openUri(Constants.Github.LICENSE_URL) }
+        )
     }
 }

@@ -18,7 +18,6 @@
 package com.codershubinc.nullvoidlauncher.ui.github
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -42,8 +41,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.border
 import com.codershubinc.nullvoidlauncher.data.GithubProfile
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
+import com.codershubinc.nullvoidlauncher.ui.components.ProfileDetailRow
 import com.codershubinc.nullvoidlauncher.utils.NetworkImage
 
 @Composable
@@ -238,56 +240,5 @@ fun QuickActionButton(icon: ImageVector, onClick: () -> Unit) {
             tint = Color.White,
             modifier = Modifier.size(20.dp)
         )
-    }
-}
-
-@Composable
-fun ModernCard(content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White.copy(alpha = 0.03f))
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.02f))
-                ),
-                shape = RoundedCornerShape(28.dp)
-            )
-            .padding(24.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun ProfileDetailRow(icon: ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.3f),
-            modifier = Modifier.size(18.dp).padding(top = 2.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(
-                text = label,
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-            Text(
-                text = value.ifEmpty { "Not specified" },
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
     }
 }

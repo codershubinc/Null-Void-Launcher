@@ -48,7 +48,7 @@ app/src/main/java/com/codershubinc/nullvoidlauncher/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/codershubinc/NullVoidLauncher.git
+   git clone https://github.com/codershubinc/null-void-launcher.git
    ```
 2. **Open in Android Studio**:
    - Ensure you have the latest version of Android Studio (Ladybug or later recommended).

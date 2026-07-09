@@ -171,6 +171,7 @@ fun HomeScreen() {
                 onWallpaperSelected = { resId ->
                     wallpaperResId = resId
                 },
+                onOpenAbout = { isAboutOpen = true },
                 onClose = { isSettingsOpen = false }
             )
         }
