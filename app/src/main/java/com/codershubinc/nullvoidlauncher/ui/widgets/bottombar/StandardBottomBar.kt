@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StandardBottomBar() {
+fun StandardBottomBar(modifier: Modifier = Modifier) {
     // Basic placeholder for standard bottom bar
-    Spacer(modifier = Modifier.fillMaxWidth().height(1.dp))
+    Spacer(modifier = modifier.fillMaxWidth().height(1.dp))
 }

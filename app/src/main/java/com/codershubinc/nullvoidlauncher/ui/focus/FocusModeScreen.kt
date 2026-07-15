@@ -427,9 +427,10 @@ fun FocusModeScreen(onClose: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
-                .padding(bottom = 24.dp)
         ) {
-            ElegantMusicWidget()
+            ElegantMusicWidget(
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
         }
     }
 }

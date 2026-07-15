@@ -21,19 +21,27 @@ fun ElegantTheme(config: LauncherThemeConfig, onOpenDrawer: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .padding(horizontal = if (isTablet) 40.dp else 0.dp)
+            .padding(horizontal = if (isTablet) 12.dp else 0.dp)
     ) {
         // Clock on the left
         ClockWidget(config.clockStyle)
 
         // Favorites on the right (bottom aligned relative to their group)
         Box(modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = if (isTablet) 80.dp else 40.dp)) {
-            FavoritesWidget(config.favoritesStyle)
+            FavoritesWidget(
+                style = config.favoritesStyle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 24.dp, bottom = 120.dp)
+            )
         }
 
         // Music at the very bottom
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            MusicWidget(config.musicStyle)
+            MusicWidget(
+                style = config.musicStyle,
+                modifier = Modifier.padding(bottom = 40.dp, start = 24.dp, end = 24.dp)
+            )
         }
     }
 }

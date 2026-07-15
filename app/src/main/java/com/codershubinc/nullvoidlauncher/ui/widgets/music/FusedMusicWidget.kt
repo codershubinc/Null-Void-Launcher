@@ -44,7 +44,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun FusedMusicWidget() {
+fun FusedMusicWidget(modifier: Modifier = Modifier) {
     var track by remember { mutableStateOf<MusicTrack?>(null) }
     var tapCount by remember { mutableIntStateOf(0) }
 
@@ -73,8 +73,7 @@ fun FusedMusicWidget() {
     track?.let {
         if (it.title != null && it.title != "" && it.title != "Unknown Title") {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
+                modifier = modifier
                     .widthIn(max = 500.dp)
                     .background(Color.DarkGray, shape = RoundedCornerShape(24.dp))
                     .clickable(
@@ -85,6 +84,7 @@ fun FusedMusicWidget() {
                     }
                     .padding(horizontal = 12.dp, vertical = 6.dp)
                     .wrapContentWidth(),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (it.artwork != null) {

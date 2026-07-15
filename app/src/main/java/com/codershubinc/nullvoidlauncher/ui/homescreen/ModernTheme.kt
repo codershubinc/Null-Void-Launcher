@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import com.codershubinc.nullvoidlauncher.data.LauncherThemeConfig
 import com.codershubinc.nullvoidlauncher.ui.widgets.ClockWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.FavoritesWidget
@@ -20,10 +22,22 @@ fun ModernTheme(config: LauncherThemeConfig) {
         Box(modifier = Modifier
             .padding(top = 140.dp, start = 0.dp)
         ) {
-            ClockWidget(config.clockStyle)
+            ClockWidget(
+                style = config.clockStyle,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = -90f
+                    transformOrigin = TransformOrigin(0f, 0f)
+                    translationY = size.width
+                }
+            )
         }
         
-        FavoritesWidget(config.favoritesStyle)
+        FavoritesWidget(
+            style = config.favoritesStyle,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 32.dp, top = 60.dp, end = 24.dp)
+        )
         
         Spacer(modifier = Modifier.weight(1f))
         

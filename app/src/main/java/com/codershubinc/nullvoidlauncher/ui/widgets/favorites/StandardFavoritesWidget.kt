@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun StandardFavoritesWidget() {
+fun StandardFavoritesWidget(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
@@ -38,9 +38,7 @@ fun StandardFavoritesWidget() {
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 32.dp, top = 60.dp, end = 24.dp),
+        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {

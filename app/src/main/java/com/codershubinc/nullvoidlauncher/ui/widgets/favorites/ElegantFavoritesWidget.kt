@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 
 @Composable
-fun ElegantFavoritesWidget() {
+fun ElegantFavoritesWidget(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
@@ -53,9 +53,7 @@ fun ElegantFavoritesWidget() {
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(end = 24.dp, bottom = 120.dp),
+        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {

@@ -29,7 +29,7 @@ import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun PixelBottomBar(onOpenDrawer: () -> Unit) {
+fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
     val context = LocalContext.current
     var amPmTimeText by remember { mutableStateOf("") }
     var dayText by remember { mutableStateOf("") }
@@ -64,7 +64,7 @@ fun PixelBottomBar(onOpenDrawer: () -> Unit) {
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .widthIn(max = 600.dp)
             .fillMaxWidth()
             .padding(horizontal = 16.dp),

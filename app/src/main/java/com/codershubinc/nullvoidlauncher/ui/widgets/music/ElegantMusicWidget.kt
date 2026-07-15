@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun ElegantMusicWidget() {
+fun ElegantMusicWidget(modifier: Modifier = Modifier) {
     var track by remember { mutableStateOf<MusicTrack?>(null) }
     var tapCount by remember { mutableIntStateOf(0) }
 
@@ -62,10 +62,9 @@ fun ElegantMusicWidget() {
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .widthIn(max = 500.dp)
-            .fillMaxWidth()
-            .padding(bottom = 40.dp, start = 24.dp, end = 24.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

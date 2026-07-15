@@ -9,6 +9,9 @@ import com.codershubinc.nullvoidlauncher.data.LauncherThemeConfig
 import com.codershubinc.nullvoidlauncher.ui.widgets.ClockWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.MusicWidget
 
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+
 @Composable
 fun VerticalTheme(config: LauncherThemeConfig) {
     Box(
@@ -20,7 +23,14 @@ fun VerticalTheme(config: LauncherThemeConfig) {
             .padding(top = 120.dp, start = 5.dp)
             .align(Alignment.TopStart)
         ) {
-            ClockWidget(config.clockStyle)
+            ClockWidget(
+                style = config.clockStyle,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = -90f
+                    transformOrigin = TransformOrigin(0f, 0f)
+                    translationY = size.width
+                }
+            )
         }
 
         Box(

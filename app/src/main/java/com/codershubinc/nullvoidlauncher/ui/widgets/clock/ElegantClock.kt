@@ -43,7 +43,7 @@ fun ElegantClock(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .padding(start = 16.dp, top = 40.dp),
+            .padding(start = 5.dp, top = 40.dp),
         horizontalAlignment = Alignment.Start
     ) {
         // Date

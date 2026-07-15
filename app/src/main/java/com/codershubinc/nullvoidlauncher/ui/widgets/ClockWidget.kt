@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 @Composable
-fun ClockWidget(style: ClockStyle) {
+fun ClockWidget(style: ClockStyle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var timeText by remember { mutableStateOf("") }
     var amPmTimeText by remember { mutableStateOf("") }
@@ -73,16 +73,6 @@ fun ClockWidget(style: ClockStyle) {
         }
         context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         onDispose { context.unregisterReceiver(batteryReceiver) }
-    }
-
-    val modifier = if (style == ClockStyle.VERTICAL || style == ClockStyle.MODERN) {
-        Modifier.graphicsLayer {
-            rotationZ = -90f
-            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
-            translationY = size.width
-        }
-    } else {
-        Modifier
     }
 
     Box(modifier = modifier) {

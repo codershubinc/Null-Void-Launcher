@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun ModernMusicWidget() {
+fun ModernMusicWidget(modifier: Modifier = Modifier) {
     var track by remember { mutableStateOf<MusicTrack?>(null) }
     var tapCount by remember { mutableIntStateOf(0) }
 
@@ -54,8 +54,7 @@ fun ModernMusicWidget() {
     track?.let {
         if (it.title != "" && it.title != "Unknown Title") {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
+                modifier = modifier
                     .widthIn(max = 500.dp)
                     .padding(horizontal = 16.dp)
                     .clickable(
@@ -65,6 +64,7 @@ fun ModernMusicWidget() {
                         tapCount++
                     }
                     .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 if (it.artwork != null) {
