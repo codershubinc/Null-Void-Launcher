@@ -47,7 +47,7 @@ fun RetroNetworkWidget(
 
     Row(
         modifier = modifier
-            .width(230.dp) // Fixed width container eliminates jitter
+            .width(230.dp)
             .clip(shape)
             .background(darkAmber)
             .border(1.2.dp, amber.copy(alpha = 0.4f), shape)
