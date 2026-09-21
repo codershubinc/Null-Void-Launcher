@@ -50,9 +50,22 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
     
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var updateInfo by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.utils.UpdateInfo?>(null) }
     var updateStatus by remember { mutableStateOf("Check for updates") }
     var isChecking by remember { mutableStateOf(false) }
-    val currentVersion = Constants.App.VERSION+"-"+ Constants.App.VERSION_SUFFIX
+    var isDownloading by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableStateOf(0f) }
+    var downloadedBytes by remember { mutableStateOf(0L) }
+    var totalBytes by remember { mutableStateOf(0L) }
+    var downloadedApkFile by remember { mutableStateOf<java.io.File?>(null) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    val currentVersion = remember {
+        val base = Constants.App.VERSION
+        val suffix = Constants.App.VERSION_SUFFIX
+        if (suffix.isNotEmpty()) "$base-$suffix" else base
+    }
 
     var devProfile by remember { mutableStateOf<GithubProfile?>(null) }
     var isDevLoading by remember { mutableStateOf(true) }
@@ -63,34 +76,63 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
         isDevLoading = false
     }
 
+    fun triggerInstall(file: java.io.File) {
+        if (com.codershubinc.nullvoidlauncher.utils.AppUpdater.canInstallPackages(context)) {
+            val installed = com.codershubinc.nullvoidlauncher.utils.AppUpdater.installApk(context, file)
+            if (!installed) {
+                updateStatus = "Error launching installer"
+            }
+        } else {
+            showPermissionDialog = true
+        }
+    }
+
+    fun startDownload(info: com.codershubinc.nullvoidlauncher.utils.UpdateInfo) {
+        val downloadUrl = info.apkDownloadUrl
+        if (downloadUrl.isNullOrEmpty()) {
+            uriHandler.openUri(info.releaseUrl)
+            return
+        }
+
+        scope.launch {
+            isDownloading = true
+            downloadProgress = 0f
+            updateStatus = "Downloading update..."
+            val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.downloadApk(
+                context = context,
+                downloadUrl = downloadUrl,
+                onProgress = { progress, downloaded, total ->
+                    downloadProgress = progress
+                    downloadedBytes = downloaded
+                    totalBytes = total
+                }
+            )
+            isDownloading = false
+            result.onSuccess { apkFile ->
+                downloadedApkFile = apkFile
+                updateStatus = "Download complete"
+                triggerInstall(apkFile)
+            }.onFailure { error ->
+                updateStatus = "Download failed: ${error.localizedMessage ?: "Unknown error"}"
+            }
+        }
+    }
+
     suspend fun checkForUpdates() {
         isChecking = true
         updateStatus = "Searching servers..."
-        try {
-            val result = withContext(Dispatchers.IO) {
-                val url = URL(Constants.Github.LATEST_RELEASE_API_URL)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.setRequestProperty("User-Agent", Constants.Github.USER_AGENT)
-                
-                if (connection.responseCode == 200) {
-                    val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    val json = JSONObject(response)
-                    val latestTag = json.getString("tag_name")
-                    if (latestTag != currentVersion) {
-                        "Update Available: $latestTag"
-                    } else {
-                        "System is up to date"
-                    }
-                } else {
-                    "Server error: ${connection.responseCode}"
-                }
+        downloadedApkFile = null
+        val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.checkForUpdates(context)
+        isChecking = false
+        result.onSuccess { info ->
+            updateInfo = info
+            updateStatus = if (info.isUpdateAvailable) {
+                "Update Available: ${info.latestVersion}"
+            } else {
+                "System is up to date (${info.latestVersion})"
             }
-            updateStatus = result
-        } catch (e: Exception) {
-            updateStatus = "Link failed"
-        } finally {
-            isChecking = false
+        }.onFailure { error ->
+            updateStatus = error.localizedMessage ?: "Failed to check for updates"
         }
     }
 
@@ -167,10 +209,22 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        // App Version Card
-                        AppVersionCard(currentVersion, isChecking, updateStatus) {
-                            scope.launch { checkForUpdates() }
-                        }
+                        // AppVersionCard
+                        AppVersionCard(
+                            currentVersion = currentVersion,
+                            isChecking = isChecking,
+                            isDownloading = isDownloading,
+                            downloadProgress = downloadProgress,
+                            downloadedBytes = downloadedBytes,
+                            totalBytes = totalBytes,
+                            updateStatus = updateStatus,
+                            updateInfo = updateInfo,
+                            downloadedApkFile = downloadedApkFile,
+                            onCheckClick = { scope.launch { checkForUpdates() } },
+                            onDownloadClick = { info -> startDownload(info) },
+                            onInstallClick = { file -> triggerInstall(file) },
+                            onViewReleaseClick = { url -> uriHandler.openUri(url) }
+                        )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -205,9 +259,21 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
             } else {
                 // Mobile Layout
                 // App Version Card
-                AppVersionCard(currentVersion, isChecking, updateStatus) {
-                    scope.launch { checkForUpdates() }
-                }
+                AppVersionCard(
+                    currentVersion = currentVersion,
+                    isChecking = isChecking,
+                    isDownloading = isDownloading,
+                    downloadProgress = downloadProgress,
+                    downloadedBytes = downloadedBytes,
+                    totalBytes = totalBytes,
+                    updateStatus = updateStatus,
+                    updateInfo = updateInfo,
+                    downloadedApkFile = downloadedApkFile,
+                    onCheckClick = { scope.launch { checkForUpdates() } },
+                    onDownloadClick = { info -> startDownload(info) },
+                    onInstallClick = { file -> triggerInstall(file) },
+                    onViewReleaseClick = { url -> uriHandler.openUri(url) }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -261,18 +327,87 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
             
             Spacer(modifier = Modifier.height(40.dp))
         }
+
+        if (showPermissionDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showPermissionDialog = false },
+                title = {
+                    Text(
+                        text = "Permission Required",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "NullVoid Launcher needs permission to install unknown apps to perform this in-app update. Please enable it in system settings.",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF3D5AFE))
+                            .clickable {
+                                showPermissionDialog = false
+                                com.codershubinc.nullvoidlauncher.utils.AppUpdater.openInstallPermissionSettings(context)
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Settings",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                },
+                dismissButton = {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showPermissionDialog = false }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                },
+                containerColor = Color(0xFF141416),
+                shape = RoundedCornerShape(16.dp)
+            )
+        }
     }
 }
 
 @Composable
-fun AppVersionCard(currentVersion: String, isChecking: Boolean, updateStatus: String, onUpdateClick: () -> Unit) {
+fun AppVersionCard(
+    currentVersion: String,
+    isChecking: Boolean,
+    isDownloading: Boolean,
+    downloadProgress: Float,
+    downloadedBytes: Long,
+    totalBytes: Long,
+    updateStatus: String,
+    updateInfo: com.codershubinc.nullvoidlauncher.utils.UpdateInfo?,
+    downloadedApkFile: java.io.File?,
+    onCheckClick: () -> Unit,
+    onDownloadClick: (com.codershubinc.nullvoidlauncher.utils.UpdateInfo) -> Unit,
+    onInstallClick: (java.io.File) -> Unit,
+    onViewReleaseClick: (String) -> Unit
+) {
     ModernCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Current Version",
                     color = Color.White.copy(alpha = 0.6f),
@@ -287,15 +422,32 @@ fun AppVersionCard(currentVersion: String, isChecking: Boolean, updateStatus: St
                 )
             }
 
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Action button based on update state
+            val (buttonText, isEnabled, action) = when {
+                isChecking -> Triple("Checking...", false, {})
+                isDownloading -> Triple("Downloading...", false, {})
+                downloadedApkFile != null && downloadedApkFile.exists() -> Triple("Install", true, { onInstallClick(downloadedApkFile) })
+                updateInfo != null && updateInfo.isUpdateAvailable -> {
+                    if (updateInfo.apkDownloadUrl != null) {
+                        Triple("Download", true, { onDownloadClick(updateInfo) })
+                    } else {
+                        Triple("View", true, { onViewReleaseClick(updateInfo.releaseUrl) })
+                    }
+                }
+                else -> Triple("Check", true, onCheckClick)
+            }
+
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF3D5AFE))
-                    .clickable(enabled = !isChecking) { onUpdateClick() }
+                    .background(if (isEnabled) Color(0xFF3D5AFE) else Color(0xFF3D5AFE).copy(alpha = 0.4f))
+                    .clickable(enabled = isEnabled) { action() }
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = if (isChecking) "Checking..." else "Update",
+                    text = buttonText,
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -303,14 +455,73 @@ fun AppVersionCard(currentVersion: String, isChecking: Boolean, updateStatus: St
             }
         }
 
-        if (updateStatus != "Check for updates") {
+        // Downloading progress bar
+        if (isDownloading) {
             Spacer(modifier = Modifier.height(16.dp))
+            if (downloadProgress >= 0f) {
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { downloadProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = Color(0xFF3D5AFE),
+                    trackColor = Color.White.copy(alpha = 0.1f)
+                )
+            } else {
+                androidx.compose.material3.LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = Color(0xFF3D5AFE),
+                    trackColor = Color.White.copy(alpha = 0.1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            val progressText = if (totalBytes > 0) {
+                "${com.codershubinc.nullvoidlauncher.utils.StorageUtils.formatSize(downloadedBytes)} / ${com.codershubinc.nullvoidlauncher.utils.StorageUtils.formatSize(totalBytes)} (${(downloadProgress * 100).toInt()}%)"
+            } else {
+                com.codershubinc.nullvoidlauncher.utils.StorageUtils.formatSize(downloadedBytes)
+            }
+            Text(
+                text = progressText,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 12.sp
+            )
+        }
+
+        // Status text
+        if (updateStatus != "Check for updates") {
+            Spacer(modifier = Modifier.height(14.dp))
+            val isSuccess = updateStatus.contains("Available") || updateStatus.contains("complete")
+            val isError = updateStatus.contains("failed", ignoreCase = true) || updateStatus.contains("error", ignoreCase = true)
+
+            val statusColor = when {
+                isSuccess -> Color(0xFF00E676)
+                isError -> Color(0xFFFF5252)
+                else -> Color.White.copy(alpha = 0.7f)
+            }
+
             Text(
                 text = updateStatus,
-                color = if (updateStatus.contains("Available")) Color(0xFF00E676) else Color.White.copy(alpha = 0.7f),
+                color = statusColor,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
+        }
+
+        // If an update is available and notes exist, show release info
+        if (updateInfo != null && updateInfo.isUpdateAvailable && !isDownloading) {
+            if (updateInfo.apkName != null && updateInfo.apkSize > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Package: ${updateInfo.apkName} (${com.codershubinc.nullvoidlauncher.utils.StorageUtils.formatSize(updateInfo.apkSize)})",
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontSize = 11.sp
+                )
+            }
         }
     }
 }
