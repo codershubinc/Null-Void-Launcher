@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -24,16 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.R
 import com.codershubinc.nullvoidlauncher.data.*
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.services.NullVoidAccessibilityService
 import com.codershubinc.nullvoidlauncher.ui.components.*
+import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.components.*
 
 @Composable
@@ -43,7 +46,12 @@ fun SettingsScreen(
     onUsernameUpdated: (String) -> Unit,
     onThemeUpdated: (LauncherTheme) -> Unit,
     onWallpaperToggleUpdated: (Boolean) -> Unit,
-    onWallpaperSelected: (Int) -> Unit,
+    onWallpaperUriUpdated: (String?) -> Unit,
+    onWallpaperBlurUpdated: (Boolean) -> Unit,
+    onWallpaperBlurIntensityUpdated: (Float) -> Unit,
+    onWallpaperBlurColorUpdated: (Int) -> Unit,
+    onWallpaperBlurColorAlphaUpdated: (Float) -> Unit,
+    onOpenWidgetSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -51,36 +59,20 @@ fun SettingsScreen(
     var inputUsername by remember { mutableStateOf(userManager.getUsername()) }
     var selectedTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
     var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
-    var wallpaperResId by remember { mutableIntStateOf(userManager.getWallpaperRes()) }
+    var wallpaperUri by remember { mutableStateOf(userManager.getWallpaperUri()) }
+    var wallpaperBlur by remember { mutableStateOf(userManager.getWallpaperBlur()) }
+    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.getWallpaperBlurIntensity()) }
+    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.getWallpaperBlurColor())) }
+    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.getWallpaperBlurColorAlpha()) }
     var selectedFavorites by remember { mutableStateOf(userManager.getFavorites().toSet()) }
+    var doubleTapAction by remember { mutableStateOf(userManager.getDoubleTapAction()) }
+    var hideStatusBar by remember { mutableStateOf(userManager.getHideStatusBar()) }
+    var isNetworkUsageOpen by remember { mutableStateOf(false) }
     
     var isSelectingApps by remember { mutableStateOf(false) }
-    var showThemeDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
-
-    if (showThemeDialog) {
-        ThemeSelectionDialog(
-            currentTheme = selectedTheme,
-            onThemeSelected = {
-                selectedTheme = it
-                showThemeDialog = false
-            },
-            onDismiss = { showThemeDialog = false }
-        )
-    }
-
-    val wallpapers = listOf(
-        R.drawable.wallpaper_elegant,
-        R.drawable.wallpaper_black_bunny,
-        R.drawable.wallpaper_event_horizon,
-        R.drawable.wallpaper_abstract_1,
-        R.drawable.wallpaper_abstract_2,
-        R.drawable.wallpaper_abstract_3,
-        R.drawable.wallpaper_abstract_4,
-        R.drawable.wallpaper_train_your_dragon
-    )
 
     Box(
         modifier = Modifier
@@ -190,10 +182,32 @@ fun SettingsScreen(
                                     }
                                 )
                             }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Gestures Section
+                            Text(
+                                text = "Gestures",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                            )
+                            ModernCard {
+                                GesturesSection(
+                                    doubleTapAction = doubleTapAction,
+                                    onDoubleTapActionChange = {
+                                        doubleTapAction = it
+                                        userManager.saveDoubleTapAction(it)
+                                    },
+                                    onOpenAccessibilitySettings = {
+                                        NullVoidAccessibilityService.openAccessibilitySettings(context)
+                                    }
+                                )
+                            }
                         }
 
                         Column(modifier = Modifier.weight(1f)) {
-                            // Appearance Section
                             Text(
                                 text = "Appearance",
                                 color = Color.White,
@@ -202,14 +216,49 @@ fun SettingsScreen(
                                 modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                             )
                             ModernCard {
+                                InfoRow(
+                                    icon = Icons.Rounded.Widgets,
+                                    label = "Widget Settings",
+                                    value = "Configure Elegant Widgets",
+                                    onClick = onOpenWidgetSettings,
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                                 AppearanceSection(
-                                    selectedTheme = selectedTheme,
                                     showWallpaper = showWallpaper,
-                                    wallpaperResId = wallpaperResId,
-                                    wallpapers = wallpapers,
-                                    onThemeClick = { showThemeDialog = true },
+                                    wallpaperUri = wallpaperUri,
+                                    wallpaperBlur = wallpaperBlur,
+                                    wallpaperBlurIntensity = wallpaperBlurIntensity,
                                     onWallpaperToggle = { showWallpaper = !showWallpaper },
-                                    onWallpaperSelected = { wallpaperResId = it }
+                                    onWallpaperUriSelected = { wallpaperUri = it },
+                                    onWallpaperBlurToggle = { wallpaperBlur = !wallpaperBlur },
+                                    onWallpaperBlurIntensityChange = { wallpaperBlurIntensity = it },
+                                    wallpaperBlurColor = wallpaperBlurColor,
+                                    wallpaperBlurColorAlpha = wallpaperBlurColorAlpha,
+                                    onWallpaperBlurColorChange = { wallpaperBlurColor = it },
+                                    onWallpaperBlurColorAlphaChange = { wallpaperBlurColorAlpha = it }
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = if (hideStatusBar) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                                    label = "System Status Bar",
+                                    value = if (hideStatusBar) "Hidden" else "Visible",
+                                    onClick = {
+                                        hideStatusBar = !hideStatusBar
+                                        userManager.saveHideStatusBar(hideStatusBar)
+                                        val activity = context as? android.app.Activity
+                                        if (activity != null) {
+                                            val controller = androidx.core.view.WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+                                            controller.systemBarsBehavior =
+                                                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                                            if (hideStatusBar) {
+                                                controller.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+                                            } else {
+                                                controller.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+                                            }
+                                        }
+                                    },
+                                    showChevron = true
                                 )
                             }
 
@@ -224,6 +273,14 @@ fun SettingsScreen(
                                 modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                             )
                             ModernCard {
+                                InfoRow(
+                                    icon = Icons.Rounded.DataUsage,
+                                    label = "Data Usage & Logs",
+                                    value = "Local Storage",
+                                    onClick = { isNetworkUsageOpen = true },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                                 InfoRow(
                                     icon = Icons.Rounded.Info,
                                     label = "About",
@@ -254,25 +311,59 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Appearance Section
-                        Text(
-                            text = "Appearance",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-                        )
-                        ModernCard {
-                            AppearanceSection(
-                                selectedTheme = selectedTheme,
-                                showWallpaper = showWallpaper,
-                                wallpaperResId = wallpaperResId,
-                                wallpapers = wallpapers,
-                                onThemeClick = { showThemeDialog = true },
-                                onWallpaperToggle = { showWallpaper = !showWallpaper },
-                                onWallpaperSelected = { wallpaperResId = it }
+                            Text(
+                                text = "Appearance",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                             )
-                        }
+                            ModernCard {
+                                InfoRow(
+                                    icon = Icons.Rounded.Widgets,
+                                    label = "Widget Settings",
+                                    value = "Configure Elegant Widgets",
+                                    onClick = onOpenWidgetSettings,
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                AppearanceSection(
+                                    showWallpaper = showWallpaper,
+                                    wallpaperUri = wallpaperUri,
+                                    wallpaperBlur = wallpaperBlur,
+                                    wallpaperBlurIntensity = wallpaperBlurIntensity,
+                                    onWallpaperToggle = { showWallpaper = !showWallpaper },
+                                    onWallpaperUriSelected = { wallpaperUri = it },
+                                    onWallpaperBlurToggle = { wallpaperBlur = !wallpaperBlur },
+                                    onWallpaperBlurIntensityChange = { wallpaperBlurIntensity = it },
+                                    wallpaperBlurColor = wallpaperBlurColor,
+                                    wallpaperBlurColorAlpha = wallpaperBlurColorAlpha,
+                                    onWallpaperBlurColorChange = { wallpaperBlurColor = it },
+                                    onWallpaperBlurColorAlphaChange = { wallpaperBlurColorAlpha = it }
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = if (hideStatusBar) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                                    label = "System Status Bar",
+                                    value = if (hideStatusBar) "Hidden" else "Visible",
+                                    onClick = {
+                                        hideStatusBar = !hideStatusBar
+                                        userManager.saveHideStatusBar(hideStatusBar)
+                                        val activity = context as? android.app.Activity
+                                        if (activity != null) {
+                                            val controller = androidx.core.view.WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+                                            controller.systemBarsBehavior =
+                                                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                                            if (hideStatusBar) {
+                                                controller.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+                                            } else {
+                                                controller.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+                                            }
+                                        }
+                                    },
+                                    showChevron = true
+                                )
+                            }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
@@ -296,6 +387,29 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
+                        // Gestures Section
+                        Text(
+                            text = "Gestures",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                        )
+                        ModernCard {
+                            GesturesSection(
+                                doubleTapAction = doubleTapAction,
+                                onDoubleTapActionChange = {
+                                    doubleTapAction = it
+                                    userManager.saveDoubleTapAction(it)
+                                },
+                                onOpenAccessibilitySettings = {
+                                    NullVoidAccessibilityService.openAccessibilitySettings(context)
+                                }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
                         // About Section
                         Text(
                             text = "System",
@@ -305,6 +419,14 @@ fun SettingsScreen(
                             modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                         )
                         ModernCard {
+                            InfoRow(
+                                icon = Icons.Rounded.DataUsage,
+                                label = "Data Usage & Logs",
+                                value = "Local Storage",
+                                onClick = { isNetworkUsageOpen = true },
+                                showChevron = true
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                             InfoRow(
                                 icon = Icons.Rounded.Info,
                                 label = "About",
@@ -329,13 +451,26 @@ fun SettingsScreen(
                             userManager.saveUsername(inputUsername)
                             userManager.saveLauncherTheme(selectedTheme)
                             userManager.saveShowWallpaper(showWallpaper)
-                            userManager.saveWallpaperRes(wallpaperResId)
+                            if (wallpaperUri != null) {
+                                userManager.saveWallpaperUri(wallpaperUri!!)
+                            } else {
+                                userManager.clearWallpaperUri()
+                            }
+                            userManager.saveWallpaperBlur(wallpaperBlur)
+                            userManager.saveWallpaperBlurIntensity(wallpaperBlurIntensity)
+                            userManager.saveWallpaperBlurColor(wallpaperBlurColor.toArgb())
+                            userManager.saveWallpaperBlurColorAlpha(wallpaperBlurColorAlpha)
                             userManager.saveFavorites(selectedFavorites.toList())
+                            userManager.saveDoubleTapAction(doubleTapAction)
 
                             onUsernameUpdated(inputUsername)
                             onThemeUpdated(selectedTheme)
                             onWallpaperToggleUpdated(showWallpaper)
-                            onWallpaperSelected(wallpaperResId)
+                            onWallpaperUriUpdated(wallpaperUri)
+                            onWallpaperBlurUpdated(wallpaperBlur)
+                            onWallpaperBlurIntensityUpdated(wallpaperBlurIntensity)
+                            onWallpaperBlurColorUpdated(wallpaperBlurColor.toArgb())
+                            onWallpaperBlurColorAlphaUpdated(wallpaperBlurColorAlpha)
                             onClose()
                         }
                         .padding(vertical = 16.dp),
@@ -418,6 +553,10 @@ fun SettingsScreen(
                     Text("Confirm Selection", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+
+        if (isNetworkUsageOpen) {
+            NetworkUsageScreen(onClose = { isNetworkUsageOpen = false })
         }
     }
 }

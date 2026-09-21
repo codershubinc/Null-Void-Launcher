@@ -30,9 +30,9 @@ data class MusicTrack(
     val title: String?,
     val artist: String?,
     val isPlaying: Boolean,
-    val artwork: Bitmap?, // Compressed
-    val fullArtwork: Bitmap?, // Original
-    val packageName: String
+    val artwork: Bitmap? = null,
+    val fullArtwork: Bitmap? = null,
+    val packageName: String = ""
 )
 
 
@@ -40,6 +40,11 @@ class MediaService : NotificationListenerService() {
     companion object {
         private var _instance: MediaService? = null
         val instance: MediaService? get() = _instance
+
+        fun isPermissionGranted(context: android.content.Context): Boolean {
+            val enabledListeners = androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(context)
+            return enabledListeners.contains(context.packageName)
+        }
     }
 
     private lateinit var sessionManager: MediaSessionManager
@@ -63,10 +68,13 @@ class MediaService : NotificationListenerService() {
     fun getMediaSessionInfo(): MusicTrack? {
         if (!::sessionManager.isInitialized) return null
 
-        val controllers =
+        val controllers = try {
             sessionManager.getActiveSessions(
                 ComponentName(this, MediaService::class.java)
             )
+        } catch (e: Exception) {
+            emptyList()
+        }
 
         val activeController = controllers.firstOrNull {
             it.playbackState?.state == PlaybackState.STATE_PLAYING
@@ -77,15 +85,61 @@ class MediaService : NotificationListenerService() {
             val playbackState = controller.playbackState
 
             
-            val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: "Unknown Title"
-            val artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: "Unknown Artist"
-            val currentTrackId = "$title-$artist-${controller.packageName}"
+            val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
+                ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
+                ?: "Playing"
+
+            val rawArtist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
+                ?: metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
+                ?: metadata?.getString(MediaMetadata.METADATA_KEY_AUTHOR)
+                ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
+
+            val artist = if (rawArtist.isNullOrBlank() ||
+                rawArtist.equals("Unknown Artist", ignoreCase = true) ||
+                rawArtist.equals("Unknown", ignoreCase = true) ||
+                rawArtist.equals("Unknown author", ignoreCase = true)
+            ) {
+                null
+            } else {
+                rawArtist
+            }
+
+            val currentTrackId = "$title-${artist ?: ""}-${controller.packageName}"
 
             val artworks = if (currentTrackId == lastTrackId && lastCompressedArtwork != null) {
                 Pair(lastCompressedArtwork, lastFullArtwork)
             } else {
-                val rawArtwork = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+                var rawArtwork = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
                     ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+                    ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+
+                if (rawArtwork == null) {
+                    val artUriStr = metadata?.getString(MediaMetadata.METADATA_KEY_ART_URI)
+                        ?: metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI)
+                        ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI)
+                    if (!artUriStr.isNullOrBlank()) {
+                        try {
+                            val uri = android.net.Uri.parse(artUriStr)
+                            contentResolver.openInputStream(uri)?.use { stream ->
+                                rawArtwork = android.graphics.BitmapFactory.decodeStream(stream)
+                            }
+                        } catch (_: Exception) {}
+                    }
+                }
+
+                // If still null, extract app icon so video streams (VLC, etc.) have a high-res graphic
+                if (rawArtwork == null) {
+                    try {
+                        val appIconDrawable = packageManager.getApplicationIcon(controller.packageName)
+                        val w = appIconDrawable.intrinsicWidth.coerceAtLeast(128)
+                        val h = appIconDrawable.intrinsicHeight.coerceAtLeast(128)
+                        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                        val canvas = android.graphics.Canvas(bmp)
+                        appIconDrawable.setBounds(0, 0, canvas.width, canvas.height)
+                        appIconDrawable.draw(canvas)
+                        rawArtwork = bmp
+                    } catch (_: Exception) {}
+                }
                 
                 val compressed = rawArtwork?.let {
                     val size = 128
@@ -111,8 +165,11 @@ class MediaService : NotificationListenerService() {
     // Inside MediaService class
     private fun getActiveController(): MediaController? {
         if (!::sessionManager.isInitialized) return null
-        val controllers =
+        val controllers = try {
             sessionManager.getActiveSessions(ComponentName(this, MediaService::class.java))
+        } catch (e: Exception) {
+            emptyList()
+        }
         // Prefer the one that is currently playing
         return controllers.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING }
             ?: controllers.firstOrNull()

@@ -20,15 +20,18 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
-import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawerScreen
+
 import com.codershubinc.nullvoidlauncher.ui.focus.FocusModeScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
 import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
 import com.codershubinc.nullvoidlauncher.ui.about.AboutScreen
+import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -41,7 +44,11 @@ fun HomeScreen() {
     var githubUsername by remember { mutableStateOf(userManager.getUsername()) }
     var currentTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
     var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
-    var wallpaperResId by remember { mutableIntStateOf(userManager.getWallpaperRes()) }
+    var wallpaperUri by remember { mutableStateOf(userManager.getWallpaperUri()) }
+    var wallpaperBlur by remember { mutableStateOf(userManager.getWallpaperBlur()) }
+    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.getWallpaperBlurIntensity()) }
+    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.getWallpaperBlurColor())) }
+    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.getWallpaperBlurColorAlpha()) }
 
     var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
@@ -77,17 +84,25 @@ fun HomeScreen() {
     var isSettingsOpen by remember { mutableStateOf(false) }
     var isFocusModeOpen by remember { mutableStateOf(false) }
     var isAboutOpen by remember { mutableStateOf(false) }
+    var isWidgetSettingsOpen by remember { mutableStateOf(false) }
+    var isNetworkUsageOpen by remember { mutableStateOf(false) }
+    var isBluetoothSettingsOpen by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1) { 2 }
 
     val blurRadius by remember {
         derivedStateOf {
             val pageOffset = pagerState.currentPage + pagerState.currentPageOffsetFraction
-            (1f - pageOffset.coerceIn(0f, 1f)) * 25f
+            val transitionBlur = (1f - pageOffset.coerceIn(0f, 1f)) * 25f
+            val userBlur = if (wallpaperBlur) wallpaperBlurIntensity else 0f
+            transitionBlur + userBlur
         }
     }
 
-    BackHandler(enabled = isDrawerOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || pagerState.currentPage == 0) {
-        if (isSettingsOpen) isSettingsOpen = false
+    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
+        if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
+        else if (isNetworkUsageOpen) isNetworkUsageOpen = false
+        else if (isWidgetSettingsOpen) isWidgetSettingsOpen = false
+        else if (isSettingsOpen) isSettingsOpen = false
         else if (isFocusModeOpen) isFocusModeOpen = false
         else if (isAboutOpen) isAboutOpen = false
         else if (isDrawerOpen) isDrawerOpen = false
@@ -95,17 +110,29 @@ fun HomeScreen() {
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(if (showWallpaper && wallpaperResId == -1) Color.Transparent else Color.Black)
+        .background(if (showWallpaper && wallpaperUri == null) Color.Transparent else Color.Black)
     ) {
-        if (showWallpaper && wallpaperResId != -1) {
-            Image(
-                painter = painterResource(id = wallpaperResId),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(blurRadius.dp),
-                contentScale = ContentScale.Crop
-            )
+        if (showWallpaper && wallpaperUri != null) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(wallpaperUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(blurRadius.dp),
+                    contentScale = ContentScale.Crop
+                )
+                if (wallpaperBlur && wallpaperBlurColor != Color.Transparent) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(wallpaperBlurColor.copy(alpha = wallpaperBlurColorAlpha))
+                    )
+                }
+            }
         }
 
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
@@ -125,7 +152,14 @@ fun HomeScreen() {
                 1 -> WidgetScreen(
                     isDrawerOpen = isDrawerOpen,
                     theme = currentTheme,
-                    onOpenDrawer = { isDrawerOpen = true }
+                    onOpenDrawer = { isDrawerOpen = true },
+                    onWallpaperChanged = {
+                        wallpaperUri = userManager.getWallpaperUri()
+                        showWallpaper = userManager.getShowWallpaper()
+                    },
+                    onOpenNetworkUsage = { isNetworkUsageOpen = true },
+                    onOpenBluetoothSettings = { isBluetoothSettingsOpen = true },
+                    onOpenWidgetSettings = { isWidgetSettingsOpen = true }
                 )
             }
         }
@@ -136,17 +170,10 @@ fun HomeScreen() {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
-            if (currentTheme == com.codershubinc.nullvoidlauncher.data.LauncherTheme.ELEGANT) {
-                ElegantSearchScreen(
-                    allApps = allApps,
-                    onClose = { isDrawerOpen = false }
-                )
-            } else {
-                AppDrawerScreen(
-                    allApps = allApps,
-                    onClose = { isDrawerOpen = false }
-                )
-            }
+            ElegantSearchScreen(
+                allApps = allApps,
+                onClose = { isDrawerOpen = false }
+            )
         }
 
         AnimatedVisibility(
@@ -168,9 +195,22 @@ fun HomeScreen() {
                 onWallpaperToggleUpdated = { show ->
                     showWallpaper = show
                 },
-                onWallpaperSelected = { resId ->
-                    wallpaperResId = resId
+                onWallpaperUriUpdated = { uri ->
+                    wallpaperUri = uri
                 },
+                onWallpaperBlurUpdated = { blur ->
+                    wallpaperBlur = blur
+                },
+                onWallpaperBlurIntensityUpdated = { intensity ->
+                    wallpaperBlurIntensity = intensity
+                },
+                onWallpaperBlurColorUpdated = { color ->
+                    wallpaperBlurColor = Color(color)
+                },
+                onWallpaperBlurColorAlphaUpdated = { alpha ->
+                    wallpaperBlurColorAlpha = alpha
+                },
+                onOpenWidgetSettings = { isWidgetSettingsOpen = true },
                 onOpenAbout = { isAboutOpen = true },
                 onClose = { isSettingsOpen = false }
             )
@@ -194,6 +234,41 @@ fun HomeScreen() {
             AboutScreen(
                 userManager = userManager,
                 onClose = { isAboutOpen = false }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isWidgetSettingsOpen,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            com.codershubinc.nullvoidlauncher.ui.settings.WidgetSettingsScreen(
+                userManager = userManager,
+                onClose = { isWidgetSettingsOpen = false }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isNetworkUsageOpen,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            NetworkUsageScreen(
+                onClose = { isNetworkUsageOpen = false }
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isBluetoothSettingsOpen,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothSettingsScreen(
+                userManager = userManager,
+                onClose = { isBluetoothSettingsOpen = false }
             )
         }
     }

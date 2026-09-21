@@ -21,57 +21,80 @@ data class GithubProfile(
 )
 
 enum class ClockStyle {
+    ELEGANT,
     MINIMAL,
-    TERMINAL,
-    BOLD,
-    VERTICAL,
-    VOID,
     MODERN,
-    PIXEL,
-    ELEGANT
+    RETRO,
+    TERMINAL
 }
 
 enum class DayStyle {
+    ELEGANT,
+    RETRO,
     MINIMAL,
     MODERN,
-    PIXEL,
-    ELEGANT,
-    BRUTAL
+    BRUTALIST
 }
 
 enum class StorageStyle {
-    STANDARD,
-    MODERN,
-    ELEGANT
+    ELEGANT,
+    MINIMAL,
+    GAUGE_BAR,
+    RING,
+    TERMINAL,
+    RETRO
+}
+
+enum class NetworkStyle {
+    ELEGANT,
+    MINIMAL,
+    TERMINAL,
+    RETRO
+}
+
+enum class PowerStyle {
+    ELEGANT,
+    MINIMAL,
+    GAUGE_BAR,
+    RING,
+    TERMINAL,
+    RETRO
+}
+
+enum class BluetoothStyle {
+    ELEGANT,
+    MINIMAL,
+    TERMINAL,
+    RETRO
 }
 
 enum class LauncherTheme {
-    MINIMAL,
-    TERMINAL,
-    BOLD,
-    VERTICAL,
-    VOID,
-    MODERN,
-    PIXEL,
     ELEGANT
 }
 
 enum class MusicStyle {
-    STANDARD,
-    MODERN,
-    FUSED,
-    ELEGANT
+    ELEGANT,
+    RETRO,
+    MINIMAL,
+    VINYL,
+    NEON
 }
 
 enum class FavoritesStyle {
-    STANDARD,
-    NONE,
-    ELEGANT
+    ELEGANT,
+    RETRO,
+    GRID,
+    DOCK
 }
 
 enum class BottomBarStyle {
-    STANDARD,
     PIXEL,
+    NONE
+}
+
+enum class DoubleTapAction {
+    LOCK_SCREEN,
+    CYCLE_WALLPAPER,
     NONE
 }
 
@@ -83,52 +106,12 @@ data class LauncherThemeConfig(
 )
 
 fun LauncherTheme.toConfig(): LauncherThemeConfig {
-    return when (this) {
-        LauncherTheme.MINIMAL -> LauncherThemeConfig(
-            ClockStyle.MINIMAL,
-            MusicStyle.STANDARD,
-            FavoritesStyle.NONE,
-            BottomBarStyle.NONE
-        )
-        LauncherTheme.TERMINAL -> LauncherThemeConfig(
-            ClockStyle.TERMINAL, MusicStyle.STANDARD, FavoritesStyle.NONE, BottomBarStyle.NONE)
-        LauncherTheme.BOLD -> LauncherThemeConfig(
-            ClockStyle.BOLD,
-            MusicStyle.STANDARD,
-            FavoritesStyle.NONE,
-            BottomBarStyle.NONE
-        )
-        LauncherTheme.VERTICAL -> LauncherThemeConfig(
-            ClockStyle.VERTICAL,
-            MusicStyle.STANDARD,
-            FavoritesStyle.NONE,
-            BottomBarStyle.NONE
-        )
-        LauncherTheme.VOID -> LauncherThemeConfig(
-            ClockStyle.VOID,
-            MusicStyle.STANDARD,
-            FavoritesStyle.NONE,
-            BottomBarStyle.NONE
-        )
-        LauncherTheme.MODERN -> LauncherThemeConfig(
-            ClockStyle.MODERN,
-            MusicStyle.MODERN,
-            FavoritesStyle.STANDARD,
-            BottomBarStyle.NONE
-        )
-        LauncherTheme.PIXEL -> LauncherThemeConfig(
-            ClockStyle.PIXEL,
-            MusicStyle.ELEGANT,
-            FavoritesStyle.NONE,
-            BottomBarStyle.PIXEL
-        )
-        LauncherTheme.ELEGANT -> LauncherThemeConfig(
-            ClockStyle.ELEGANT,
-            MusicStyle.ELEGANT,
-            FavoritesStyle.ELEGANT,
-            BottomBarStyle.PIXEL
-        )
-    }
+    return LauncherThemeConfig(
+        ClockStyle.ELEGANT,
+        MusicStyle.ELEGANT,
+        FavoritesStyle.ELEGANT,
+        BottomBarStyle.PIXEL
+    )
 }
 
 class UserManager(context: Context) {
@@ -147,8 +130,8 @@ class UserManager(context: Context) {
     }
 
     fun getClockStyle(): ClockStyle {
-        val styleName = prefs.getString("clock_style", ClockStyle.MINIMAL.name)
-        return try { ClockStyle.valueOf(styleName!!) } catch (e: Exception) { ClockStyle.MINIMAL }
+        val styleName = prefs.getString("clock_style", ClockStyle.ELEGANT.name)
+        return try { ClockStyle.valueOf(styleName!!) } catch (e: Exception) { ClockStyle.ELEGANT }
     }
 
     fun saveLauncherTheme(theme: LauncherTheme) {
@@ -156,8 +139,8 @@ class UserManager(context: Context) {
     }
 
     fun getLauncherTheme(): LauncherTheme {
-        val themeName = prefs.getString("launcher_theme", LauncherTheme.MINIMAL.name)
-        return try { LauncherTheme.valueOf(themeName!!) } catch (e: Exception) { LauncherTheme.MINIMAL }
+        val themeName = prefs.getString("launcher_theme", LauncherTheme.ELEGANT.name)
+        return try { LauncherTheme.valueOf(themeName!!) } catch (e: Exception) { LauncherTheme.ELEGANT }
     }
 
     fun saveMusicStyle(style: MusicStyle) {
@@ -165,8 +148,8 @@ class UserManager(context: Context) {
     }
 
     fun getMusicStyle(): MusicStyle {
-        val name = prefs.getString("music_style", MusicStyle.STANDARD.name)
-        return try { MusicStyle.valueOf(name!!) } catch (e: Exception) { MusicStyle.STANDARD }
+        val name = prefs.getString("music_style", MusicStyle.ELEGANT.name)
+        return try { MusicStyle.valueOf(name!!) } catch (e: Exception) { MusicStyle.ELEGANT }
     }
 
     fun saveFavoritesStyle(style: FavoritesStyle) {
@@ -174,8 +157,26 @@ class UserManager(context: Context) {
     }
 
     fun getFavoritesStyle(): FavoritesStyle {
-        val name = prefs.getString("favorites_style", FavoritesStyle.STANDARD.name)
-        return try { FavoritesStyle.valueOf(name!!) } catch (e: Exception) { FavoritesStyle.STANDARD }
+        val name = prefs.getString("favorites_style", FavoritesStyle.ELEGANT.name)
+        return try { FavoritesStyle.valueOf(name!!) } catch (e: Exception) { FavoritesStyle.ELEGANT }
+    }
+
+    fun saveDayStyle(style: DayStyle) {
+        prefs.edit { putString("day_style", style.name) }
+    }
+
+    fun getDayStyle(): DayStyle {
+        val name = prefs.getString("day_style", DayStyle.ELEGANT.name)
+        return try { DayStyle.valueOf(name!!) } catch (e: Exception) { DayStyle.ELEGANT }
+    }
+
+    fun saveNetworkStyle(style: NetworkStyle) {
+        prefs.edit { putString("network_style", style.name) }
+    }
+
+    fun getNetworkStyle(): NetworkStyle {
+        val name = prefs.getString("network_style", NetworkStyle.ELEGANT.name)
+        return try { NetworkStyle.valueOf(name!!) } catch (e: Exception) { NetworkStyle.ELEGANT }
     }
 
     fun saveBottomBarStyle(style: BottomBarStyle) {
@@ -183,8 +184,8 @@ class UserManager(context: Context) {
     }
 
     fun getBottomBarStyle(): BottomBarStyle {
-        val name = prefs.getString("bottom_bar_style", BottomBarStyle.STANDARD.name)
-        return try { BottomBarStyle.valueOf(name!!) } catch (e: Exception) { BottomBarStyle.STANDARD }
+        val name = prefs.getString("bottom_bar_style", BottomBarStyle.PIXEL.name)
+        return try { BottomBarStyle.valueOf(name!!) } catch (e: Exception) { BottomBarStyle.PIXEL }
     }
 
     fun saveFavorites(favorites: List<String>) {
@@ -203,12 +204,97 @@ class UserManager(context: Context) {
         return prefs.getBoolean("show_wallpaper", false)
     }
 
+    fun saveHideStatusBar(hide: Boolean) {
+        prefs.edit { putBoolean("hide_status_bar", hide) }
+    }
+
+    fun getHideStatusBar(): Boolean {
+        return prefs.getBoolean("hide_status_bar", true)
+    }
+
+    fun saveShowNetworkUsageOnWidget(show: Boolean) {
+        prefs.edit { putBoolean("show_network_usage_on_widget", show) }
+    }
+
+    fun getShowNetworkUsageOnWidget(): Boolean {
+        return prefs.getBoolean("show_network_usage_on_widget", true)
+    }
+
     fun saveWallpaperRes(resId: Int) {
         prefs.edit { putInt("wallpaper_res_id", resId) }
     }
 
     fun getWallpaperRes(): Int {
         return prefs.getInt("wallpaper_res_id", -1)
+    }
+
+    // URI-based wallpaper (user-selected from device)
+    fun saveWallpaperUri(uri: String) {
+        prefs.edit { putString("wallpaper_uri", uri) }
+    }
+
+    fun getWallpaperUri(): String? {
+        return prefs.getString("wallpaper_uri", null)
+    }
+
+    fun clearWallpaperUri() {
+        prefs.edit { remove("wallpaper_uri") }
+    }
+
+    fun saveWallpaperBlur(blur: Boolean) {
+        prefs.edit { putBoolean("wallpaper_blur", blur) }
+    }
+
+    fun getWallpaperBlur(): Boolean {
+        return prefs.getBoolean("wallpaper_blur", false)
+    }
+
+    fun saveWallpaperBlurIntensity(intensity: Float) {
+        prefs.edit { putFloat("wallpaper_blur_intensity", intensity) }
+    }
+
+    fun getWallpaperBlurIntensity(): Float {
+        return prefs.getFloat("wallpaper_blur_intensity", 10f)
+    }
+
+    fun saveWallpaperBlurColor(color: Int) {
+        prefs.edit { putInt("wallpaper_blur_color", color) }
+    }
+
+    fun getWallpaperBlurColor(): Int {
+        return prefs.getInt("wallpaper_blur_color", 0x00000000)
+    }
+
+    fun saveWallpaperBlurColorAlpha(alpha: Float) {
+        prefs.edit { putFloat("wallpaper_blur_color_alpha", alpha) }
+    }
+
+    fun getWallpaperBlurColorAlpha(): Float {
+        return prefs.getFloat("wallpaper_blur_color_alpha", 0.3f)
+    }
+
+    fun saveAutoWallpaperEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean("auto_wallpaper_enabled", enabled) }
+    }
+
+    fun getAutoWallpaperEnabled(): Boolean {
+        return prefs.getBoolean("auto_wallpaper_enabled", false)
+    }
+
+    fun saveAutoWallpaperInterval(seconds: Int) {
+        prefs.edit { putInt("auto_wallpaper_interval", seconds) }
+    }
+
+    fun getAutoWallpaperInterval(): Int {
+        return prefs.getInt("auto_wallpaper_interval", 60)
+    }
+
+    fun saveAutoWallpaperList(resIds: List<Int>) {
+        prefs.edit { putStringSet("auto_wallpaper_list", resIds.map { it.toString() }.toSet()) }
+    }
+
+    fun getAutoWallpaperList(): List<Int> {
+        return prefs.getStringSet("auto_wallpaper_list", emptySet())?.mapNotNull { it.toIntOrNull() } ?: emptyList()
     }
 
     fun saveUserInfo(info: GithubProfile) {
@@ -264,5 +350,126 @@ class UserManager(context: Context) {
             e.printStackTrace()
         }
         return@withContext null
+    }
+
+    // Widget Customization Settings
+    fun saveWidgetCornerRadius(radius: Float) = prefs.edit { putFloat("widget_corner_radius", radius) }
+    fun getWidgetCornerRadius(): Float = prefs.getFloat("widget_corner_radius", 24f)
+
+    fun saveWidgetBlurIntensity(intensity: Float) = prefs.edit { putFloat("widget_blur_intensity", intensity) }
+    fun getWidgetBlurIntensity(): Float = prefs.getFloat("widget_blur_intensity", 50f)
+
+    fun saveWidgetColor(color: Int) = prefs.edit { putInt("widget_color", color) }
+    fun getWidgetColor(): Int = prefs.getInt("widget_color", 0x1AFFFFFF) // Transparent white
+
+    fun saveWidgetGlassEffect(enabled: Boolean) = prefs.edit { putBoolean("widget_glass_effect", enabled) }
+    fun getWidgetGlassEffect(): Boolean = prefs.getBoolean("widget_glass_effect", true)
+
+    fun saveWidgetPreset(presetName: String) = prefs.edit { putString("widget_preset", presetName) }
+    fun getWidgetPreset(): String = prefs.getString("widget_preset", "GLASS") ?: "GLASS"
+
+    // Widget Toggles
+    fun saveShowClockWidget(show: Boolean) = prefs.edit { putBoolean("show_clock_widget", show) }
+    fun getShowClockWidget(): Boolean = prefs.getBoolean("show_clock_widget", true)
+
+    fun saveShowDayWidget(show: Boolean) = prefs.edit { putBoolean("show_day_widget", show) }
+    fun getShowDayWidget(): Boolean = prefs.getBoolean("show_day_widget", true)
+
+    fun saveShowMusicWidget(show: Boolean) = prefs.edit { putBoolean("show_music_widget", show) }
+    fun getShowMusicWidget(): Boolean = prefs.getBoolean("show_music_widget", true)
+
+    fun saveShowFavoritesWidget(show: Boolean) = prefs.edit { putBoolean("show_favorites_widget", show) }
+    fun getShowFavoritesWidget(): Boolean = prefs.getBoolean("show_favorites_widget", true)
+
+    fun saveShowStorageWidget(show: Boolean) = prefs.edit { putBoolean("show_storage_widget", show) }
+    fun getShowStorageWidget(): Boolean = prefs.getBoolean("show_storage_widget", true)
+
+    fun saveStorageStyle(style: StorageStyle) = prefs.edit { putString("storage_style", style.name) }
+    fun getStorageStyle(): StorageStyle {
+        val name = prefs.getString("storage_style", StorageStyle.ELEGANT.name)
+        return try { StorageStyle.valueOf(name!!) } catch (e: Exception) { StorageStyle.ELEGANT }
+    }
+
+    fun saveShowNetworkWidget(show: Boolean) = prefs.edit { putBoolean("show_network_widget", show) }
+    fun getShowNetworkWidget(): Boolean = prefs.getBoolean("show_network_widget", true)
+
+    fun saveShowPowerWidget(show: Boolean) = prefs.edit { putBoolean("show_power_widget", show) }
+    fun getShowPowerWidget(): Boolean = prefs.getBoolean("show_power_widget", true)
+
+    fun savePowerStyle(style: PowerStyle) = prefs.edit { putString("power_style", style.name) }
+    fun getPowerStyle(): PowerStyle {
+        val name = prefs.getString("power_style", PowerStyle.ELEGANT.name)
+        return try { PowerStyle.valueOf(name!!) } catch (e: Exception) { PowerStyle.ELEGANT }
+    }
+
+    fun saveShowBluetoothWidget(show: Boolean) = prefs.edit { putBoolean("show_bluetooth_widget", show) }
+    fun getShowBluetoothWidget(): Boolean = prefs.getBoolean("show_bluetooth_widget", true)
+
+    fun saveBluetoothShowOnlyIfConnected(onlyConnected: Boolean) = prefs.edit { putBoolean("bluetooth_only_connected", onlyConnected) }
+    fun getBluetoothShowOnlyIfConnected(): Boolean = prefs.getBoolean("bluetooth_only_connected", true)
+
+    fun savePreferredBluetoothDevice(address: String) = prefs.edit { putString("bluetooth_preferred_device", address) }
+    fun getPreferredBluetoothDevice(): String = prefs.getString("bluetooth_preferred_device", "") ?: ""
+
+    fun saveBluetoothStyle(style: BluetoothStyle) = prefs.edit { putString("bluetooth_style", style.name) }
+    fun getBluetoothStyle(): BluetoothStyle {
+        val name = prefs.getString("bluetooth_style", BluetoothStyle.ELEGANT.name)
+        return try { BluetoothStyle.valueOf(name!!) } catch (e: Exception) { BluetoothStyle.ELEGANT }
+    }
+
+    // Widget Font Settings
+    fun saveClockFont(font: WidgetFont) = prefs.edit { putString("clock_font", font.name) }
+    fun getClockFont(): WidgetFont {
+        val name = prefs.getString("clock_font", WidgetFont.DEFAULT.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
+    }
+
+    fun saveDayFont(font: WidgetFont) = prefs.edit { putString("day_font", font.name) }
+    fun getDayFont(): WidgetFont {
+        val name = prefs.getString("day_font", WidgetFont.SANS_SERIF.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.SANS_SERIF }
+    }
+
+    fun saveMusicFont(font: WidgetFont) = prefs.edit { putString("music_font", font.name) }
+    fun getMusicFont(): WidgetFont {
+        val name = prefs.getString("music_font", WidgetFont.DEFAULT.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
+    }
+
+    fun saveFavoritesFont(font: WidgetFont) = prefs.edit { putString("favorites_font", font.name) }
+    fun getFavoritesFont(): WidgetFont {
+        val name = prefs.getString("favorites_font", WidgetFont.DEFAULT.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
+    }
+
+    fun saveStorageFont(font: WidgetFont) = prefs.edit { putString("storage_font", font.name) }
+    fun getStorageFont(): WidgetFont {
+        val name = prefs.getString("storage_font", WidgetFont.SANS_SERIF.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.SANS_SERIF }
+    }
+
+    fun saveNetworkFont(font: WidgetFont) = prefs.edit { putString("network_font", font.name) }
+    fun getNetworkFont(): WidgetFont {
+        val name = prefs.getString("network_font", WidgetFont.MONOSPACE.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.MONOSPACE }
+    }
+
+    fun savePowerFont(font: WidgetFont) = prefs.edit { putString("power_font", font.name) }
+    fun getPowerFont(): WidgetFont {
+        val name = prefs.getString("power_font", WidgetFont.MONOSPACE.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.MONOSPACE }
+    }
+
+    fun saveBluetoothFont(font: WidgetFont) = prefs.edit { putString("bluetooth_font", font.name) }
+    fun getBluetoothFont(): WidgetFont {
+        val name = prefs.getString("bluetooth_font", WidgetFont.DEFAULT.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
+    }
+
+    // Gestures
+    fun saveDoubleTapAction(action: DoubleTapAction) = prefs.edit { putString("double_tap_action", action.name) }
+    fun getDoubleTapAction(): DoubleTapAction {
+        val name = prefs.getString("double_tap_action", DoubleTapAction.LOCK_SCREEN.name)
+        return try { DoubleTapAction.valueOf(name!!) } catch (e: Exception) { DoubleTapAction.LOCK_SCREEN }
     }
 }

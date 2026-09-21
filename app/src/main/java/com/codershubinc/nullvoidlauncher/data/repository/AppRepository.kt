@@ -3,29 +3,55 @@ package com.codershubinc.nullvoidlauncher.data.repository
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.LauncherApps
+import android.graphics.Bitmap
 import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.UserHandle
 import android.os.UserManager
+import androidx.collection.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+object AppIconCache {
+    val cache = LruCache<ComponentName, ImageBitmap>(200)
+}
+
+private fun drawableToBitmap(drawable: Drawable): Bitmap {
+    if (drawable is BitmapDrawable && drawable.bitmap != null) {
+        return drawable.bitmap
+    }
+    val w = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 128
+    val h = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 128
+    val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap
+}
 
 // 1. Data Class (Lighter: No Icon stored here)
 data class AppInfo(
@@ -99,55 +125,43 @@ fun LazyAppIcon(
     tint: Color? = null,
     grayscale: Boolean = false
 ) {
-    var icon by remember(app) { mutableStateOf<Drawable?>(null) }
+    var imageBitmap by remember(app.componentName) {
+        mutableStateOf(AppIconCache.cache[app.componentName])
+    }
 
-    LaunchedEffect(app) {
-        withContext(Dispatchers.IO) {
-            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-            val activities = launcherApps.getActivityList(app.packageName, app.userHandle)
-            val activityInfo = activities.find { it.componentName == app.componentName }
-            
-            val density = context.resources.displayMetrics.densityDpi
-            
-            // 1. Try to get foreground of adaptive icon for a cleaner look
-            var drawable = activityInfo?.getIcon(density)
-            
-            if (drawable is AdaptiveIconDrawable) {
-                // If we want a tinted look, the foreground usually looks better than the whole adaptive icon
-                if (tint != null || grayscale) {
-                    drawable = drawable.foreground
-                }
-            }
-
-            // 2. For Android 13+, check for the monochrome version
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (drawable is AdaptiveIconDrawable) {
-                    val monochrome = drawable.monochrome
-                    if (monochrome != null) {
-                        drawable = monochrome
+    LaunchedEffect(app.componentName) {
+        if (imageBitmap == null) {
+            withContext(Dispatchers.IO) {
+                val bmp = try {
+                    val drawable = context.packageManager.getActivityIcon(app.componentName)
+                    drawableToBitmap(drawable).asImageBitmap()
+                } catch (e: Exception) {
+                    try {
+                        val drawable = context.packageManager.getApplicationIcon(app.packageName)
+                        drawableToBitmap(drawable).asImageBitmap()
+                    } catch (e2: Exception) {
+                        null
                     }
                 }
-            }
-
-            icon = if (drawable != null) {
-                context.packageManager.getUserBadgedIcon(drawable, app.userHandle)
-            } else {
-                null
+                if (bmp != null) {
+                    AppIconCache.cache.put(app.componentName, bmp)
+                    imageBitmap = bmp
+                }
             }
         }
     }
 
-    Box(modifier = Modifier.size(size.dp)) {
+    Box(modifier = Modifier.size(size.dp), contentAlignment = Alignment.Center) {
         val customIcon = getCustomIcon(app.packageName.lowercase())
 
         if (customIcon != null && tint != null) {
             Icon(
                 imageVector = customIcon,
-                contentDescription = null,
+                contentDescription = app.label,
                 modifier = Modifier.fillMaxSize(),
                 tint = tint
             )
-        } else if (icon != null) {
+        } else if (imageBitmap != null) {
             val colorFilter = when {
                 tint != null -> ColorFilter.tint(tint)
                 grayscale -> ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
@@ -155,13 +169,25 @@ fun LazyAppIcon(
             }
 
             Image(
-                painter = rememberAsyncImagePainter(icon),
-                contentDescription = null,
+                bitmap = imageBitmap!!,
+                contentDescription = app.label,
                 modifier = Modifier.fillMaxSize(),
                 colorFilter = colorFilter
             )
         } else {
-            Box(modifier = Modifier.fillMaxSize().background(Color.DarkGray.copy(alpha = 0.3f)))
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.12f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = app.label.take(1).uppercase(),
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = (size * 0.45f).sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
