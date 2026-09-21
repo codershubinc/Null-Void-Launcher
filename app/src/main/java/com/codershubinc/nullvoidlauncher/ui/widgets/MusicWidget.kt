@@ -19,18 +19,32 @@ package com.codershubinc.nullvoidlauncher.ui.widgets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.data.MusicStyle
-import com.codershubinc.nullvoidlauncher.ui.widgets.music.FusedMusicWidget
-import com.codershubinc.nullvoidlauncher.ui.widgets.music.ModernMusicWidget
-import com.codershubinc.nullvoidlauncher.ui.widgets.music.StandardMusicWidget
+import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.WidgetFont
+import com.codershubinc.nullvoidlauncher.ui.music.MusicTrack
 import com.codershubinc.nullvoidlauncher.ui.widgets.music.ElegantMusicWidget
+import com.codershubinc.nullvoidlauncher.ui.widgets.music.RetroMusicWidget
+import com.codershubinc.nullvoidlauncher.ui.widgets.music.MinimalMusicWidget
+import com.codershubinc.nullvoidlauncher.ui.widgets.music.VinylMusicWidget
+import com.codershubinc.nullvoidlauncher.ui.widgets.music.NeonMusicWidget
 
 @Composable
-fun MusicWidget( style: MusicStyle = MusicStyle.STANDARD, modifier: Modifier = Modifier ) {
+fun MusicWidget(
+    style: MusicStyle = MusicStyle.ELEGANT,
+    modifier: Modifier = Modifier,
+    font: WidgetFont? = null,
+    previewTrack: MusicTrack? = null
+) {
+    val context = LocalContext.current
+    val effectiveFont = font ?: UserManager(context).getMusicFont()
+
     when (style) {
-        MusicStyle.STANDARD -> StandardMusicWidget(modifier)
-        MusicStyle.MODERN -> ModernMusicWidget(modifier)
-        MusicStyle.FUSED -> FusedMusicWidget(modifier)
-        MusicStyle.ELEGANT -> ElegantMusicWidget(modifier)
+        MusicStyle.ELEGANT -> ElegantMusicWidget(modifier, previewTrack, font = effectiveFont)
+        MusicStyle.RETRO   -> RetroMusicWidget(modifier, previewTrack, font = effectiveFont)
+        MusicStyle.MINIMAL -> MinimalMusicWidget(modifier, previewTrack, font = effectiveFont)
+        MusicStyle.VINYL   -> VinylMusicWidget(modifier, previewTrack, font = effectiveFont)
+        MusicStyle.NEON    -> NeonMusicWidget(modifier, previewTrack, font = effectiveFont)
     }
 }

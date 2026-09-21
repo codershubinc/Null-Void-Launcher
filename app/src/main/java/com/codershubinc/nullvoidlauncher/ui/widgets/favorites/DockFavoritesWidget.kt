@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
@@ -28,23 +27,22 @@ import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
-import androidx.compose.ui.draw.blur
 
+/**
+ * DockFavoritesWidget — Floating horizontal dock capsule.
+ * Renders favorite apps in an elegant horizontal row with frosted glass background.
+ */
 @Composable
-fun ElegantFavoritesWidget(
+fun DockFavoritesWidget(
     modifier: Modifier = Modifier,
     previewApps: List<AppInfo>? = null,
     font: WidgetFont = WidgetFont.DEFAULT
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    
     val widgetColor = Color(userManager.getWidgetColor())
     val cornerRadius = userManager.getWidgetCornerRadius()
-    val blurIntensity = userManager.getWidgetBlurIntensity()
-    val glassEffect = userManager.getWidgetGlassEffect()
 
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
@@ -58,74 +56,66 @@ fun ElegantFavoritesWidget(
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
             val savedFavs = userManager.getFavorites()
-            
             favoriteApps = if (savedFavs.isNotEmpty()) {
-                savedFavs.mapNotNull { pkg ->
-                    all.find { it.componentName.flattenToString() == pkg }
-                }
-            } else {
-                all.take(4) // Assume first 4 for demo
-            }
+                savedFavs.mapNotNull { pkg -> all.find { it.componentName.flattenToString() == pkg } }
+            } else all.take(5)
         }
         isVisible = true
     }
 
-    val shape = RoundedCornerShape(cornerRadius.dp)
+    val dockShape = RoundedCornerShape(32.dp)
+    val iconShape = RoundedCornerShape((cornerRadius * 0.8f).dp)
 
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+    Row(
+        modifier = modifier
+            .clip(dockShape)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.35f)),
+                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.12f))
+                    )
+                )
+            )
+            .border(
+                1.dp,
+                Brush.verticalGradient(
+                    listOf(
+                        Color.White.copy(alpha = 0.35f),
+                        Color.White.copy(alpha = 0.08f)
+                    )
+                ),
+                dockShape
+            )
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         favoriteApps.forEachIndexed { index, app ->
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(animationSpec = tween(500, delayMillis = index * 100)) +
+                enter = fadeIn(tween(350, delayMillis = index * 50)) +
                         scaleIn(
-                            initialScale = 0.5f,
+                            initialScale = 0.6f,
                             animationSpec = spring(
                                 dampingRatio = Spring.DampingRatioMediumBouncy,
                                 stiffness = Spring.StiffnessLow
                             )
-                        ),
+                        )
             ) {
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(shape)
-                        .background(
-                            if (glassEffect) {
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.4f)),
-                                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.1f))
-                                    )
-                                )
-                            } else {
-                                Brush.verticalGradient(colors = listOf(widgetColor, widgetColor))
-                            }
-                        )
-                        .border(
-                            width = 1.dp,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.White.copy(alpha = 0.05f)
-                                )
-                            ),
-                            shape = shape
-                        )
+                        .size(46.dp)
+                        .clip(iconShape)
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .border(1.dp, Color.White.copy(alpha = 0.12f), iconShape)
                         .clickable {
-                            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                            launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                            val la = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+                            la.startMainActivity(app.componentName, app.userHandle, null, null)
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    LazyAppIcon(
-                        app = app,
-                        context = context,
-                        size = 32
-                    )
+                    LazyAppIcon(app = app, context = context, size = 26)
                 }
             }
         }

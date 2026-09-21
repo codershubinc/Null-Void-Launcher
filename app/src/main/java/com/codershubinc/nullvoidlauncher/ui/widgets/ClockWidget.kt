@@ -5,11 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.codershubinc.nullvoidlauncher.data.ClockStyle
 import com.codershubinc.nullvoidlauncher.ui.widgets.clock.*
 import kotlinx.coroutines.delay
@@ -18,20 +22,47 @@ import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 
 
-@Composable
-fun ClockWidget(style: ClockStyle, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    var timeText by remember { mutableStateOf("") }
-    var amPmTimeText by remember { mutableStateOf("") }
-    var dayText by remember { mutableStateOf("") }
-    var dateText by remember { mutableStateOf("") }
-    var dayOfMonth by remember { mutableStateOf("") }
-    var monthName by remember { mutableStateOf("") }
-    var batteryLevel by remember { mutableIntStateOf(-1) }
-    var batteryStatus by remember { mutableStateOf("") }
-    var currentYear by remember { mutableStateOf( "") }
+import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.WidgetFont
 
-    LaunchedEffect(Unit) {
+@Composable
+fun ClockWidget(
+    style: ClockStyle = ClockStyle.ELEGANT,
+    modifier: Modifier = Modifier,
+    font: WidgetFont? = null,
+    previewTimeText: String? = null,
+    previewDayText: String? = null,
+    previewMonthName: String? = null,
+    previewDayOfMonth: String? = null,
+    previewBatteryLevel: Int? = null,
+    previewBatteryStatus: String? = null,
+    onTap: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
+) {
+    val context = LocalContext.current
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val userManager = remember { UserManager(context) }
+    val effectiveFont = font ?: userManager.getClockFont()
+    var timeText by remember { mutableStateOf(previewTimeText ?: "") }
+    var amPmTimeText by remember { mutableStateOf("") }
+    var dayText by remember { mutableStateOf(previewDayText ?: "") }
+    var dateText by remember { mutableStateOf("") }
+    var dayOfMonth by remember { mutableStateOf(previewDayOfMonth ?: "") }
+    var monthName by remember { mutableStateOf(previewMonthName ?: "") }
+    var batteryLevel by remember { mutableIntStateOf(previewBatteryLevel ?: 85) }
+    var batteryStatus by remember { mutableStateOf(previewBatteryStatus ?: "DISCHARGING") }
+    var currentYear by remember { mutableStateOf("") }
+
+    LaunchedEffect(previewTimeText) {
+        if (previewTimeText != null) {
+            timeText = previewTimeText
+            dayText = previewDayText ?: "FRIDAY"
+            monthName = previewMonthName ?: "september"
+            dayOfMonth = previewDayOfMonth ?: "20"
+            batteryLevel = previewBatteryLevel ?: 85
+            batteryStatus = previewBatteryStatus ?: "DISCHARGING"
+            return@LaunchedEffect
+        }
         val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
         val amPmTimeFormatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
         val dayFormatter = SimpleDateFormat("EEEE", Locale.getDefault())
@@ -52,7 +83,10 @@ fun ClockWidget(style: ClockStyle, modifier: Modifier = Modifier) {
         }
     }
 
-    DisposableEffect(context) {
+    DisposableEffect(context, previewTimeText) {
+        if (previewTimeText != null) {
+            return@DisposableEffect onDispose {}
+        }
         val batteryReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -63,11 +97,11 @@ fun ClockWidget(style: ClockStyle, modifier: Modifier = Modifier) {
 
                 val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
                 batteryStatus = when (status) {
-                    BatteryManager.BATTERY_STATUS_CHARGING -> "CHARGING"
-                    BatteryManager.BATTERY_STATUS_DISCHARGING -> "!CHARGING"
-                    BatteryManager.BATTERY_STATUS_FULL -> "FULL"
-                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "!CHARGING"
-                    else -> "UNKNOWN"
+                    BatteryManager.BATTERY_STATUS_CHARGING -> "Charging"
+                    BatteryManager.BATTERY_STATUS_DISCHARGING -> "On Battery"
+                    BatteryManager.BATTERY_STATUS_FULL -> "Full"
+                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Discharging"
+                    else -> "On Battery"
                 }
             }
         }
@@ -75,16 +109,39 @@ fun ClockWidget(style: ClockStyle, modifier: Modifier = Modifier) {
         onDispose { context.unregisterReceiver(batteryReceiver) }
     }
 
-    Box(modifier = modifier) {
+    fun openDefaultClockApp() {
+        val intent = Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        try {
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            val clockIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.deskclock")
+                ?: context.packageManager.getLaunchIntentForPackage("com.sec.android.app.clockpackage")
+                ?: Intent(android.provider.Settings.ACTION_DATE_SETTINGS).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+            try { context.startActivity(clockIntent) } catch (_: Exception) {}
+        }
+    }
+
+    Box(
+        modifier = modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onTap = {
+                    if (onTap != null) onTap() else openDefaultClockApp()
+                },
+                onLongPress = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick?.invoke()
+                }
+            )
+        }
+    ) {
         when (style) {
-            ClockStyle.MINIMAL -> MinimalClock(timeText, batteryLevel, batteryStatus)
-            ClockStyle.TERMINAL -> TerminalClock(timeText, batteryLevel, batteryStatus)
-            ClockStyle.BOLD -> BoldClock(timeText, batteryLevel)
-            ClockStyle.VERTICAL -> VerticalClock(timeText, batteryLevel, batteryStatus)
-            ClockStyle.VOID -> VoidClock(timeText)
-            ClockStyle.MODERN -> ModernClock(dayText, dateText, timeText)
-            ClockStyle.PIXEL -> PixelClock(dayOfMonth, monthName , weekName = dayText , year = currentYear )
-            ClockStyle.ELEGANT -> ElegantClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus)
+            ClockStyle.ELEGANT  -> ElegantClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
+            ClockStyle.MINIMAL  -> MinimalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
+            ClockStyle.MODERN   -> ModernClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
+            ClockStyle.RETRO    -> RetroClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
+            ClockStyle.TERMINAL -> TerminalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
         }
     }
 }

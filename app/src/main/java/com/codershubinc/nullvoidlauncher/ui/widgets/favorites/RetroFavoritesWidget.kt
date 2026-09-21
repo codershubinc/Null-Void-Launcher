@@ -10,17 +10,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
@@ -28,23 +30,21 @@ import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
-import androidx.compose.ui.draw.blur
 
+/**
+ * RetroFavoritesWidget — Vertical list of favourite apps with amber labels
+ * and a dark retro card background. Each app name is shown below its icon.
+ */
 @Composable
-fun ElegantFavoritesWidget(
+fun RetroFavoritesWidget(
     modifier: Modifier = Modifier,
     previewApps: List<AppInfo>? = null,
-    font: WidgetFont = WidgetFont.DEFAULT
+    font: WidgetFont = WidgetFont.MONOSPACE
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    
-    val widgetColor = Color(userManager.getWidgetColor())
     val cornerRadius = userManager.getWidgetCornerRadius()
-    val blurIntensity = userManager.getWidgetBlurIntensity()
-    val glassEffect = userManager.getWidgetGlassEffect()
 
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
@@ -58,73 +58,56 @@ fun ElegantFavoritesWidget(
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
             val savedFavs = userManager.getFavorites()
-            
             favoriteApps = if (savedFavs.isNotEmpty()) {
-                savedFavs.mapNotNull { pkg ->
-                    all.find { it.componentName.flattenToString() == pkg }
-                }
-            } else {
-                all.take(4) // Assume first 4 for demo
-            }
+                savedFavs.mapNotNull { pkg -> all.find { it.componentName.flattenToString() == pkg } }
+            } else all.take(4)
         }
         isVisible = true
     }
 
+    val amber = Color(0xFFC5A35E)
     val shape = RoundedCornerShape(cornerRadius.dp)
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         favoriteApps.forEachIndexed { index, app ->
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(animationSpec = tween(500, delayMillis = index * 100)) +
+                enter = fadeIn(tween(400, delayMillis = index * 80)) +
                         scaleIn(
-                            initialScale = 0.5f,
+                            initialScale = 0.7f,
                             animationSpec = spring(
                                 dampingRatio = Spring.DampingRatioMediumBouncy,
                                 stiffness = Spring.StiffnessLow
                             )
-                        ),
+                        )
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(56.dp)
                         .clip(shape)
-                        .background(
-                            if (glassEffect) {
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.4f)),
-                                        widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.1f))
-                                    )
-                                )
-                            } else {
-                                Brush.verticalGradient(colors = listOf(widgetColor, widgetColor))
-                            }
-                        )
-                        .border(
-                            width = 1.dp,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.White.copy(alpha = 0.05f)
-                                )
-                            ),
-                            shape = shape
-                        )
+                        .background(Color(0xFF1A1208))
+                        .border(1.dp, amber.copy(alpha = 0.3f), shape)
                         .clickable {
                             val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
                             launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
-                        },
-                    contentAlignment = Alignment.Center
+                        }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    LazyAppIcon(
-                        app = app,
-                        context = context,
-                        size = 32
+                    LazyAppIcon(app = app, context = context, size = 22, tint = amber)
+                    Text(
+                        text = app.label,
+                        color = amber,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = font.toFontFamily(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 100.dp)
                     )
                 }
             }

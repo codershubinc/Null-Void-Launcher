@@ -34,13 +34,39 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
-@Composable
-fun ElegantMusicWidget(modifier: Modifier = Modifier) {
-    var track by remember { mutableStateOf<MusicTrack?>(null) }
-    var tapCount by remember { mutableIntStateOf(0) }
+import androidx.compose.ui.platform.LocalContext
+import com.codershubinc.nullvoidlauncher.data.UserManager
+import androidx.compose.ui.draw.blur
 
-    LaunchedEffect(Unit) {
+import com.codershubinc.nullvoidlauncher.data.WidgetFont
+
+@Composable
+fun ElegantMusicWidget(
+    modifier: Modifier = Modifier,
+    previewTrack: MusicTrack? = null,
+    font: WidgetFont = WidgetFont.DEFAULT
+) {
+    val context = LocalContext.current
+    val userManager = remember { UserManager(context) }
+    
+    val widgetColor = Color(userManager.getWidgetColor())
+    val cornerRadius = userManager.getWidgetCornerRadius()
+    val blurIntensity = userManager.getWidgetBlurIntensity()
+    val glassEffect = userManager.getWidgetGlassEffect()
+    val preset = userManager.getWidgetPreset()
+
+    var track by remember { mutableStateOf<MusicTrack?>(previewTrack) }
+    var tapCount by remember { mutableIntStateOf(0) }
+    var hasPermission by remember { mutableStateOf(previewTrack != null || MediaService.isPermissionGranted(context)) }
+
+    LaunchedEffect(previewTrack) {
+        if (previewTrack != null) {
+            track = previewTrack
+            hasPermission = true
+            return@LaunchedEffect
+        }
         while (true) {
+            hasPermission = MediaService.isPermissionGranted(context)
             val fetchTrack = withContext(Dispatchers.IO) {
                 MediaService.instance?.getMediaSessionInfo()
             }
@@ -61,6 +87,8 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
         }
     }
 
+    val shape = RoundedCornerShape(cornerRadius.dp)
+
     Row(
         modifier = modifier
             .widthIn(max = 500.dp)
@@ -74,13 +102,17 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.15f),
-                            Color.White.copy(alpha = 0.05f)
+                    if (glassEffect) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.4f)),
+                                widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.1f))
+                            )
                         )
-                    ),
-                    shape = RoundedCornerShape(40.dp)
+                    } else {
+                        Brush.verticalGradient(colors = listOf(widgetColor, widgetColor))
+                    },
+                    shape = shape
                 )
                 .border(
                     width = 1.dp,
@@ -90,78 +122,111 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
                             Color.White.copy(alpha = 0.1f)
                         )
                     ),
-                    shape = RoundedCornerShape(40.dp)
+                    shape = shape
                 )
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) {
-                    tapCount++
+                    if (!hasPermission) {
+                        val intent = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        context.startActivity(intent)
+                    } else if (track == null) {
+                        val musicIntent = android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
+                            addCategory(android.content.Intent.CATEGORY_APP_MUSIC)
+                            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        try {
+                            context.startActivity(musicIntent)
+                        } catch (e: Exception) {
+                            tapCount++
+                        }
+                    } else {
+                        tapCount++
+                    }
                 }
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            // Music ARTWORK Icon
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.15f),
-                                Color.White.copy(alpha = 0.05f)
+            if (preset != "MINIMAL") {
+                // Music ARTWORK Icon
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.4f)),
+                                    widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.1f))
+                                )
                             )
                         )
-                    )
-                    .border(
-                        width = 1.dp,
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.4f),
-                                Color.White.copy(alpha = 0.1f)
-                            )
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.4f),
+                                    Color.White.copy(alpha = 0.1f)
+                                )
+                            ),
+                            shape = CircleShape
                         ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (track?.artwork == null) {
-                    Icon(
-                        imageVector = Icons.Rounded.MusicNote,
-                        contentDescription = null,
-                        tint = Color(0xFFC5A35E),
-                        modifier = Modifier.size(32.dp)
-                    )
-                } else {
-                    track?.artwork?.let {
-                        Image(
-                            bitmap = it.asImageBitmap(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (track?.artwork == null) {
+                        Icon(
+                            imageVector = Icons.Rounded.MusicNote,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            tint = Color(0xFFC5A35E),
+                            modifier = Modifier.size(32.dp)
                         )
+                    } else {
+                        track?.artwork?.let {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.width(12.dp))
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
             Column {
+                val displayTitle = when {
+                    !hasPermission -> "Music Sync Disabled"
+                    track != null -> track?.title ?: "Playing"
+                    else -> "No Music Playing"
+                }
+                val displayArtist = when {
+                    !hasPermission -> "Tap to enable permission"
+                    track != null -> track?.artist
+                    else -> "Tap to open player"
+                }
                 Text(
-                    text = track?.title ?: "Nothing Playing",
+                    text = displayTitle,
                     color = Color.White,
                     fontSize = 14.sp,
+                    fontFamily = font.toFontFamily(),
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = track?.artist ?: "Play some music",
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (!displayArtist.isNullOrBlank() && !displayArtist.equals("Unknown Artist", ignoreCase = true)) {
+                    Text(
+                        text = displayArtist,
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 10.sp,
+                        fontFamily = font.toFontFamily(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
 
@@ -173,12 +238,16 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
                 .size(52.dp)
                 .clip(CircleShape)
                 .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.05f)
+                    if (glassEffect) {
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.4f)),
+                                widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.1f))
+                            )
                         )
-                    )
+                    } else {
+                        Brush.verticalGradient(colors = listOf(widgetColor, widgetColor))
+                    }
                 )
                 .border(
                     width = 1.dp,
@@ -190,7 +259,15 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
                     ),
                     shape = CircleShape
                 )
-                .clickable { MediaService.instance?.togglePlayPause() },
+                .clickable {
+                    if (!hasPermission) {
+                        context.startActivity(android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    } else {
+                        MediaService.instance?.togglePlayPause()
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
              Icon(
@@ -202,8 +279,5 @@ fun ElegantMusicWidget(modifier: Modifier = Modifier) {
         }
 
         Spacer(modifier = Modifier.width(12.dp))
-
-
-
     }
 }
