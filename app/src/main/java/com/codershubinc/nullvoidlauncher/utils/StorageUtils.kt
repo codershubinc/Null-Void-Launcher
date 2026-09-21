@@ -2,14 +2,26 @@ package com.codershubinc.nullvoidlauncher.utils
 
 import android.app.usage.StorageStatsManager
 import android.content.Context
+import android.content.Intent
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
+import android.provider.Settings
 import java.io.File
 import java.text.DecimalFormat
 import java.util.UUID
 import kotlin.math.log10
 import kotlin.math.pow
+
+data class StorageInfoState(
+    val totalBytes: Long = 0L,
+    val availableBytes: Long = 0L,
+    val usedBytes: Long = 0L,
+    val usedPercentage: Int = 0,
+    val totalText: String = "0 B",
+    val availableText: String = "0 B",
+    val usedText: String = "0 B"
+)
 
 object StorageUtils {
 
@@ -95,5 +107,49 @@ object StorageUtils {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         val digitGroups = (log10(size.toDouble()) / log10(1000.0)).toInt()
         return DecimalFormat("#,##0.#").format(size / 1000.0.pow(digitGroups.toDouble())) + " " + units[digitGroups]
+    }
+
+    /**
+     * Aggregates and returns a complete StorageInfoState snapshot.
+     */
+    fun getStorageInfo(context: Context): StorageInfoState {
+        val total = getTotalStorage(context)
+        val available = getAvailableStorage(context)
+        val used = (total - available).coerceAtLeast(0L)
+        val percent = if (total > 0) ((used.toDouble() / total.toDouble()) * 100).toInt().coerceIn(0, 100) else 0
+        return StorageInfoState(
+            totalBytes = total,
+            availableBytes = available,
+            usedBytes = used,
+            usedPercentage = percent,
+            totalText = formatSize(total),
+            availableText = formatSize(available),
+            usedText = formatSize(used)
+        )
+    }
+
+    /**
+     * Opens device storage settings.
+     */
+    @Suppress("DEPRECATION")
+    fun openStorageSettings(context: Context) {
+        val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        try {
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            val fallback = Intent(Settings.ACTION_STORAGE_VOLUME_ACCESS_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            try {
+                context.startActivity(fallback)
+            } catch (_: Exception) {
+                val sys = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try { context.startActivity(sys) } catch (_: Exception) {}
+            }
+        }
     }
 }

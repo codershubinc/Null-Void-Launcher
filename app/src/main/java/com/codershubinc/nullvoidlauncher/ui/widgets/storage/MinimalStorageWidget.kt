@@ -18,10 +18,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
@@ -29,11 +26,11 @@ import com.codershubinc.nullvoidlauncher.utils.StorageInfoState
 import com.codershubinc.nullvoidlauncher.utils.StorageUtils
 
 /**
- * ElegantStorageWidget — Frosted glassmorphism pill for storage telemetry.
+ * MinimalStorageWidget — Ultra-compact horizontal pill for storage telemetry.
  * Integrates seamlessly alongside or beneath clock/date/power widgets.
  */
 @Composable
-fun ElegantStorageWidget(
+fun MinimalStorageWidget(
     storageInfo: StorageInfoState,
     modifier: Modifier = Modifier,
     font: WidgetFont = WidgetFont.SANS_SERIF,
@@ -43,21 +40,20 @@ fun ElegantStorageWidget(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val shape = RoundedCornerShape(14.dp)
-
+    val shape = RoundedCornerShape(12.dp)
     val percent = storageInfo.usedPercentage
     val percentColor = when {
         percent >= 90 -> Color(0xFFFF5252)
         percent >= 75 -> Color(0xFFFFB300)
-        else -> Color.White
+        else -> Color(0xFF3D5AFE)
     }
 
     Row(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.08f))
-            .border(1.dp, Color.White.copy(alpha = 0.14f), shape)
+            .background(Color.White.copy(alpha = 0.06f))
+            .border(1.dp, Color.White.copy(alpha = 0.11f), shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -71,35 +67,38 @@ fun ElegantStorageWidget(
                     }
                 )
             }
-            .padding(horizontal = 9.dp, vertical = 4.5.dp),
+            .padding(horizontal = 8.dp, vertical = 3.5.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
             imageVector = Icons.Rounded.Storage,
             contentDescription = null,
-            tint = if (percent >= 90) Color(0xFFFF5252) else Color.White.copy(alpha = 0.65f),
-            modifier = Modifier.size(13.dp)
+            tint = percentColor,
+            modifier = Modifier.size(12.dp)
         )
 
         Text(
-            text = buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.55f))) {
-                    append("Storage ")
-                }
-                withStyle(style = SpanStyle(color = percentColor, fontWeight = FontWeight.SemiBold)) {
-                    append("${storageInfo.usedPercentage}%")
-                }
-                withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.4f))) {
-                    append(" • ")
-                }
-                withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.75f), fontWeight = FontWeight.Medium)) {
-                    append("${storageInfo.availableText} free")
-                }
-            },
+            text = "${storageInfo.usedPercentage}%",
+            color = Color.White,
             fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = font.toFontFamily()
+        )
+
+        Text(
+            text = "•",
+            color = Color.White.copy(alpha = 0.35f),
+            fontSize = 9.sp
+        )
+
+        Text(
+            text = "${storageInfo.availableText} / ${storageInfo.totalText}",
+            color = Color.White.copy(alpha = 0.65f),
+            fontSize = 9.5.sp,
+            fontWeight = FontWeight.Medium,
             fontFamily = font.toFontFamily(),
-            lineHeight = 15.sp
+            letterSpacing = 0.5.sp
         )
     }
 }
