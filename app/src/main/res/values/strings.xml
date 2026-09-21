@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Null-Void Launcher</string>
+    <string name="accessibility_service_label">Null Void Gestures &amp; Screen Lock</string>
+    <string name="accessibility_service_description">Used for double-tap to lock screen and gesture shortcuts without disabling fingerprint unlock.</string>
 </resources>
