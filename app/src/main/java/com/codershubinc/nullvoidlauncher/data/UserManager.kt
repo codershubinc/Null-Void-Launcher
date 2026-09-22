@@ -100,7 +100,6 @@ enum class BottomBarStyle {
 }
 
 enum class DoubleTapAction {
-    LOCK_SCREEN,
     CYCLE_WALLPAPER,
     NONE
 }
@@ -500,8 +499,8 @@ class UserManager(context: Context) {
     // Gestures
     fun saveDoubleTapAction(action: DoubleTapAction) = prefs.edit { putString("double_tap_action", action.name) }
     fun getDoubleTapAction(): DoubleTapAction {
-        val name = prefs.getString("double_tap_action", DoubleTapAction.LOCK_SCREEN.name)
-        return try { DoubleTapAction.valueOf(name!!) } catch (e: Exception) { DoubleTapAction.LOCK_SCREEN }
+        val name = prefs.getString("double_tap_action", DoubleTapAction.CYCLE_WALLPAPER.name)
+        return try { DoubleTapAction.valueOf(name!!) } catch (e: Exception) { DoubleTapAction.CYCLE_WALLPAPER }
     }
 
     // Icon Styles

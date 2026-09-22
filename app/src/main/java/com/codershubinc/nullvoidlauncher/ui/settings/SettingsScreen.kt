@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.*
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.services.NullVoidAccessibilityService
 import com.codershubinc.nullvoidlauncher.ui.components.*
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.components.*
@@ -200,9 +199,6 @@ fun SettingsScreen(
                                     onDoubleTapActionChange = {
                                         doubleTapAction = it
                                         userManager.saveDoubleTapAction(it)
-                                    },
-                                    onOpenAccessibilitySettings = {
-                                        NullVoidAccessibilityService.openAccessibilitySettings(context)
                                     }
                                 )
                             }
@@ -436,9 +432,6 @@ fun SettingsScreen(
                                 onDoubleTapActionChange = {
                                     doubleTapAction = it
                                     userManager.saveDoubleTapAction(it)
-                                },
-                                onOpenAccessibilitySettings = {
-                                    NullVoidAccessibilityService.openAccessibilitySettings(context)
                                 }
                             )
                         }

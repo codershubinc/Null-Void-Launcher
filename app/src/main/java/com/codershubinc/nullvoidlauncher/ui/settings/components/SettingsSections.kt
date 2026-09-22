@@ -307,42 +307,25 @@ fun NavigationSection(
 @Composable
 fun GesturesSection(
     doubleTapAction: com.codershubinc.nullvoidlauncher.data.DoubleTapAction,
-    onDoubleTapActionChange: (com.codershubinc.nullvoidlauncher.data.DoubleTapAction) -> Unit,
-    onOpenAccessibilitySettings: () -> Unit
+    onDoubleTapActionChange: (com.codershubinc.nullvoidlauncher.data.DoubleTapAction) -> Unit
 ) {
-    val context = LocalContext.current
-    val isAccessibilityEnabled = com.codershubinc.nullvoidlauncher.services.NullVoidAccessibilityService.isServiceEnabled(context)
-
     Column {
         InfoRow(
             icon = Icons.Rounded.TouchApp,
             label = "Double-Tap Action",
             value = when (doubleTapAction) {
-                com.codershubinc.nullvoidlauncher.data.DoubleTapAction.LOCK_SCREEN -> "Lock Screen"
                 com.codershubinc.nullvoidlauncher.data.DoubleTapAction.CYCLE_WALLPAPER -> "Cycle Wallpaper"
                 com.codershubinc.nullvoidlauncher.data.DoubleTapAction.NONE -> "Disabled"
             },
             onClick = {
                 val nextAction = when (doubleTapAction) {
-                    com.codershubinc.nullvoidlauncher.data.DoubleTapAction.LOCK_SCREEN -> com.codershubinc.nullvoidlauncher.data.DoubleTapAction.CYCLE_WALLPAPER
                     com.codershubinc.nullvoidlauncher.data.DoubleTapAction.CYCLE_WALLPAPER -> com.codershubinc.nullvoidlauncher.data.DoubleTapAction.NONE
-                    com.codershubinc.nullvoidlauncher.data.DoubleTapAction.NONE -> com.codershubinc.nullvoidlauncher.data.DoubleTapAction.LOCK_SCREEN
+                    com.codershubinc.nullvoidlauncher.data.DoubleTapAction.NONE -> com.codershubinc.nullvoidlauncher.data.DoubleTapAction.CYCLE_WALLPAPER
                 }
                 onDoubleTapActionChange(nextAction)
             },
             showChevron = true
         )
-
-        if (doubleTapAction == com.codershubinc.nullvoidlauncher.data.DoubleTapAction.LOCK_SCREEN) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
-            InfoRow(
-                icon = Icons.Rounded.Lock,
-                label = "Accessibility Service",
-                value = if (isAccessibilityEnabled) "Active ✓" else "Permission Required",
-                onClick = onOpenAccessibilitySettings,
-                showChevron = true
-            )
-        }
     }
 }
 
