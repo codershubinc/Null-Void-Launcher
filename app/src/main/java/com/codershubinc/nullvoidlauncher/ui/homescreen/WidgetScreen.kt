@@ -25,7 +25,10 @@ fun WidgetScreen(
     onWallpaperChanged: (() -> Unit)? = null,
     onOpenNetworkUsage: () -> Unit = {},
     onOpenBluetoothSettings: () -> Unit = {},
-    onOpenWidgetSettings: () -> Unit = {}
+    onOpenWidgetSettings: () -> Unit = {},
+    isEditMode: Boolean = false,
+    onEnterEditMode: () -> Unit = {},
+    onExitEditMode: () -> Unit = {}
 ) {
     val config = theme.toConfig()
     val context = LocalContext.current
@@ -35,22 +38,30 @@ fun WidgetScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(Unit) {
+            .pointerInput(isEditMode) {
                 detectTapGestures(
                     onDoubleTap = {
-                        when (userManager.getDoubleTapAction()) {
-                            DoubleTapAction.CYCLE_WALLPAPER -> {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                CloudWallpaperEngine.cycleNextWallpaper(context, userManager)
-                                onWallpaperChanged?.invoke()
+                        if (!isEditMode) {
+                            when (userManager.getDoubleTapAction()) {
+                                DoubleTapAction.CYCLE_WALLPAPER -> {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    CloudWallpaperEngine.cycleNextWallpaper(context, userManager)
+                                    onWallpaperChanged?.invoke()
+                                }
+                                DoubleTapAction.NONE -> {}
                             }
-                            DoubleTapAction.NONE -> {}
+                        }
+                    },
+                    onLongPress = {
+                        if (!isEditMode) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onEnterEditMode()
                         }
                     }
                 )
             }
-            .pointerInput(isDrawerOpen) {
-                if (!isDrawerOpen) {
+            .pointerInput(isDrawerOpen, isEditMode) {
+                if (!isDrawerOpen && !isEditMode) {
                     detectVerticalDragGestures { change, dragAmount ->
                         change.consume()
                         if (dragAmount < -20) {
@@ -65,7 +76,9 @@ fun WidgetScreen(
             onOpenDrawer = onOpenDrawer,
             onOpenNetworkUsage = onOpenNetworkUsage,
             onOpenBluetoothSettings = onOpenBluetoothSettings,
-            onOpenWidgetSettings = onOpenWidgetSettings
+            onOpenWidgetSettings = onOpenWidgetSettings,
+            isEditMode = isEditMode,
+            onExitEditMode = onExitEditMode
         )
     }
 }
