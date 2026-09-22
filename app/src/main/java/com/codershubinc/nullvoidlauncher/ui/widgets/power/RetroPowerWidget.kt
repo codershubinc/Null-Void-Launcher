@@ -99,13 +99,14 @@ fun RetroPowerWidget(
                 tint = amber,
                 modifier = Modifier.size(11.dp)
             )
-        }
 
-        Text(
-            text = powerInfo.status.uppercase(),
-            color = amber.copy(alpha = 0.7f),
-            fontSize = 9.sp,
-            fontFamily = font.toFontFamily()
-        )
+            Text(
+                text = "CHR",
+                color = amber,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = font.toFontFamily()
+            )
+        }
     }
 }

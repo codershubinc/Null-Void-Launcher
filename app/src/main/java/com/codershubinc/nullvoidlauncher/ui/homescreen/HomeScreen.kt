@@ -87,7 +87,6 @@ fun HomeScreen() {
     var isWidgetSettingsOpen by remember { mutableStateOf(false) }
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
     var isBluetoothSettingsOpen by remember { mutableStateOf(false) }
-    var isEditMode by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1) { 2 }
 
     val blurRadius by remember {
@@ -99,9 +98,8 @@ fun HomeScreen() {
         }
     }
 
-    BackHandler(enabled = isEditMode || isDrawerOpen || isWidgetSettingsOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
-        if (isEditMode) isEditMode = false
-        else if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
+    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
+        if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
         else if (isNetworkUsageOpen) isNetworkUsageOpen = false
         else if (isWidgetSettingsOpen) isWidgetSettingsOpen = false
         else if (isSettingsOpen) isSettingsOpen = false
@@ -139,7 +137,6 @@ fun HomeScreen() {
 
         HorizontalPager(
             state = pagerState,
-            userScrollEnabled = !isEditMode,
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
@@ -165,10 +162,7 @@ fun HomeScreen() {
                     },
                     onOpenNetworkUsage = { isNetworkUsageOpen = true },
                     onOpenBluetoothSettings = { isBluetoothSettingsOpen = true },
-                    onOpenWidgetSettings = { isWidgetSettingsOpen = true },
-                    isEditMode = isEditMode,
-                    onEnterEditMode = { isEditMode = true },
-                    onExitEditMode = { isEditMode = false }
+                    onOpenWidgetSettings = { isWidgetSettingsOpen = true }
                 )
             }
         }

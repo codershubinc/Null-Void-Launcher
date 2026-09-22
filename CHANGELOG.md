@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2026-09-22 — Maintenance & Feature Release
+
+The **v0.1.1** release brings essential UI de-cluttering, streamlined power & battery telemetry, enhanced drawer search features, fresh app iconography, and removal of intrusive permissions for a smoother out-of-the-box user experience.
+
+### Added
+- **Quick Control Deck**:
+  - Added a compact 5-tile quick control deck directly beneath the Wi-Fi and Bluetooth telemetry stack for immediate access to Flashlight, Airplane mode, Hotspot, Sound profile, and Volume settings.
+- **NullVoid Singularity App Icon**:
+  - Implemented custom brand vector branding featuring the NullVoid Singularity glyph with adaptive vector layers.
+- **App Drawer Enhancements**:
+  - Categorized app drawer tabs (`ALL`, `FAVORITES`, `SYSTEM`, `GAMES`, `TOOLS`).
+  - Custom app icon styling options (Monochrome & Outline modes).
+  - Alphabetical fast-scroller on drawer edge for instant app jumping.
+  - Built-in live math expression evaluator directly in the drawer search field.
+  - App long-press contextual action sheet (Pin to Favorites, App Info, Uninstall, Hide).
+- **Weather Telemetry Suite**:
+  - Added weather telemetry widget with 4 distinct visual styling variants.
+
+### Changed & Improved
+- **Power & Battery Telemetry De-cluttering**:
+  - Streamlined `ElegantPowerWidget` to display compact battery percentage and charging indicator without redundant `"Battery "` prefix or long status strings that previously caused clutter on narrow mobile viewports.
+  - Tightened spacing and cleaned charging text indicators across all power styles (`MINIMAL`, `GAUGE_BAR`, `RING`, `RETRO`, `TERMINAL`).
+- **Permission & Security Overhaul**:
+  - Completely removed Accessibility Service dependencies and permissions (`android.permission.BIND_ACCESSIBILITY_SERVICE`), providing a lighter footprint and eliminating unnecessary permission prompts.
+- **UI Stability**:
+  - Cleaned up experimental layout gestures and restored smooth horizontal pager navigation.
+
+---
+
 ## [0.1.0] - 2026-09-21 — First Stable Release
 
 Welcome to the first official stable release of **NullVoid Launcher** (`v0.1.0`)! This milestone brings comprehensive hardware telemetry widgets, biometrics-preserving gestures, glassmorphism customization, and an ultra-refined minimalist Android desktop.

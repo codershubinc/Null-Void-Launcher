@@ -107,13 +107,15 @@ fun GaugeBarPowerWidget(
             )
         }
 
-        Text(
-            text = if (isCharging) "CHARGING" else powerInfo.status.uppercase(),
-            color = if (isCharging) Color(0xFF00E676) else Color.White.copy(alpha = 0.55f),
-            fontSize = 9.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = font.toFontFamily(),
-            letterSpacing = 0.5.sp
-        )
+        if (isCharging) {
+            Text(
+                text = "CHARGING",
+                color = Color(0xFF00E676),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = font.toFontFamily(),
+                letterSpacing = 0.5.sp
+            )
+        }
     }
 }

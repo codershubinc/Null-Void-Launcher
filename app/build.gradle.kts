@@ -20,8 +20,8 @@ android {
         applicationId = "com.codershubinc.nullvoidlauncher"
         minSdk = 29
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resConfigs("en")

@@ -88,19 +88,21 @@ fun MinimalPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        Text(
-            text = "•",
-            color = Color.White.copy(alpha = 0.35f),
-            fontSize = 9.sp
-        )
+        if (isCharging) {
+            Text(
+                text = "•",
+                color = Color.White.copy(alpha = 0.35f),
+                fontSize = 9.sp
+            )
 
-        Text(
-            text = powerInfo.status.uppercase(),
-            color = Color.White.copy(alpha = 0.65f),
-            fontSize = 9.5.sp,
-            fontWeight = FontWeight.Medium,
-            fontFamily = font.toFontFamily(),
-            letterSpacing = 0.5.sp
-        )
+            Text(
+                text = "CHARGING",
+                color = Color(0xFF00E676),
+                fontSize = 9.5.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = font.toFontFamily(),
+                letterSpacing = 0.5.sp
+            )
+        }
     }
 }

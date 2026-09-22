@@ -90,11 +90,14 @@ fun TerminalPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        Text(
-            text = "[${if (isCharging) "CHARGING" else powerInfo.status.uppercase()}]",
-            color = if (isCharging) terminalGreen else terminalDim,
-            fontSize = 9.sp,
-            fontFamily = font.toFontFamily()
-        )
+        if (isCharging) {
+            Text(
+                text = "[CHR]",
+                color = terminalGreen,
+                fontSize = 9.sp,
+                fontFamily = font.toFontFamily(),
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }

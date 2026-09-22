@@ -13,14 +13,14 @@ object Constants {
     }
 
     object App {
-        const val VERSION = "v0.1.0"
+        const val VERSION = "v0.1.1"
         const val VERSION_SUFFIX = "stable"
     }
 
     object System {
         const val CODENAME = "ELEGANCE"
         const val ORGANIZATION = "CodersHub INC"
-        const val BUILD_TYPE = "First Stable Release"
+        const val BUILD_TYPE = "Maintenance & Feature Release"
         const val UI_ENGINE = "Compose Modern"
     }
     object  Org {

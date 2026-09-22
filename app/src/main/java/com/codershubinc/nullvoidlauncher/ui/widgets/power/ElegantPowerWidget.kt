@@ -74,35 +74,26 @@ fun ElegantPowerWidget(
                     }
                 )
             }
-            .padding(horizontal = 9.dp, vertical = 4.5.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Icon(
             imageVector = if (isCharging) Icons.Rounded.BatteryChargingFull else Icons.Rounded.BatteryStd,
             contentDescription = null,
-            tint = if (isCharging) Color(0xFF00E676) else Color.White.copy(alpha = 0.65f),
+            tint = levelColor,
             modifier = Modifier.size(13.dp)
         )
 
         Text(
             text = buildAnnotatedString {
-                withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.55f))) {
-                    append("Battery ")
-                }
                 withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.SemiBold)) {
                     append("${powerInfo.level}%")
                 }
-                withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.4f))) {
-                    append(" • ")
-                }
-                withStyle(
-                    style = SpanStyle(
-                        color = if (isCharging) Color(0xFF00E676) else Color.White.copy(alpha = 0.75f),
-                        fontWeight = FontWeight.Medium
-                    )
-                ) {
-                    append(powerInfo.status)
+                if (isCharging) {
+                    withStyle(style = SpanStyle(color = Color(0xFF00E676), fontWeight = FontWeight.Medium)) {
+                        append(" • Charging")
+                    }
                 }
             },
             fontSize = 11.sp,

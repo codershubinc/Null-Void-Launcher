@@ -116,11 +116,13 @@ fun RingPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        Text(
-            text = "• ${powerInfo.status}",
-            color = if (isCharging) Color(0xFF00E676) else Color.White.copy(alpha = 0.55f),
-            fontSize = 10.sp,
-            fontFamily = font.toFontFamily()
-        )
+        if (isCharging) {
+            Text(
+                text = "• Charging",
+                color = Color(0xFF00E676),
+                fontSize = 10.sp,
+                fontFamily = font.toFontFamily()
+            )
+        }
     }
 }

@@ -529,30 +529,4 @@ class UserManager(context: Context) {
     // Quick Toggles / Control Deck
     fun saveShowControlDeck(show: Boolean) = prefs.edit { putBoolean("show_control_deck", show) }
     fun getShowControlDeck(): Boolean = prefs.getBoolean("show_control_deck", true)
-
-    // Free-form widget offsets (saved in Dp)
-    fun saveWidgetOffset(widgetKey: String, offsetX: Float, offsetY: Float) {
-        prefs.edit {
-            putFloat("widget_offset_x_$widgetKey", offsetX)
-            putFloat("widget_offset_y_$widgetKey", offsetY)
-        }
-    }
-
-    fun getWidgetOffsetX(widgetKey: String): Float {
-        return prefs.getFloat("widget_offset_x_$widgetKey", 0f)
-    }
-
-    fun getWidgetOffsetY(widgetKey: String): Float {
-        return prefs.getFloat("widget_offset_y_$widgetKey", 0f)
-    }
-
-    fun resetWidgetOffsets() {
-        val keys = listOf("telemetry", "clock", "favorites", "music")
-        prefs.edit {
-            for (k in keys) {
-                remove("widget_offset_x_$k")
-                remove("widget_offset_y_$k")
-            }
-        }
-    }
 }

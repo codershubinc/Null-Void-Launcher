@@ -4,20 +4,24 @@ NullVoid Launcher is a highly customizable, modern Android launcher built entire
 
 ## ✨ Features
 
-- **🎨 Dynamic Themes**: Choose from multiple pre-built themes:
-  - **Pixel Theme**: For the clean Google experience.
-  - **Elegant Theme**: Minimalist and sophisticated.
-  - **Modern Theme**: Sleek and current.
-  - **Vertical Theme**: A unique take on layout.
-  - **Standard Theme**: Familiar and reliable.
-- **🕰️ Diverse Clock Widgets**: 
-  - Minimal, Terminal, Bold, Vertical, Void, Modern, Pixel, and Elegant Clock styles.
-- **🎵 Music Integration**:
-  - Multiple music widget styles (Fused, Standard, Modern, Elegant).
-- **📱 Smart App Drawer**: Fast and organized access to all your apps.
-- **⭐ Favorites Widget**: Quick access to your most-used applications.
-- **🛠️ Customization**: Fine-tune your home screen with various bottom bar styles and widget layouts.
-- **📦 Github Integration**: View your Github profile directly from the launcher.
+- **🎨 Dynamic Themes & Customization**: Minimalist aesthetics with custom font typography, glassmorphism specular highlights, customizable corner radii, and color tinting.
+- **🕰️ Diverse Clock & Day Widgets**: Minimal, Modern, Retro, Terminal, and Elegant Clock styles with matching Day of week indicators.
+- **⚡ Hardware & System Telemetry**:
+  - **Power / Battery Telemetry**: 6 distinct styles (`ELEGANT`, `MINIMAL`, `GAUGE_BAR`, `RING`, `TERMINAL`, `RETRO`) with live charging indicators and direct battery settings access.
+  - **Storage Telemetry**: 6 variants displaying free/used disk space with interactive storage manager triggers.
+  - **Network & Wi-Fi**: Real-time upload/download throughput speed tracker, SSID/IP details, and data usage monitor.
+  - **Bluetooth Telemetry**: Paired device connectivity tracking with battery level and peripheral-type indicators.
+  - **Quick Control Deck**: 5-tile hardware quick-control deck for Flashlight, Airplane mode, Hotspot, Audio profiles, and Volume slider.
+  - **Weather Telemetry**: Dynamic temperature, weather condition icons, and 4 design variants.
+- **🎵 Music Integration**: Multiple music widget styles (`ELEGANT`, `MINIMAL`, `VINYL`, `RETRO`, `NEON`) interacting with active Android media sessions.
+- **📱 Smart App Drawer**:
+  - Filter by category tabs (`ALL`, `FAVORITES`, `SYSTEM`, `GAMES`, `TOOLS`).
+  - Alphabetical fast-scroller with haptic feedback.
+  - Custom icon styling (Monochrome & Outline modes).
+  - Integrated math expression calculator right from the search bar.
+  - Long-press contextual app management (Favorites, App Info, Uninstall, Hide).
+- **⭐ Favorites Widget**: Quick access to pinned applications directly from the homescreen.
+- **📦 Github Integration & In-App Updater**: Check your GitHub developer telemetry profile and seamlessly download and install releases directly from GitHub Releases.
 
 ## 🛠️ Tech Stack
 
