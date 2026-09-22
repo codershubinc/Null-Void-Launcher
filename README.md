@@ -61,7 +61,8 @@ app/src/main/java/com/codershubinc/nullvoidlauncher/
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you have ideas for new widgets, themes, or improvements:
+Contributions are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines, project structure, and PR checklists.
+
 1. Fork the project.
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
@@ -70,7 +71,7 @@ Contributions are welcome! If you have ideas for new widgets, themes, or improve
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the GNU General Public License v3.0 (GPLv3). See [`LICENSE`](LICENSE) for more information.
 
 ---
 Built with ❤️ by [CodersHubInc](https://github.com/codershubinc)
