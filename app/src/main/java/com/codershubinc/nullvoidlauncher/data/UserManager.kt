@@ -196,6 +196,24 @@ class UserManager(context: Context) {
         return prefs.getStringSet("favorite_apps", emptySet())?.toList() ?: emptyList()
     }
 
+    fun saveHiddenApps(hidden: Set<String>) {
+        prefs.edit { putStringSet("hidden_apps", hidden) }
+    }
+
+    fun getHiddenApps(): Set<String> {
+        return prefs.getStringSet("hidden_apps", emptySet()) ?: emptySet()
+    }
+
+    fun toggleHiddenApp(componentNameStr: String) {
+        val current = getHiddenApps().toMutableSet()
+        if (current.contains(componentNameStr)) {
+            current.remove(componentNameStr)
+        } else {
+            current.add(componentNameStr)
+        }
+        saveHiddenApps(current)
+    }
+
     fun saveShowWallpaper(show: Boolean) {
         prefs.edit { putBoolean("show_wallpaper", show) }
     }

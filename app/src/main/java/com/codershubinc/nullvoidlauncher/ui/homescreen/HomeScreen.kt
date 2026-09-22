@@ -172,6 +172,7 @@ fun HomeScreen() {
         ) {
             ElegantSearchScreen(
                 allApps = allApps,
+                userManager = userManager,
                 onClose = { isDrawerOpen = false }
             )
         }
