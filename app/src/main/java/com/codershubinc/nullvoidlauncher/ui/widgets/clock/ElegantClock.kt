@@ -84,23 +84,12 @@ fun ElegantClock(
             modifier = Modifier.padding(start = 0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Weather / Atmosphere pill
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.WbSunny,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.45f),
-                    modifier = Modifier.size(13.dp)
-                )
-                Text(
-                    text = "Atmosphere 50% humidity • Wind 32 km/h",
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontSize = 11.sp,
-                    fontFamily = font.toFontFamily(),
-                    lineHeight = 15.sp
+            val showWeather = userManager.getShowWeatherWidget()
+            if (showWeather) {
+                com.codershubinc.nullvoidlauncher.ui.widgets.WeatherWidget(
+                    style = userManager.getWeatherStyle(),
+                    font = userManager.getWeatherFont(),
+                    onClick = onLongClick
                 )
             }
 

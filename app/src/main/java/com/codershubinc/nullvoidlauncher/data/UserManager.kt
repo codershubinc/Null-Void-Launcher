@@ -68,6 +68,13 @@ enum class BluetoothStyle {
     RETRO
 }
 
+enum class WeatherStyle {
+    ELEGANT,
+    MINIMAL,
+    TERMINAL,
+    RETRO
+}
+
 enum class LauncherTheme {
     ELEGANT
 }
@@ -502,5 +509,21 @@ class UserManager(context: Context) {
     fun getIconStyle(): IconStyle {
         val name = prefs.getString("icon_style", IconStyle.DEFAULT.name)
         return try { IconStyle.valueOf(name!!) } catch (e: Exception) { IconStyle.DEFAULT }
+    }
+
+    // Weather Widget Settings
+    fun saveShowWeatherWidget(show: Boolean) = prefs.edit { putBoolean("show_weather_widget", show) }
+    fun getShowWeatherWidget(): Boolean = prefs.getBoolean("show_weather_widget", true)
+
+    fun saveWeatherStyle(style: WeatherStyle) = prefs.edit { putString("weather_style", style.name) }
+    fun getWeatherStyle(): WeatherStyle {
+        val name = prefs.getString("weather_style", WeatherStyle.ELEGANT.name)
+        return try { WeatherStyle.valueOf(name!!) } catch (e: Exception) { WeatherStyle.ELEGANT }
+    }
+
+    fun saveWeatherFont(font: WidgetFont) = prefs.edit { putString("weather_font", font.name) }
+    fun getWeatherFont(): WidgetFont {
+        val name = prefs.getString("weather_font", WidgetFont.DEFAULT.name)
+        return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
     }
 }
