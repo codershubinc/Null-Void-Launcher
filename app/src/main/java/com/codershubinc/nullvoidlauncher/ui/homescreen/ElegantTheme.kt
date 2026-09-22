@@ -39,6 +39,7 @@ fun ElegantTheme(
     val showNetwork = userManager.getShowNetworkWidget()
     val showPower = userManager.getShowPowerWidget()
     val showBluetooth = userManager.getShowBluetoothWidget()
+    val showControlDeck = userManager.getShowControlDeck()
     val musicStyle = userManager.getMusicStyle()
     val favoritesStyle = userManager.getFavoritesStyle()
     val clockStyle = userManager.getClockStyle()
@@ -91,6 +92,9 @@ fun ElegantTheme(
                         onTap = { NetworkHelper.openWifiSettings(context) },
                         onLongClick = onOpenNetworkUsage
                     )
+                }
+                if (showControlDeck) {
+                    com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget()
                 }
             }
         }

@@ -82,6 +82,7 @@ fun WidgetSettingsScreen(userManager: UserManager, onClose: () -> Unit) {
     var showNetwork by remember { mutableStateOf(userManager.getShowNetworkWidget()) }
     var showPower by remember { mutableStateOf(userManager.getShowPowerWidget()) }
     var showBluetooth by remember { mutableStateOf(userManager.getShowBluetoothWidget()) }
+    var showControlDeck by remember { mutableStateOf(userManager.getShowControlDeck()) }
 
     var clockStyle by remember { mutableStateOf(userManager.getClockStyle()) }
     var musicStyle by remember { mutableStateOf(userManager.getMusicStyle()) }
@@ -200,6 +201,7 @@ fun WidgetSettingsScreen(userManager: UserManager, onClose: () -> Unit) {
         userManager.saveShowNetworkWidget(showNetwork)
         userManager.saveShowPowerWidget(showPower)
         userManager.saveShowBluetoothWidget(showBluetooth)
+        userManager.saveShowControlDeck(showControlDeck)
         userManager.saveClockStyle(clockStyle)
         userManager.saveMusicStyle(musicStyle)
         userManager.saveFavoritesStyle(favoritesStyle)
@@ -336,6 +338,19 @@ fun WidgetSettingsScreen(userManager: UserManager, onClose: () -> Unit) {
                 Switch(
                     checked = showBluetooth,
                     onCheckedChange = { showBluetooth = it },
+                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Quick Control Deck (Flashlight, Sound)", color = Color.White)
+                Switch(
+                    checked = showControlDeck,
+                    onCheckedChange = { showControlDeck = it },
                     colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
                 )
             }

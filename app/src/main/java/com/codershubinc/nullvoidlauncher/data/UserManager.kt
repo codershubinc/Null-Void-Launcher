@@ -526,4 +526,8 @@ class UserManager(context: Context) {
         val name = prefs.getString("weather_font", WidgetFont.DEFAULT.name)
         return try { WidgetFont.valueOf(name!!) } catch (e: Exception) { WidgetFont.DEFAULT }
     }
+
+    // Quick Toggles / Control Deck
+    fun saveShowControlDeck(show: Boolean) = prefs.edit { putBoolean("show_control_deck", show) }
+    fun getShowControlDeck(): Boolean = prefs.getBoolean("show_control_deck", true)
 }
