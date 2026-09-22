@@ -98,6 +98,12 @@ enum class DoubleTapAction {
     NONE
 }
 
+enum class IconStyle {
+    DEFAULT,
+    MONOCHROME,
+    MINIMAL_OUTLINE
+}
+
 data class LauncherThemeConfig(
     val clockStyle: ClockStyle,
     val musicStyle: MusicStyle,
@@ -489,5 +495,12 @@ class UserManager(context: Context) {
     fun getDoubleTapAction(): DoubleTapAction {
         val name = prefs.getString("double_tap_action", DoubleTapAction.LOCK_SCREEN.name)
         return try { DoubleTapAction.valueOf(name!!) } catch (e: Exception) { DoubleTapAction.LOCK_SCREEN }
+    }
+
+    // Icon Styles
+    fun saveIconStyle(style: IconStyle) = prefs.edit { putString("icon_style", style.name) }
+    fun getIconStyle(): IconStyle {
+        val name = prefs.getString("icon_style", IconStyle.DEFAULT.name)
+        return try { IconStyle.valueOf(name!!) } catch (e: Exception) { IconStyle.DEFAULT }
     }
 }

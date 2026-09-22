@@ -53,13 +53,58 @@ private fun drawableToBitmap(drawable: Drawable): Bitmap {
     return bitmap
 }
 
+enum class AppCategory(val title: String) {
+    ALL("All"),
+    COMMUNICATION("Chat"),
+    MEDIA("Media"),
+    PRODUCTIVITY("Work"),
+    TOOLS("Tools"),
+    GAMES("Games"),
+    OTHER("More")
+}
+
 // 1. Data Class (Lighter: No Icon stored here)
 data class AppInfo(
     val label: String,
     val packageName: String,
     val componentName: ComponentName,
-    val userHandle: UserHandle
+    val userHandle: UserHandle,
+    val category: AppCategory = AppCategory.OTHER
 )
+
+private fun resolveCategory(packageName: String, label: String): AppCategory {
+    val pkg = packageName.lowercase()
+    val lbl = label.lowercase()
+    return when {
+        pkg.contains("whatsapp") || pkg.contains("telegram") || pkg.contains("signal") ||
+        pkg.contains("message") || pkg.contains("dialer") || pkg.contains("phone") ||
+        pkg.contains("contact") || pkg.contains("discord") || pkg.contains("messenger") ||
+        pkg.contains("twitter") || pkg.contains(" x ") || pkg.contains("instagram") ||
+        pkg.contains("facebook") || pkg.contains("reddit") || pkg.contains("linkedin") -> AppCategory.COMMUNICATION
+
+        pkg.contains("youtube") || pkg.contains("spotify") || pkg.contains("music") ||
+        pkg.contains("video") || pkg.contains("netflix") || pkg.contains("prime") ||
+        pkg.contains("audio") || pkg.contains("podcast") || pkg.contains("camera") ||
+        pkg.contains("gallery") || pkg.contains("photos") -> AppCategory.MEDIA
+
+        pkg.contains("mail") || pkg.contains("gmail") || pkg.contains("outlook") ||
+        pkg.contains("docs") || pkg.contains("sheet") || pkg.contains("slide") ||
+        pkg.contains("office") || pkg.contains("keep") || pkg.contains("note") ||
+        pkg.contains("notion") || pkg.contains("calendar") || pkg.contains("drive") ||
+        pkg.contains("dropbox") || pkg.contains("pdf") -> AppCategory.PRODUCTIVITY
+
+        pkg.contains("game") || pkg.contains("play") && pkg.contains("games") ||
+        pkg.contains("unity") || pkg.contains("supercell") || pkg.contains("roblox") ||
+        pkg.contains("minecraft") || lbl.contains("game") -> AppCategory.GAMES
+
+        pkg.contains("calc") || pkg.contains("clock") || pkg.contains("time") ||
+        pkg.contains("setting") || pkg.contains("file") || pkg.contains("browser") ||
+        pkg.contains("chrome") || pkg.contains("firefox") || pkg.contains("tool") ||
+        pkg.contains("terminal") || pkg.contains("store") || pkg.contains("vending") -> AppCategory.TOOLS
+
+        else -> AppCategory.OTHER
+    }
+}
 
 // 2. Function to fetch installed apps (Now super fast!)
 fun getInstalledApps(context: Context): List<AppInfo> {
@@ -74,12 +119,14 @@ fun getInstalledApps(context: Context): List<AppInfo> {
         for (activity in activities) {
             val pkg = activity.applicationInfo.packageName
             if (pkg != context.packageName) {
+                val label = activity.label.toString()
                 allApps.add(
                     AppInfo(
-                        label = activity.label.toString(),
+                        label = label,
                         packageName = pkg,
                         componentName = activity.componentName,
-                        userHandle = profile
+                        userHandle = profile,
+                        category = resolveCategory(pkg, label)
                     )
                 )
             }
@@ -123,7 +170,8 @@ fun LazyAppIcon(
     context: Context,
     size: Int = 28,
     tint: Color? = null,
-    grayscale: Boolean = false
+    grayscale: Boolean = false,
+    iconStyle: com.codershubinc.nullvoidlauncher.data.IconStyle = com.codershubinc.nullvoidlauncher.data.IconStyle.DEFAULT
 ) {
     var imageBitmap by remember(app.componentName) {
         mutableStateOf(AppIconCache.cache[app.componentName])
@@ -154,17 +202,18 @@ fun LazyAppIcon(
     Box(modifier = Modifier.size(size.dp), contentAlignment = Alignment.Center) {
         val customIcon = getCustomIcon(app.packageName.lowercase())
 
-        if (customIcon != null && tint != null) {
+        if (customIcon != null && (tint != null || iconStyle == com.codershubinc.nullvoidlauncher.data.IconStyle.MINIMAL_OUTLINE)) {
             Icon(
                 imageVector = customIcon,
                 contentDescription = app.label,
                 modifier = Modifier.fillMaxSize(),
-                tint = tint
+                tint = tint ?: Color(0xFFC5A35E)
             )
         } else if (imageBitmap != null) {
             val colorFilter = when {
                 tint != null -> ColorFilter.tint(tint)
-                grayscale -> ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+                iconStyle == com.codershubinc.nullvoidlauncher.data.IconStyle.MONOCHROME || grayscale ->
+                    ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
                 else -> null
             }
 

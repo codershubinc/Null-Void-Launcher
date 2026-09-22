@@ -66,6 +66,7 @@ fun SettingsScreen(
     var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.getWallpaperBlurColorAlpha()) }
     var selectedFavorites by remember { mutableStateOf(userManager.getFavorites().toSet()) }
     var doubleTapAction by remember { mutableStateOf(userManager.getDoubleTapAction()) }
+    var selectedIconStyle by remember { mutableStateOf(userManager.getIconStyle()) }
     var hideStatusBar by remember { mutableStateOf(userManager.getHideStatusBar()) }
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
     
@@ -240,6 +241,23 @@ fun SettingsScreen(
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                                 InfoRow(
+                                    icon = Icons.Rounded.Palette,
+                                    label = "App Icon Style",
+                                    value = when (selectedIconStyle) {
+                                        IconStyle.DEFAULT -> "Default Color"
+                                        IconStyle.MONOCHROME -> "Monochrome"
+                                        IconStyle.MINIMAL_OUTLINE -> "Minimal Outline"
+                                    },
+                                    onClick = {
+                                        val styles = IconStyle.values()
+                                        val nextIdx = (selectedIconStyle.ordinal + 1) % styles.size
+                                        selectedIconStyle = styles[nextIdx]
+                                        userManager.saveIconStyle(selectedIconStyle)
+                                    },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
                                     icon = if (hideStatusBar) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                                     label = "System Status Bar",
                                     value = if (hideStatusBar) "Hidden" else "Visible",
@@ -340,6 +358,23 @@ fun SettingsScreen(
                                     wallpaperBlurColorAlpha = wallpaperBlurColorAlpha,
                                     onWallpaperBlurColorChange = { wallpaperBlurColor = it },
                                     onWallpaperBlurColorAlphaChange = { wallpaperBlurColorAlpha = it }
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = Icons.Rounded.Palette,
+                                    label = "App Icon Style",
+                                    value = when (selectedIconStyle) {
+                                        IconStyle.DEFAULT -> "Default Color"
+                                        IconStyle.MONOCHROME -> "Monochrome"
+                                        IconStyle.MINIMAL_OUTLINE -> "Minimal Outline"
+                                    },
+                                    onClick = {
+                                        val styles = IconStyle.values()
+                                        val nextIdx = (selectedIconStyle.ordinal + 1) % styles.size
+                                        selectedIconStyle = styles[nextIdx]
+                                        userManager.saveIconStyle(selectedIconStyle)
+                                    },
+                                    showChevron = true
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                                 InfoRow(

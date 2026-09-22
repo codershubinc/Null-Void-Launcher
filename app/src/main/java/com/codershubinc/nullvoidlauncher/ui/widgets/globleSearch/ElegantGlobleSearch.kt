@@ -75,15 +75,15 @@ fun ElegantSearchScreen(
         MathEvaluator.evaluate(searchQuery)
     }
 
-    // Filter apps, respecting hidden apps
-    val visibleApps = remember(allApps, hiddenApps, showHiddenAppsOnly) {
+    var selectedCategory by remember { mutableStateOf(com.codershubinc.nullvoidlauncher.data.repository.AppCategory.ALL) }
+
+    // Filter apps, respecting hidden apps and selected category
+    val visibleApps = remember(allApps, hiddenApps, showHiddenAppsOnly, selectedCategory) {
         allApps.filter { app ->
             val key = app.componentName.flattenToString()
-            if (showHiddenAppsOnly) {
-                hiddenApps.contains(key)
-            } else {
-                !hiddenApps.contains(key)
-            }
+            val matchesHidden = if (showHiddenAppsOnly) hiddenApps.contains(key) else !hiddenApps.contains(key)
+            val matchesCategory = selectedCategory == com.codershubinc.nullvoidlauncher.data.repository.AppCategory.ALL || app.category == selectedCategory
+            matchesHidden && matchesCategory
         }.sortedBy { it.label.lowercase() }
     }
 
@@ -271,7 +271,41 @@ fun ElegantSearchScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            // Category Chips Row (All, Chat, Media, Work, Tools, Games, More)
+            if (searchQuery.isEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(com.codershubinc.nullvoidlauncher.data.repository.AppCategory.values().size) { idx ->
+                        val cat = com.codershubinc.nullvoidlauncher.data.repository.AppCategory.values()[idx]
+                        val isSelected = selectedCategory == cat
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (isSelected) Color(0xFF3D5AFE) else Color.White.copy(alpha = 0.05f))
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isSelected) Color(0xFF3D5AFE) else Color.White.copy(alpha = 0.08f),
+                                    shape = RoundedCornerShape(14.dp)
+                                )
+                                .clickable { selectedCategory = cat }
+                                .padding(horizontal = 14.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = cat.title,
+                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Section Filter & Toggle
             Row(
@@ -283,6 +317,7 @@ fun ElegantSearchScreen(
                     text = when {
                         searchQuery.isNotEmpty() -> "RESULTS FOR: ${searchQuery.uppercase()}"
                         showHiddenAppsOnly -> "HIDDEN APPLICATIONS (${filteredApps.size})"
+                        selectedCategory != com.codershubinc.nullvoidlauncher.data.repository.AppCategory.ALL -> "${selectedCategory.title.uppercase()} (${filteredApps.size})"
                         else -> "ALL APPLICATIONS (${filteredApps.size})"
                     },
                     color = Color(0xFFC5A35E).copy(alpha = 0.7f),
@@ -340,6 +375,7 @@ fun ElegantSearchScreen(
                         ElegantAppRow(
                             app = app,
                             context = context,
+                            iconStyle = userManager.getIconStyle(),
                             isFavorite = favoritesList.contains(app.componentName.flattenToString()),
                             isHidden = hiddenApps.contains(app.componentName.flattenToString()),
                             onAppClick = {
@@ -579,6 +615,7 @@ fun AppMenuActionItem(
 fun ElegantAppRow(
     app: AppInfo,
     context: Context,
+    iconStyle: com.codershubinc.nullvoidlauncher.data.IconStyle = com.codershubinc.nullvoidlauncher.data.IconStyle.DEFAULT,
     isFavorite: Boolean = false,
     isHidden: Boolean = false,
     onAppClick: () -> Unit,
@@ -602,7 +639,11 @@ fun ElegantAppRow(
                 .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            LazyAppIcon(app, context)
+            LazyAppIcon(
+                app = app,
+                context = context,
+                iconStyle = iconStyle
+            )
         }
 
         Spacer(modifier = Modifier.width(16.dp))

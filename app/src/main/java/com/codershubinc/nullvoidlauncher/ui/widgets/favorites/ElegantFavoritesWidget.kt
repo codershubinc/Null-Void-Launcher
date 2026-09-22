@@ -124,7 +124,8 @@ fun ElegantFavoritesWidget(
                     LazyAppIcon(
                         app = app,
                         context = context,
-                        size = 32
+                        size = 32,
+                        iconStyle = userManager.getIconStyle()
                     )
                 }
             }

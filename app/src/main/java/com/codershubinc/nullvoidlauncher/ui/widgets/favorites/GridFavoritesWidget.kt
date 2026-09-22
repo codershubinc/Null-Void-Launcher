@@ -100,7 +100,12 @@ fun GridFavoritesWidget(
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                LazyAppIcon(app = app, context = context, size = 28)
+                                LazyAppIcon(
+                                    app = app,
+                                    context = context,
+                                    size = 28,
+                                    iconStyle = userManager.getIconStyle()
+                                )
                             }
                         }
                     } else {

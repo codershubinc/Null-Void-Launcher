@@ -115,7 +115,12 @@ fun DockFavoritesWidget(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    LazyAppIcon(app = app, context = context, size = 26)
+                    LazyAppIcon(
+                        app = app,
+                        context = context,
+                        size = 26,
+                        iconStyle = userManager.getIconStyle()
+                    )
                 }
             }
         }
