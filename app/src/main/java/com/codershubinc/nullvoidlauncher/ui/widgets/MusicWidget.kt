@@ -17,9 +17,13 @@
 
 package com.codershubinc.nullvoidlauncher.ui.widgets
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.codershubinc.nullvoidlauncher.data.MusicStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
@@ -35,16 +39,44 @@ fun MusicWidget(
     style: MusicStyle = MusicStyle.ELEGANT,
     modifier: Modifier = Modifier,
     font: WidgetFont? = null,
-    previewTrack: MusicTrack? = null
+    previewTrack: MusicTrack? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val effectiveFont = font ?: UserManager(context).getMusicFont()
+    val haptic = LocalHapticFeedback.current
+    val userManager = remember { UserManager(context) }
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getMusicFont() }
+
+    val gestureModifier = if (onLongClick != null) {
+        Modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onLongPress = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick.invoke()
+                }
+            )
+        }
+    } else Modifier
+
+    val finalModifier = modifier.then(gestureModifier)
 
     when (style) {
-        MusicStyle.ELEGANT -> ElegantMusicWidget(modifier, previewTrack, font = effectiveFont)
-        MusicStyle.RETRO   -> RetroMusicWidget(modifier, previewTrack, font = effectiveFont)
-        MusicStyle.MINIMAL -> MinimalMusicWidget(modifier, previewTrack, font = effectiveFont)
-        MusicStyle.VINYL   -> VinylMusicWidget(modifier, previewTrack, font = effectiveFont)
-        MusicStyle.NEON    -> NeonMusicWidget(modifier, previewTrack, font = effectiveFont)
+        MusicStyle.ELEGANT -> ElegantMusicWidget(finalModifier, previewTrack, font = effectiveFont)
+        MusicStyle.RETRO   -> RetroMusicWidget(finalModifier, previewTrack, font = effectiveFont)
+        MusicStyle.MINIMAL -> MinimalMusicWidget(finalModifier, previewTrack, font = effectiveFont)
+        MusicStyle.VINYL   -> VinylMusicWidget(finalModifier, previewTrack, font = effectiveFont)
+        MusicStyle.NEON    -> NeonMusicWidget(finalModifier, previewTrack, font = effectiveFont)
     }
 }

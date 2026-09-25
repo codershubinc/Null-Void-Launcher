@@ -3,6 +3,7 @@ package com.codershubinc.nullvoidlauncher.ui.widgets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,7 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,18 +36,47 @@ fun WeatherWidget(
     modifier: Modifier = Modifier,
     font: WidgetFont? = null,
     previewInfo: WeatherInfoState? = null,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    val effectiveFont = font ?: userManager.getWeatherFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getWeatherFont() }
     val weather = remember { previewInfo ?: WeatherHelper.getWeatherInfo() }
 
+    val gestureModifier = if (onLongClick != null) {
+        Modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onTap = { onClick?.invoke() },
+                onLongPress = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick.invoke()
+                }
+            )
+        }
+    } else Modifier
+
+    val finalModifier = modifier.then(gestureModifier)
+    val effectiveClick = if (onLongClick != null) null else onClick
+
     when (style) {
-        WeatherStyle.ELEGANT -> ElegantWeather(weather, effectiveFont, modifier, onClick)
-        WeatherStyle.MINIMAL -> MinimalWeather(weather, effectiveFont, modifier, onClick)
-        WeatherStyle.TERMINAL -> TerminalWeather(weather, effectiveFont, modifier, onClick)
-        WeatherStyle.RETRO -> RetroWeather(weather, effectiveFont, modifier, onClick)
+        WeatherStyle.ELEGANT -> ElegantWeather(weather, effectiveFont, finalModifier, effectiveClick)
+        WeatherStyle.MINIMAL -> MinimalWeather(weather, effectiveFont, finalModifier, effectiveClick)
+        WeatherStyle.TERMINAL -> TerminalWeather(weather, effectiveFont, finalModifier, effectiveClick)
+        WeatherStyle.RETRO -> RetroWeather(weather, effectiveFont, finalModifier, effectiveClick)
     }
 }
 

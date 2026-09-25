@@ -76,7 +76,7 @@ fun MinimalBluetoothWidget(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(
-            imageVector = if (activeDevice?.deviceType == BluetoothDeviceType.HEADPHONES) Icons.Rounded.Headphones else Icons.Rounded.BluetoothConnected,
+            imageVector = resolveBluetoothDeviceIcon(activeDevice?.deviceType, isConnected),
             contentDescription = null,
             tint = if (isConnected) Color(0xFF00E5FF) else Color.White.copy(alpha = 0.35f),
             modifier = Modifier.size(16.dp)

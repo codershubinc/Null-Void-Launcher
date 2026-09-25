@@ -40,17 +40,31 @@ fun TerminalClock(
     batteryStatus: String,
     modifier: Modifier = Modifier,
     font: WidgetFont = WidgetFont.MONOSPACE,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val dayStyle = userManager.getDayStyle()
-    val showStorage = userManager.getShowStorageWidget()
-    val storageStyle = userManager.getStorageStyle()
-    val storageFont = userManager.getStorageFont()
-    val showPower = userManager.getShowPowerWidget()
-    val powerStyle = userManager.getPowerStyle()
-    val powerFont = userManager.getPowerFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val showDay = remember(prefVersion) { userManager.getShowDayWidget() }
+    val dayStyle = remember(prefVersion) { userManager.getDayStyle() }
+    val showStorage = remember(prefVersion) { userManager.getShowStorageWidget() }
+    val storageStyle = remember(prefVersion) { userManager.getStorageStyle() }
+    val storageFont = remember(prefVersion) { userManager.getStorageFont() }
+    val showPower = remember(prefVersion) { userManager.getShowPowerWidget() }
+    val powerStyle = remember(prefVersion) { userManager.getPowerStyle() }
+    val powerFont = remember(prefVersion) { userManager.getPowerFont() }
     val isCharging = batteryStatus.equals("CHARGING", ignoreCase = true) || batteryStatus.equals("Charging", ignoreCase = true)
 
     val terminalGreen = Color(0xFF00FF66)
@@ -127,14 +141,25 @@ fun TerminalClock(
                     font = powerFont,
                     previewInfo = PowerInfoState(level = batteryLevel, status = batteryStatus, isCharging = isCharging),
                     onTap = { PowerHelper.openBatterySettings(context) },
-                    onLongClick = onLongClick
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.POWER)
+                        else onLongClick?.invoke()
+                    }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        DayWidget(dayText = dayText, style = dayStyle)
+        if (showDay) {
+            Spacer(modifier = Modifier.height(10.dp))
+            DayWidget(
+                dayText = dayText,
+                style = dayStyle,
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DAY)
+                    else onLongClick?.invoke()
+                }
+            )
+        }
 
         if (showStorage) {
             Spacer(modifier = Modifier.height(12.dp))
@@ -142,7 +167,10 @@ fun TerminalClock(
                 modifier = Modifier.padding(start = 2.dp),
                 style = storageStyle,
                 font = storageFont,
-                onLongClick = onLongClick
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.STORAGE)
+                    else onLongClick?.invoke()
+                }
             )
         }
     }

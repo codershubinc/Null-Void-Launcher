@@ -25,7 +25,8 @@ fun WidgetScreen(
     onWallpaperChanged: (() -> Unit)? = null,
     onOpenNetworkUsage: () -> Unit = {},
     onOpenBluetoothSettings: () -> Unit = {},
-    onOpenWidgetSettings: () -> Unit = {}
+    onOpenWidgetSettings: () -> Unit = {},
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val config = theme.toConfig()
     val context = LocalContext.current
@@ -65,7 +66,8 @@ fun WidgetScreen(
             onOpenDrawer = onOpenDrawer,
             onOpenNetworkUsage = onOpenNetworkUsage,
             onOpenBluetoothSettings = onOpenBluetoothSettings,
-            onOpenWidgetSettings = onOpenWidgetSettings
+            onOpenWidgetSettings = onOpenWidgetSettings,
+            onOpenWidgetTweaks = onOpenWidgetTweaks
         )
     }
 }

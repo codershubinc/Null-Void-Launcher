@@ -11,8 +11,7 @@ import androidx.compose.material.icons.rounded.BatteryStd
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,16 +43,34 @@ fun ElegantClock(
     batteryStatus: String,
     modifier: Modifier = Modifier,
     font: WidgetFont = WidgetFont.DEFAULT,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val dayStyle = userManager.getDayStyle()
-    val showPower = userManager.getShowPowerWidget()
-    val powerStyle = userManager.getPowerStyle()
-    val powerFont = userManager.getPowerFont()
-    val storageStyle = userManager.getStorageStyle()
-    val storageFont = userManager.getStorageFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val showDay = remember(prefVersion) { userManager.getShowDayWidget() }
+    val dayStyle = remember(prefVersion) { userManager.getDayStyle() }
+    val showPower = remember(prefVersion) { userManager.getShowPowerWidget() }
+    val powerStyle = remember(prefVersion) { userManager.getPowerStyle() }
+    val powerFont = remember(prefVersion) { userManager.getPowerFont() }
+    val showStorage = remember(prefVersion) { userManager.getShowStorageWidget() }
+    val storageStyle = remember(prefVersion) { userManager.getStorageStyle() }
+    val storageFont = remember(prefVersion) { userManager.getStorageFont() }
+    val showWeather = remember(prefVersion) { userManager.getShowWeatherWidget() }
+    val weatherStyle = remember(prefVersion) { userManager.getWeatherStyle() }
+    val weatherFont = remember(prefVersion) { userManager.getWeatherFont() }
     val isCharging = batteryStatus == "Charging"
 
     Column(
@@ -72,10 +89,18 @@ fun ElegantClock(
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Day Widget
-        DayWidget(dayText = dayText, style = dayStyle)
+        if (showDay) {
+            Spacer(modifier = Modifier.height(14.dp))
+            // Day Widget
+            DayWidget(
+                dayText = dayText,
+                style = dayStyle,
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DAY)
+                    else onLongClick?.invoke()
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -84,12 +109,14 @@ fun ElegantClock(
             modifier = Modifier.padding(start = 0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val showWeather = userManager.getShowWeatherWidget()
             if (showWeather) {
                 com.codershubinc.nullvoidlauncher.ui.widgets.WeatherWidget(
-                    style = userManager.getWeatherStyle(),
-                    font = userManager.getWeatherFont(),
-                    onClick = onLongClick
+                    style = weatherStyle,
+                    font = weatherFont,
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.WEATHER)
+                        else onLongClick?.invoke()
+                    }
                 )
             }
 
@@ -100,19 +127,24 @@ fun ElegantClock(
                     font = powerFont,
                     previewInfo = PowerInfoState(level = batteryLevel, status = batteryStatus, isCharging = isCharging),
                     onTap = { PowerHelper.openBatterySettings(context) },
-                    onLongClick = onLongClick
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.POWER)
+                        else onLongClick?.invoke()
+                    }
                 )
             }
         }
 
-        val showStorage = userManager.getShowStorageWidget()
         if (showStorage) {
             Spacer(modifier = Modifier.height(14.dp))
             StorageWidget(
                 modifier = Modifier.padding(start = 2.dp),
                 style = storageStyle,
                 font = storageFont,
-                onLongClick = onLongClick
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.STORAGE)
+                    else onLongClick?.invoke()
+                }
             )
         }
     }

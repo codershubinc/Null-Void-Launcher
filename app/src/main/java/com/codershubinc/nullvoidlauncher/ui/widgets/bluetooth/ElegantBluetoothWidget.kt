@@ -113,13 +113,7 @@ fun ElegantBluetoothWidget(
                 .border(1.dp, if (isConnected) accent.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            val icon = when (activeDevice?.deviceType) {
-                BluetoothDeviceType.HEADPHONES -> Icons.Rounded.Headphones
-                BluetoothDeviceType.SPEAKER -> Icons.Rounded.Speaker
-                BluetoothDeviceType.WATCH -> Icons.Rounded.Watch
-                BluetoothDeviceType.HEADSET -> Icons.Rounded.HeadsetMic
-                else -> if (isConnected) Icons.Rounded.BluetoothConnected else Icons.Rounded.Bluetooth
-            }
+            val icon = resolveBluetoothDeviceIcon(activeDevice?.deviceType, isConnected)
             Icon(
                 imageVector = icon,
                 contentDescription = null,

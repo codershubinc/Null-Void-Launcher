@@ -1,12 +1,14 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets.power
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,7 +17,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,8 +25,8 @@ import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
 
 /**
- * TerminalPowerWidget — Hacker / CLI terminal prompt aesthetic for battery telemetry.
- * Integrates seamlessly alongside or beneath clock/date/day widgets.
+ * TerminalPowerWidget — Hacker / CLI terminal prompt aesthetic for battery telemetry
+ * with cursor blink / animated charging indicator.
  */
 @Composable
 fun TerminalPowerWidget(
@@ -51,12 +52,14 @@ fun TerminalPowerWidget(
         else -> terminalGreen
     }
 
+
+
     Row(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
             .background(Color(0xFF060B08))
-            .border(1.dp, terminalGreen.copy(alpha = 0.35f), shape)
+            .border(1.dp, terminalGreen.copy(alpha = if (isCharging) 0.6f else 0.35f), shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -90,9 +93,13 @@ fun TerminalPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        if (isCharging) {
+        AnimatedVisibility(
+            visible = isCharging,
+            enter = fadeIn(tween(300)) + expandHorizontally(tween(300)),
+            exit = fadeOut(tween(200)) + shrinkHorizontally(tween(200))
+        ) {
             Text(
-                text = "[CHR]",
+                text = "[CHR⚡]",
                 color = terminalGreen,
                 fontSize = 9.sp,
                 fontFamily = font.toFontFamily(),

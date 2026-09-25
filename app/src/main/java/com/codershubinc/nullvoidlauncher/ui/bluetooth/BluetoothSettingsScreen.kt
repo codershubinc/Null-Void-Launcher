@@ -397,13 +397,10 @@ fun BluetoothSettingsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        val devIcon = when (dev.deviceType) {
-                            BluetoothDeviceType.HEADPHONES -> Icons.Rounded.Headphones
-                            BluetoothDeviceType.SPEAKER -> Icons.Rounded.Speaker
-                            BluetoothDeviceType.WATCH -> Icons.Rounded.Watch
-                            BluetoothDeviceType.HEADSET -> Icons.Rounded.HeadsetMic
-                            else -> Icons.Rounded.Bluetooth
-                        }
+                        val devIcon = com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.resolveBluetoothDeviceIcon(
+                            dev.deviceType,
+                            dev.isConnected
+                        )
 
                         Icon(
                             imageVector = devIcon,

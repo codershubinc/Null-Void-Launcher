@@ -1,5 +1,7 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets.power
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -9,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,7 +20,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,8 +28,8 @@ import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
 
 /**
- * RetroPowerWidget — Amber vintage digital LED aesthetic for battery telemetry.
- * Integrates seamlessly alongside or beneath clock/date/day widgets.
+ * RetroPowerWidget — Amber vintage digital LED aesthetic for battery telemetry
+ * with retro blinking CHR indicator on charging.
  */
 @Composable
 fun RetroPowerWidget(
@@ -46,12 +47,14 @@ fun RetroPowerWidget(
     val shape = RoundedCornerShape(6.dp)
     val isCharging = powerInfo.isCharging
 
+
+
     Row(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
             .background(darkAmber)
-            .border(1.dp, amber.copy(alpha = 0.45f), shape)
+            .border(1.dp, amber.copy(alpha = if (isCharging) 0.7f else 0.45f), shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -92,21 +95,30 @@ fun RetroPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        if (isCharging) {
-            Icon(
-                imageVector = Icons.Rounded.Bolt,
-                contentDescription = null,
-                tint = amber,
-                modifier = Modifier.size(11.dp)
-            )
+        AnimatedVisibility(
+            visible = isCharging,
+            enter = fadeIn(tween(300)) + expandHorizontally(tween(300)),
+            exit = fadeOut(tween(200)) + shrinkHorizontally(tween(200))
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Bolt,
+                    contentDescription = null,
+                    tint = amber,
+                    modifier = Modifier.size(11.dp)
+                )
 
-            Text(
-                text = "CHR",
-                color = amber,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = font.toFontFamily()
-            )
+                Text(
+                    text = "CHR",
+                    color = amber,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = font.toFontFamily()
+                )
+            }
         }
     }
 }

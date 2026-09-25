@@ -1,5 +1,7 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets.power
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -10,10 +12,11 @@ import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.BatteryStd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -30,8 +33,8 @@ import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
 
 /**
- * ElegantPowerWidget — Frosted glassmorphism pill for battery telemetry.
- * Integrates seamlessly alongside or beneath clock/date/day widgets.
+ * ElegantPowerWidget — Frosted glassmorphism pill for battery telemetry with smooth
+ * transition animations for charging state changes (pulsing glow, color morphing, scale bounce).
  */
 @Composable
 fun ElegantPowerWidget(
@@ -48,19 +51,60 @@ fun ElegantPowerWidget(
 
     val isCharging = powerInfo.isCharging
     val level = powerInfo.level
-    val levelColor = when {
+
+    val targetLevelColor = when {
         isCharging -> Color(0xFF00E676)
         level <= 15 -> Color(0xFFFF5252)
         level <= 30 -> Color(0xFFFFB300)
         else -> Color.White
     }
 
+    val animatedLevelColor by animateColorAsState(
+        targetValue = targetLevelColor,
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        label = "batteryLevelColor"
+    )
+
+    // Smooth one-time transition animation on charging state change
+    val chargingTransitionScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "chargingTransitionScale"
+    )
+
+    val targetBorderColor = if (isCharging) {
+        Color(0xFF00E676).copy(alpha = 0.35f)
+    } else {
+        Color.White.copy(alpha = 0.14f)
+    }
+
+    val animatedBorderColor by animateColorAsState(
+        targetValue = targetBorderColor,
+        animationSpec = tween(durationMillis = 500),
+        label = "batteryBorderColor"
+    )
+
+    val targetBgColor = if (isCharging) {
+        Color(0xFF00E676).copy(alpha = 0.12f)
+    } else {
+        Color.White.copy(alpha = 0.08f)
+    }
+
+    val animatedBgColor by animateColorAsState(
+        targetValue = targetBgColor,
+        animationSpec = tween(durationMillis = 500),
+        label = "batteryBgColor"
+    )
+
     Row(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.08f))
-            .border(1.dp, Color.White.copy(alpha = 0.14f), shape)
+            .background(animatedBgColor)
+            .border(1.dp, animatedBorderColor, shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -78,27 +122,48 @@ fun ElegantPowerWidget(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Icon(
-            imageVector = if (isCharging) Icons.Rounded.BatteryChargingFull else Icons.Rounded.BatteryStd,
-            contentDescription = null,
-            tint = levelColor,
-            modifier = Modifier.size(13.dp)
-        )
+        // Icon with animated transition
+        AnimatedContent(
+            targetState = isCharging,
+            transitionSpec = {
+                (scaleIn(animationSpec = tween(400)) + fadeIn()) togetherWith
+                        (scaleOut(animationSpec = tween(400)) + fadeOut())
+            },
+            label = "chargingIconTransition"
+        ) { charging ->
+            Icon(
+                imageVector = if (charging) Icons.Rounded.BatteryChargingFull else Icons.Rounded.BatteryStd,
+                contentDescription = null,
+                tint = animatedLevelColor,
+                modifier = Modifier.size(13.dp)
+            )
+        }
 
         Text(
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.SemiBold)) {
                     append("${powerInfo.level}%")
                 }
-                if (isCharging) {
-                    withStyle(style = SpanStyle(color = Color(0xFF00E676), fontWeight = FontWeight.Medium)) {
-                        append(" • Charging")
-                    }
-                }
             },
             fontSize = 11.sp,
             fontFamily = font.toFontFamily(),
             lineHeight = 15.sp
         )
+
+        // Animated charging text appearance
+        AnimatedVisibility(
+            visible = isCharging,
+            enter = fadeIn(animationSpec = tween(400)) + expandHorizontally(animationSpec = tween(400)),
+            exit = fadeOut(animationSpec = tween(300)) + shrinkHorizontally(animationSpec = tween(300))
+        ) {
+            Text(
+                text = "• Charging",
+                color = Color(0xFF00E676),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = font.toFontFamily(),
+                lineHeight = 15.sp
+            )
+        }
     }
 }

@@ -27,8 +27,20 @@ fun StorageWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val effectiveStyle = style ?: userManager.getStorageStyle()
-    val effectiveFont = font ?: userManager.getStorageFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveStyle = style ?: remember(prefVersion) { userManager.getStorageStyle() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getStorageFont() }
     val storageInfo = previewInfo ?: remember { StorageUtils.getStorageInfo(context) }
 
     when (effectiveStyle) {

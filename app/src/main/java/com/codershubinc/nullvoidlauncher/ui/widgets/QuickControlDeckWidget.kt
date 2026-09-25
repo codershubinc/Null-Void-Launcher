@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,13 +18,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlHelper
 
 @Composable
 fun QuickControlDeckWidget(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     var isTorchOn by remember { mutableStateOf(ControlHelper.isTorchActive()) }
@@ -63,7 +68,8 @@ fun QuickControlDeckWidget(
                 ControlHelper.toggleTorch(context) { on ->
                     isTorchOn = on
                 }
-            }
+            },
+            onLongClick = onLongClick
         )
 
         // 2. Ringer Mode (Ring / Vibrate / Silent)
@@ -78,7 +84,8 @@ fun QuickControlDeckWidget(
             activeColor = Color(0xFF3D5AFE),
             onClick = {
                 ringerState = ControlHelper.cycleRingerMode(context)
-            }
+            },
+            onLongClick = onLongClick
         )
 
         // 3. Hotspot Shortcut
@@ -88,7 +95,8 @@ fun QuickControlDeckWidget(
             activeColor = Color(0xFF00E5FF),
             onClick = {
                 ControlHelper.openHotspotSettings(context)
-            }
+            },
+            onLongClick = onLongClick
         )
 
         // 4. Display / Auto-Rotate Shortcut
@@ -99,7 +107,8 @@ fun QuickControlDeckWidget(
             activeColor = Color(0xFF00E676),
             onClick = {
                 ControlHelper.openDisplaySettings(context)
-            }
+            },
+            onLongClick = onLongClick
         )
     }
 }
@@ -109,8 +118,10 @@ private fun QuickControlItem(
     icon: ImageVector,
     isActive: Boolean,
     activeColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     Box(
         modifier = Modifier
             .size(36.dp)
@@ -121,7 +132,15 @@ private fun QuickControlItem(
                 if (isActive) activeColor.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.08f),
                 CircleShape
             )
-            .clickable { onClick() },
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onLongClick?.invoke()
+                    }
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Icon(

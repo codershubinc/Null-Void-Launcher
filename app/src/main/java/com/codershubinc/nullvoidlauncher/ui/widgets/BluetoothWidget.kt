@@ -18,6 +18,7 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothHelper
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothInfoState
+import com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.CompactGlassBluetoothWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.ElegantBluetoothWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.MinimalBluetoothWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.RetroBluetoothWidget
@@ -42,8 +43,20 @@ fun BluetoothWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val effectiveFont = font ?: userManager.getBluetoothFont()
-    val onlyConnected = showOnlyIfConnected ?: userManager.getBluetoothShowOnlyIfConnected()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getBluetoothFont() }
+    val onlyConnected = showOnlyIfConnected ?: remember(prefVersion) { userManager.getBluetoothShowOnlyIfConnected() }
 
     var bluetoothInfo by remember {
         mutableStateOf(previewInfo ?: BluetoothHelper.getBluetoothInfo(context))
@@ -121,6 +134,13 @@ fun BluetoothWidget(
             onLongClick = onLongClick
         )
         BluetoothStyle.MINIMAL  -> MinimalBluetoothWidget(
+            bluetoothInfo = bluetoothInfo,
+            modifier = modifier,
+            font = effectiveFont,
+            onTap = effectiveTap,
+            onLongClick = onLongClick
+        )
+        BluetoothStyle.COMPACT, BluetoothStyle.GLASS -> CompactGlassBluetoothWidget(
             bluetoothInfo = bluetoothInfo,
             modifier = modifier,
             font = effectiveFont,

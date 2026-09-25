@@ -38,7 +38,19 @@ fun PowerWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val effectiveFont = font ?: userManager.getPowerFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getPowerFont() }
     var powerInfo by remember { mutableStateOf(previewInfo ?: PowerHelper.getPowerInfo(context)) }
 
     DisposableEffect(previewInfo) {

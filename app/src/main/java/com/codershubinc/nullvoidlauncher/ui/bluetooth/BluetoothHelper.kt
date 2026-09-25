@@ -19,10 +19,19 @@ import java.util.concurrent.ConcurrentHashMap
 
 enum class BluetoothDeviceType {
     HEADPHONES,
+    BUDS,
     HEADSET,
     SPEAKER,
+    SOUNDBAR,
     WATCH,
     PHONE,
+    LAPTOP,
+    TABLET,
+    TV,
+    CAR,
+    CONTROLLER,
+    MOUSE,
+    KEYBOARD,
     AUDIO,
     GENERIC
 }
@@ -148,7 +157,7 @@ object BluetoothHelper {
             val name = try { device.name ?: address } catch (_: SecurityException) { address }
             val connected = isDeviceConnected(device)
             val battery = resolveBattery(device, address)
-            val type = resolveDeviceType(device)
+            val type = resolveDeviceType(device, name)
             val isPref = address.isNotEmpty() && address.equals(preferredAddress, ignoreCase = true)
 
             val info = BluetoothDeviceInfo(
@@ -213,19 +222,133 @@ object BluetoothHelper {
         }
     }
 
-    private fun resolveDeviceType(device: BluetoothDevice): BluetoothDeviceType {
+    private fun resolveDeviceType(device: BluetoothDevice, name: String = ""): BluetoothDeviceType {
+        val lower = name.lowercase().trim()
+
+        // 1. In-ear Earbuds / TWS / Airpods
+        if (lower.contains("airpod") || lower.contains("earbud") || lower.contains("buds") ||
+            lower.contains("earphone") || lower.contains("tws") || lower.contains("dots") ||
+            lower.contains("airdots") || lower.contains("pixel buds") || lower.contains("galaxy buds") ||
+            lower.contains("freebuds") || lower.contains("linkbuds") || lower.contains("tune flex") ||
+            lower.contains("tune beam") || lower.contains("c Round") || lower.contains("in-ear") ||
+            lower.contains("ear-buds") || lower.contains("cords") || lower.contains("neckband") ||
+            lower.contains("rockerz") || lower.contains("airdopes") || lower.contains("bullets") ||
+            lower.contains("wireless stereo") || lower.contains("true wireless")
+        ) {
+            return BluetoothDeviceType.BUDS
+        }
+
+        // 2. Soundbars & Home Theater
+        if (lower.contains("soundbar") || lower.contains("sound bar") || lower.contains("home theater") ||
+            lower.contains("cinema") || lower.contains("subwoofer") || lower.contains("soundstage") ||
+            lower.contains("sound tower") || lower.contains("partybox")
+        ) {
+            return BluetoothDeviceType.SOUNDBAR
+        }
+
+        // 3. Over-ear / On-ear Headphones
+        if (lower.contains("headphone") || lower.contains("over-ear") || lower.contains("on-ear") ||
+            lower.contains("wh-1000") || lower.contains("xm4") || lower.contains("xm5") || lower.contains("xm3") ||
+            lower.contains("qc35") || lower.contains("qc45") || lower.contains("quietcomfort") ||
+            lower.contains("momentum") || lower.contains("crusher") || lower.contains("beats studio") ||
+            lower.contains("beats solo") || lower.contains("major iv") || lower.contains("monitor")
+        ) {
+            return BluetoothDeviceType.HEADPHONES
+        }
+
+        // 4. Smartwatches & Fitness Trackers
+        if (lower.contains("watch") || lower.contains("band") || lower.contains("fitbit") ||
+            lower.contains("garmin") || lower.contains("amazfit") || lower.contains("wearos") ||
+            lower.contains("galaxy watch") || lower.contains("pixel watch") || lower.contains("apple watch") ||
+            lower.contains("smartwatch") || lower.contains("tracker") || lower.contains("mi band") ||
+            lower.contains("honor band")
+        ) {
+            return BluetoothDeviceType.WATCH
+        }
+
+        // 5. Portable & Home Speakers
+        if (lower.contains("speaker") || lower.contains("boombox") || lower.contains("jbl") ||
+            lower.contains("echo") || lower.contains("nest mini") || lower.contains("nest audio") ||
+            lower.contains("homepod") || lower.contains("marshall") || lower.contains("emberton") ||
+            lower.contains("stanmore") || lower.contains("acton") || lower.contains("flip") ||
+            lower.contains("charge") || lower.contains("clip") || lower.contains("wonderboom") ||
+            lower.contains("megaboom") || lower.contains("tribit") || lower.contains("soundcore") ||
+            lower.contains("anker") || lower.contains("pill") || lower.contains("bose soundlink")
+        ) {
+            return BluetoothDeviceType.SPEAKER
+        }
+
+        // 6. Gaming Controllers
+        if (lower.contains("controller") || lower.contains("gamepad") || lower.contains("dualshock") ||
+            lower.contains("dualsense") || lower.contains("xbox") || lower.contains("joy-con") ||
+            lower.contains("switch pro") || lower.contains("wireless controller")
+        ) {
+            return BluetoothDeviceType.CONTROLLER
+        }
+
+        // 7. Input devices (Mouse / Keyboard)
+        if (lower.contains("mouse") || lower.contains("mx master") || lower.contains("magic mouse")) {
+            return BluetoothDeviceType.MOUSE
+        }
+        if (lower.contains("keyboard") || lower.contains("keychron") || lower.contains("magic keyboard")) {
+            return BluetoothDeviceType.KEYBOARD
+        }
+
+        // 8. TVs & Displays
+        if (lower.contains("tv") || lower.contains("bravia") || lower.contains("fire tv") ||
+            lower.contains("chromecast") || lower.contains("smart tv") || lower.contains("roku")
+        ) {
+            return BluetoothDeviceType.TV
+        }
+
+        // 9. Car Audio / Handsfree
+        if (lower.contains("car") || lower.contains("auto") || lower.contains("audi") ||
+            lower.contains("bmw") || lower.contains("mercedes") || lower.contains("honda") ||
+            lower.contains("toyota") || lower.contains("hyundai") || lower.contains("ford") ||
+            lower.contains("sync") || lower.contains("uconnect") || lower.contains("carplay") ||
+            lower.contains("handsfree") || lower.contains("carkit")
+        ) {
+            return BluetoothDeviceType.CAR
+        }
+
+        // 10. PC / Laptop / Tablet
+        if (lower.contains("macbook") || lower.contains("laptop") || lower.contains("thinkpad") ||
+            lower.contains("notebook") || lower.contains("zenbook") || lower.contains("desktop") ||
+            lower.contains("pc")
+        ) {
+            return BluetoothDeviceType.LAPTOP
+        }
+        if (lower.contains("ipad") || lower.contains("tab") || lower.contains("tablet")) {
+            return BluetoothDeviceType.TABLET
+        }
+
+        // Fallback: Inspect Android BluetoothClass device & major classes
         return try {
             val bluetoothClass = device.bluetoothClass ?: return BluetoothDeviceType.GENERIC
             val devClass = bluetoothClass.deviceClass
             when (devClass) {
-                BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES,
-                BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET -> BluetoothDeviceType.HEADPHONES
+                BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES -> BluetoothDeviceType.HEADPHONES
+                BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET -> BluetoothDeviceType.BUDS
                 BluetoothClass.Device.AUDIO_VIDEO_LOUDSPEAKER,
                 BluetoothClass.Device.AUDIO_VIDEO_PORTABLE_AUDIO -> BluetoothDeviceType.SPEAKER
                 BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE,
-                BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO -> BluetoothDeviceType.HEADSET
+                BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO -> BluetoothDeviceType.CAR
+                BluetoothClass.Device.AUDIO_VIDEO_SET_TOP_BOX,
+                BluetoothClass.Device.AUDIO_VIDEO_VIDEO_DISPLAY_AND_LOUDSPEAKER -> BluetoothDeviceType.TV
                 BluetoothClass.Device.WEARABLE_WRIST_WATCH -> BluetoothDeviceType.WATCH
-                BluetoothClass.Device.PHONE_SMART -> BluetoothDeviceType.PHONE
+                BluetoothClass.Device.PHONE_SMART,
+                BluetoothClass.Device.PHONE_CELLULAR -> BluetoothDeviceType.PHONE
+                BluetoothClass.Device.COMPUTER_LAPTOP -> BluetoothDeviceType.LAPTOP
+                BluetoothClass.Device.COMPUTER_DESKTOP -> BluetoothDeviceType.LAPTOP
+                1076 -> BluetoothDeviceType.TABLET // BluetoothClass.Device.COMPUTER_TABLET
+                BluetoothClass.Device.Major.PERIPHERAL -> {
+                    when (devClass) {
+                        1344 -> BluetoothDeviceType.KEYBOARD // Peripheral Keyboard
+                        1408 -> BluetoothDeviceType.MOUSE // Peripheral Pointer / Mouse
+                        1472 -> BluetoothDeviceType.CONTROLLER // Peripheral Joystick / Gamepad
+                        else -> BluetoothDeviceType.GENERIC
+                    }
+                }
                 else -> {
                     if (bluetoothClass.hasService(BluetoothClass.Service.AUDIO)) {
                         BluetoothDeviceType.AUDIO

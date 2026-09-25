@@ -37,12 +37,25 @@ fun ClockWidget(
     previewBatteryLevel: Int? = null,
     previewBatteryStatus: String? = null,
     onTap: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    val effectiveFont = font ?: userManager.getClockFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getClockFont() }
     var timeText by remember { mutableStateOf(previewTimeText ?: "") }
     var amPmTimeText by remember { mutableStateOf("") }
     var dayText by remember { mutableStateOf(previewDayText ?: "") }
@@ -123,6 +136,8 @@ fun ClockWidget(
         }
     }
 
+    val effectiveClockLongClick = onLongClick ?: onOpenWidgetTweaks?.let { { it(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.CLOCK) } }
+
     Box(
         modifier = modifier.pointerInput(Unit) {
             detectTapGestures(
@@ -131,17 +146,17 @@ fun ClockWidget(
                 },
                 onLongPress = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongClick?.invoke()
+                    effectiveClockLongClick?.invoke()
                 }
             )
         }
     ) {
         when (style) {
-            ClockStyle.ELEGANT  -> ElegantClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
-            ClockStyle.MINIMAL  -> MinimalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
-            ClockStyle.MODERN   -> ModernClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
-            ClockStyle.RETRO    -> RetroClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
-            ClockStyle.TERMINAL -> TerminalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = onLongClick)
+            ClockStyle.ELEGANT  -> ElegantClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = effectiveClockLongClick, onOpenWidgetTweaks = onOpenWidgetTweaks)
+            ClockStyle.MINIMAL  -> MinimalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = effectiveClockLongClick, onOpenWidgetTweaks = onOpenWidgetTweaks)
+            ClockStyle.MODERN   -> ModernClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = effectiveClockLongClick, onOpenWidgetTweaks = onOpenWidgetTweaks)
+            ClockStyle.RETRO    -> RetroClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = effectiveClockLongClick, onOpenWidgetTweaks = onOpenWidgetTweaks)
+            ClockStyle.TERMINAL -> TerminalClock(timeText, dayText, monthName, dayOfMonth, batteryLevel, batteryStatus, font = effectiveFont, onLongClick = effectiveClockLongClick, onOpenWidgetTweaks = onOpenWidgetTweaks)
         }
     }
 }

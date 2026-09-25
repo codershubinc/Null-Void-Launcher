@@ -1,5 +1,7 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets.power
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -10,10 +12,11 @@ import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.BatteryStd
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -27,8 +30,8 @@ import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
 
 /**
- * GaugeBarPowerWidget — Modern linear progress micro-gauge battery telemetry.
- * Designed to integrate seamlessly alongside or beneath clock/date/day widgets.
+ * GaugeBarPowerWidget — Modern linear progress micro-gauge battery telemetry
+ * with animated transitions and charging progress pulses.
  */
 @Composable
 fun GaugeBarPowerWidget(
@@ -43,12 +46,22 @@ fun GaugeBarPowerWidget(
     val haptic = LocalHapticFeedback.current
     val isCharging = powerInfo.isCharging
     val level = powerInfo.level
-    val levelColor = when {
+
+    val targetLevelColor = when {
         isCharging -> Color(0xFF00E676)
         level <= 15 -> Color(0xFFFF5252)
         level <= 30 -> Color(0xFFFFB300)
         else -> Color(0xFF00E5FF)
     }
+
+    val animatedLevelColor by animateColorAsState(
+        targetValue = targetLevelColor,
+        animationSpec = tween(500),
+        label = "gaugeBatteryLevelColor"
+    )
+
+    val targetBorderColor = if (isCharging) Color(0xFF00E676).copy(alpha = 0.35f) else Color.White.copy(alpha = 0.11f)
+    val animatedBorderColor by animateColorAsState(targetValue = targetBorderColor, animationSpec = tween(500), label = "gaugeBorder")
 
     val shape = RoundedCornerShape(12.dp)
 
@@ -56,8 +69,8 @@ fun GaugeBarPowerWidget(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.06f))
-            .border(1.dp, Color.White.copy(alpha = 0.11f), shape)
+            .background(if (isCharging) Color(0xFF00E676).copy(alpha = 0.08f) else Color.White.copy(alpha = 0.06f))
+            .border(1.dp, animatedBorderColor, shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -75,12 +88,20 @@ fun GaugeBarPowerWidget(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Icon(
-            imageVector = if (isCharging) Icons.Rounded.BatteryChargingFull else Icons.Rounded.BatteryStd,
-            contentDescription = null,
-            tint = levelColor,
-            modifier = Modifier.size(13.dp)
-        )
+        AnimatedContent(
+            targetState = isCharging,
+            transitionSpec = {
+                (scaleIn(tween(400)) + fadeIn()) togetherWith (scaleOut(tween(400)) + fadeOut())
+            },
+            label = "gaugeIconTransition"
+        ) { charging ->
+            Icon(
+                imageVector = if (charging) Icons.Rounded.BatteryChargingFull else Icons.Rounded.BatteryStd,
+                contentDescription = null,
+                tint = animatedLevelColor,
+                modifier = Modifier.size(13.dp)
+            )
+        }
 
         Text(
             text = "${powerInfo.level}%",
@@ -103,11 +124,15 @@ fun GaugeBarPowerWidget(
                     .fillMaxHeight()
                     .fillMaxWidth(fraction = (level / 100f).coerceIn(0.06f, 1f))
                     .clip(RoundedCornerShape(2.dp))
-                    .background(levelColor)
+                    .background(animatedLevelColor)
             )
         }
 
-        if (isCharging) {
+        AnimatedVisibility(
+            visible = isCharging,
+            enter = fadeIn(tween(400)) + expandHorizontally(tween(400)),
+            exit = fadeOut(tween(300)) + shrinkHorizontally(tween(300))
+        ) {
             Text(
                 text = "CHARGING",
                 color = Color(0xFF00E676),

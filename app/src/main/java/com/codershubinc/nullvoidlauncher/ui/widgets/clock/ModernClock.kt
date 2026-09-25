@@ -4,8 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,17 +38,31 @@ fun ModernClock(
     batteryStatus: String,
     modifier: Modifier = Modifier,
     font: WidgetFont = WidgetFont.DEFAULT,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val dayStyle = userManager.getDayStyle()
-    val showStorage = userManager.getShowStorageWidget()
-    val storageStyle = userManager.getStorageStyle()
-    val storageFont = userManager.getStorageFont()
-    val showPower = userManager.getShowPowerWidget()
-    val powerStyle = userManager.getPowerStyle()
-    val powerFont = userManager.getPowerFont()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val showDay = remember(prefVersion) { userManager.getShowDayWidget() }
+    val dayStyle = remember(prefVersion) { userManager.getDayStyle() }
+    val showStorage = remember(prefVersion) { userManager.getShowStorageWidget() }
+    val storageStyle = remember(prefVersion) { userManager.getStorageStyle() }
+    val storageFont = remember(prefVersion) { userManager.getStorageFont() }
+    val showPower = remember(prefVersion) { userManager.getShowPowerWidget() }
+    val powerStyle = remember(prefVersion) { userManager.getPowerStyle() }
+    val powerFont = remember(prefVersion) { userManager.getPowerFont() }
     val isCharging = batteryStatus.equals("CHARGING", ignoreCase = true) || batteryStatus.equals("Charging", ignoreCase = true)
 
     val parts = timeText.split(":")
@@ -101,7 +114,16 @@ fun ModernClock(
                 modifier = Modifier.padding(start = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                DayWidget(dayText = dayText, style = dayStyle)
+                if (showDay) {
+                    DayWidget(
+                        dayText = dayText,
+                        style = dayStyle,
+                        onLongClick = {
+                            if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DAY)
+                            else onLongClick?.invoke()
+                        }
+                    )
+                }
 
                 Text(
                     text = "$monthName $dayOfMonth".uppercase(),
@@ -118,7 +140,10 @@ fun ModernClock(
                         font = powerFont,
                         previewInfo = PowerInfoState(level = batteryLevel, status = batteryStatus, isCharging = isCharging),
                         onTap = { PowerHelper.openBatterySettings(context) },
-                        onLongClick = onLongClick
+                        onLongClick = {
+                            if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.POWER)
+                            else onLongClick?.invoke()
+                        }
                     )
                 }
             }
@@ -130,7 +155,10 @@ fun ModernClock(
                 modifier = Modifier.padding(start = 2.dp),
                 style = storageStyle,
                 font = storageFont,
-                onLongClick = onLongClick
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.STORAGE)
+                    else onLongClick?.invoke()
+                }
             )
         }
     }

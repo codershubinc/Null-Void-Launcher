@@ -85,6 +85,7 @@ fun HomeScreen() {
     var isFocusModeOpen by remember { mutableStateOf(false) }
     var isAboutOpen by remember { mutableStateOf(false) }
     var isWidgetSettingsOpen by remember { mutableStateOf(false) }
+    var targetWidgetSubPage by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage?>(null) }
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
     var isBluetoothSettingsOpen by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(initialPage = 1) { 2 }
@@ -98,8 +99,9 @@ fun HomeScreen() {
         }
     }
 
-    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
-        if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
+    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || targetWidgetSubPage != null || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
+        if (targetWidgetSubPage != null) targetWidgetSubPage = null
+        else if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
         else if (isNetworkUsageOpen) isNetworkUsageOpen = false
         else if (isWidgetSettingsOpen) isWidgetSettingsOpen = false
         else if (isSettingsOpen) isSettingsOpen = false
@@ -162,7 +164,8 @@ fun HomeScreen() {
                     },
                     onOpenNetworkUsage = { isNetworkUsageOpen = true },
                     onOpenBluetoothSettings = { isBluetoothSettingsOpen = true },
-                    onOpenWidgetSettings = { isWidgetSettingsOpen = true }
+                    onOpenWidgetSettings = { isWidgetSettingsOpen = true },
+                    onOpenWidgetTweaks = { subPage -> targetWidgetSubPage = subPage }
                 )
             }
         }
@@ -242,14 +245,18 @@ fun HomeScreen() {
         }
 
         AnimatedVisibility(
-            visible = isWidgetSettingsOpen,
+            visible = isWidgetSettingsOpen || targetWidgetSubPage != null,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
             com.codershubinc.nullvoidlauncher.ui.settings.WidgetSettingsScreen(
                 userManager = userManager,
-                onClose = { isWidgetSettingsOpen = false }
+                initialPage = targetWidgetSubPage ?: com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.NONE,
+                onClose = {
+                    isWidgetSettingsOpen = false
+                    targetWidgetSubPage = null
+                }
             )
         }
 

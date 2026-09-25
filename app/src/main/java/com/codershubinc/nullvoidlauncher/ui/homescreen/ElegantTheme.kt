@@ -1,5 +1,6 @@
 package com.codershubinc.nullvoidlauncher.ui.homescreen
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,34 +29,47 @@ fun ElegantTheme(
     onOpenDrawer: () -> Unit,
     onOpenNetworkUsage: () -> Unit = {},
     onOpenBluetoothSettings: () -> Unit = {},
-    onOpenWidgetSettings: () -> Unit = {}
+    onOpenWidgetSettings: () -> Unit = {},
+    onOpenWidgetTweaks: ((com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage) -> Unit)? = null
 ) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp > 600
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
 
-    val showClock = userManager.getShowClockWidget()
-    val showFavorites = userManager.getShowFavoritesWidget()
-    val showMusic = userManager.getShowMusicWidget()
-    val showNetwork = userManager.getShowNetworkWidget()
-    val showPower = userManager.getShowPowerWidget()
-    val showBluetooth = userManager.getShowBluetoothWidget()
-    val showControlDeck = userManager.getShowControlDeck()
-    val musicStyle = userManager.getMusicStyle()
-    val favoritesStyle = userManager.getFavoritesStyle()
-    val clockStyle = userManager.getClockStyle()
-    val networkStyle = userManager.getNetworkStyle()
-    val powerStyle = userManager.getPowerStyle()
-    val bluetoothStyle = userManager.getBluetoothStyle()
-    val clockFont = userManager.getClockFont()
-    val networkFont = userManager.getNetworkFont()
-    val powerFont = userManager.getPowerFont()
-    val bluetoothFont = userManager.getBluetoothFont()
-    val favoritesFont = userManager.getFavoritesFont()
-    val musicFont = userManager.getMusicFont()
+    // Reactive preference version trigger for instant recomposition on tweaks change
+    var prefVersion by remember { mutableIntStateOf(0) }
+    DisposableEffect(userManager) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
 
-    val hideStatusBar = userManager.getHideStatusBar()
+    // Read values keyed on prefVersion so home screen instantly refreshes when tweaked
+    val showClock = remember(prefVersion) { userManager.getShowClockWidget() }
+    val showFavorites = remember(prefVersion) { userManager.getShowFavoritesWidget() }
+    val showMusic = remember(prefVersion) { userManager.getShowMusicWidget() }
+    val showNetwork = remember(prefVersion) { userManager.getShowNetworkWidget() }
+    val showBluetooth = remember(prefVersion) { userManager.getShowBluetoothWidget() }
+    val showControlDeck = remember(prefVersion) { userManager.getShowControlDeck() }
+
+    val musicStyle = remember(prefVersion) { userManager.getMusicStyle() }
+    val favoritesStyle = remember(prefVersion) { userManager.getFavoritesStyle() }
+    val clockStyle = remember(prefVersion) { userManager.getClockStyle() }
+    val networkStyle = remember(prefVersion) { userManager.getNetworkStyle() }
+    val bluetoothStyle = remember(prefVersion) { userManager.getBluetoothStyle() }
+
+    val clockFont = remember(prefVersion) { userManager.getClockFont() }
+    val networkFont = remember(prefVersion) { userManager.getNetworkFont() }
+    val bluetoothFont = remember(prefVersion) { userManager.getBluetoothFont() }
+    val favoritesFont = remember(prefVersion) { userManager.getFavoritesFont() }
+    val musicFont = remember(prefVersion) { userManager.getMusicFont() }
+
+    val hideStatusBar = remember(prefVersion) { userManager.getHideStatusBar() }
 
     // Theme Content Box
     Box(
@@ -86,7 +100,10 @@ fun ElegantTheme(
                             style = bluetoothStyle,
                             font = bluetoothFont,
                             onTap = { BluetoothHelper.openBluetoothSettings(context) },
-                            onLongClick = onOpenBluetoothSettings
+                            onLongClick = {
+                                if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.BLUETOOTH)
+                                else onOpenBluetoothSettings()
+                            }
                         )
                     }
                     if (showNetwork) {
@@ -94,11 +111,18 @@ fun ElegantTheme(
                             style = networkStyle,
                             font = networkFont,
                             onTap = { NetworkHelper.openWifiSettings(context) },
-                            onLongClick = onOpenNetworkUsage
+                            onLongClick = {
+                                if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.NETWORK)
+                                else onOpenNetworkUsage()
+                            }
                         )
                     }
                     if (showControlDeck) {
-                        com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget()
+                        com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget(
+                            onLongClick = {
+                                onOpenWidgetTweaks?.invoke(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.CONTROL_DECK)
+                            }
+                        )
                     }
                 }
             }
@@ -112,7 +136,11 @@ fun ElegantTheme(
                 ClockWidget(
                     style = clockStyle,
                     font = clockFont,
-                    onLongClick = onOpenWidgetSettings
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.CLOCK)
+                        else onOpenWidgetSettings()
+                    },
+                    onOpenWidgetTweaks = onOpenWidgetTweaks
                 )
             }
         }
@@ -127,7 +155,11 @@ fun ElegantTheme(
                 FavoritesWidget(
                     style = favoritesStyle,
                     font = favoritesFont,
-                    modifier = Modifier.wrapContentSize(Alignment.BottomEnd)
+                    modifier = Modifier.wrapContentSize(Alignment.BottomEnd),
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.FAVORITES)
+                        else onOpenWidgetSettings()
+                    }
                 )
             }
         }
@@ -140,7 +172,11 @@ fun ElegantTheme(
                 MusicWidget(
                     style = musicStyle,
                     font = musicFont,
-                    modifier = Modifier.padding(bottom = 36.dp, start = 24.dp, end = 24.dp)
+                    modifier = Modifier.padding(bottom = 36.dp, start = 24.dp, end = 24.dp),
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.MUSIC)
+                        else onOpenWidgetSettings()
+                    }
                 )
             }
         }

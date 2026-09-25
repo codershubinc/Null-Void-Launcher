@@ -17,9 +17,13 @@
 
 package com.codershubinc.nullvoidlauncher.ui.widgets
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.codershubinc.nullvoidlauncher.data.FavoritesStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
@@ -34,15 +38,43 @@ fun FavoritesWidget(
     style: FavoritesStyle = FavoritesStyle.ELEGANT,
     modifier: Modifier = Modifier,
     font: WidgetFont? = null,
-    previewApps: List<AppInfo>? = null
+    previewApps: List<AppInfo>? = null,
+    onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val effectiveFont = font ?: UserManager(context).getFavoritesFont()
+    val haptic = LocalHapticFeedback.current
+    val userManager = remember { UserManager(context) }
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getFavoritesFont() }
+
+    val gestureModifier = if (onLongClick != null) {
+        Modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onLongPress = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick.invoke()
+                }
+            )
+        }
+    } else Modifier
+
+    val finalModifier = modifier.then(gestureModifier)
 
     when (style) {
-        FavoritesStyle.ELEGANT -> ElegantFavoritesWidget(modifier, previewApps, font = effectiveFont)
-        FavoritesStyle.RETRO   -> RetroFavoritesWidget(modifier, previewApps, font = effectiveFont)
-        FavoritesStyle.GRID    -> GridFavoritesWidget(modifier, previewApps, font = effectiveFont)
-        FavoritesStyle.DOCK    -> DockFavoritesWidget(modifier, previewApps, font = effectiveFont)
+        FavoritesStyle.ELEGANT -> ElegantFavoritesWidget(finalModifier, previewApps, font = effectiveFont)
+        FavoritesStyle.RETRO   -> RetroFavoritesWidget(finalModifier, previewApps, font = effectiveFont)
+        FavoritesStyle.GRID    -> GridFavoritesWidget(finalModifier, previewApps, font = effectiveFont)
+        FavoritesStyle.DOCK    -> DockFavoritesWidget(finalModifier, previewApps, font = effectiveFont)
     }
 }

@@ -33,8 +33,20 @@ fun NetworkWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val effectiveFont = font ?: userManager.getNetworkFont()
-    val effectiveShowUsage = showUsage ?: userManager.getShowNetworkUsageOnWidget()
+    var prefVersion by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(userManager) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            prefVersion++
+        }
+        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    val effectiveFont = font ?: remember(prefVersion) { userManager.getNetworkFont() }
+    val effectiveShowUsage = showUsage ?: remember(prefVersion) { userManager.getShowNetworkUsageOnWidget() }
     var networkInfo by remember { mutableStateOf(previewInfo ?: NetworkInfoState()) }
 
     LaunchedEffect(previewInfo) {

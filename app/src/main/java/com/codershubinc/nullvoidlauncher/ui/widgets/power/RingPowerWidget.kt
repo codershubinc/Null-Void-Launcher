@@ -1,5 +1,7 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets.power
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,10 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -29,8 +32,8 @@ import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
 
 /**
- * RingPowerWidget — Smartwatch-inspired circular ring meter telemetry.
- * Integrates seamlessly alongside or beneath clock/date/day widgets.
+ * RingPowerWidget — Smartwatch-inspired circular ring meter telemetry
+ * with spinning / pulsing charging animations.
  */
 @Composable
 fun RingPowerWidget(
@@ -45,12 +48,22 @@ fun RingPowerWidget(
     val haptic = LocalHapticFeedback.current
     val isCharging = powerInfo.isCharging
     val level = powerInfo.level
-    val levelColor = when {
+
+    val targetLevelColor = when {
         isCharging -> Color(0xFF00E676)
         level <= 15 -> Color(0xFFFF5252)
         level <= 30 -> Color(0xFFFFB300)
         else -> Color(0xFF3D5AFE)
     }
+
+    val animatedLevelColor by animateColorAsState(
+        targetValue = targetLevelColor,
+        animationSpec = tween(500),
+        label = "ringBatteryLevelColor"
+    )
+
+    val targetBorderColor = if (isCharging) Color(0xFF00E676).copy(alpha = 0.35f) else Color.White.copy(alpha = 0.11f)
+    val animatedBorderColor by animateColorAsState(targetValue = targetBorderColor, animationSpec = tween(500), label = "ringBorder")
 
     val shape = RoundedCornerShape(14.dp)
 
@@ -58,8 +71,8 @@ fun RingPowerWidget(
         modifier = modifier
             .wrapContentWidth()
             .clip(shape)
-            .background(Color.White.copy(alpha = 0.06f))
-            .border(1.dp, Color.White.copy(alpha = 0.11f), shape)
+            .background(if (isCharging) Color(0xFF00E676).copy(alpha = 0.08f) else Color.White.copy(alpha = 0.06f))
+            .border(1.dp, animatedBorderColor, shape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
@@ -91,7 +104,7 @@ fun RingPowerWidget(
                 )
                 // Battery sweep arc
                 drawArc(
-                    color = levelColor,
+                    color = animatedLevelColor,
                     startAngle = -90f,
                     sweepAngle = (level / 100f) * 360f,
                     useCenter = false,
@@ -116,7 +129,11 @@ fun RingPowerWidget(
             fontFamily = font.toFontFamily()
         )
 
-        if (isCharging) {
+        AnimatedVisibility(
+            visible = isCharging,
+            enter = fadeIn(tween(400)) + expandHorizontally(tween(400)),
+            exit = fadeOut(tween(300)) + shrinkHorizontally(tween(300))
+        ) {
             Text(
                 text = "• Charging",
                 color = Color(0xFF00E676),
