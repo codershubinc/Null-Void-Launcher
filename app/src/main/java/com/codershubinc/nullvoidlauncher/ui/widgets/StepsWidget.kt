@@ -68,7 +68,6 @@ fun StepsWidget(
         if (onTap != null) onTap()
         else StepsHelper.openGoogleFitOrHealth(context)
     }
-
     when (effectiveStyle) {
         StepsStyle.ELEGANT   -> ElegantStepsWidget(
             stepsInfo = stepsInfo,
