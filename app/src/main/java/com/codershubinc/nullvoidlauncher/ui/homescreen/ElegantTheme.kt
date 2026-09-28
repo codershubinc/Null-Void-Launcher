@@ -119,11 +119,13 @@ fun ElegantTheme(
                     }
                     if (showControlDeck) {
                         val controlDeckStyle = remember(prefVersion) { userManager.getControlDeckStyle() }
+                        val controlDeckIconStyle = remember(prefVersion) { userManager.getControlDeckIconStyle() }
                         val controlDeckActions = remember(prefVersion) { userManager.getControlDeckActions() }
                         val controlDeckCompact = remember(prefVersion) { userManager.getControlDeckCompact() }
 
                         com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget(
                             overrideStyle = controlDeckStyle,
+                            overrideIconStyle = controlDeckIconStyle,
                             overrideActions = controlDeckActions,
                             overrideCompact = controlDeckCompact,
                             onLongClick = {

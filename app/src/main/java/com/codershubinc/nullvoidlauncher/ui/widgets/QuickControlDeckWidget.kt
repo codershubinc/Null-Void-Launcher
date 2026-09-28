@@ -27,14 +27,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.ControlDeckAction
+import com.codershubinc.nullvoidlauncher.data.ControlDeckIconStyle
 import com.codershubinc.nullvoidlauncher.data.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.ui.controls.ControlDeckIconProvider
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlHelper
 
 @Composable
 fun QuickControlDeckWidget(
     modifier: Modifier = Modifier,
     overrideStyle: ControlDeckStyle? = null,
+    overrideIconStyle: ControlDeckIconStyle? = null,
     overrideActions: Set<ControlDeckAction>? = null,
     overrideCompact: Boolean? = null,
     onLongClick: (() -> Unit)? = null
@@ -51,6 +54,7 @@ fun QuickControlDeckWidget(
     val deckState by ControlHelper.deckState.collectAsState()
 
     val style = overrideStyle ?: remember { userManager.getControlDeckStyle() }
+    val iconStyle = overrideIconStyle ?: remember { userManager.getControlDeckIconStyle() }
     val actions = overrideActions ?: remember { userManager.getControlDeckActions() }
     val isCompact = overrideCompact ?: remember { userManager.getControlDeckCompact() }
 
@@ -121,7 +125,7 @@ fun QuickControlDeckWidget(
         if (actions.contains(ControlDeckAction.TORCH)) {
             val isTorch = deckState.isTorchOn
             QuickControlButton(
-                icon = if (isTorch) Icons.Rounded.FlashlightOn else Icons.Rounded.FlashlightOff,
+                icon = ControlDeckIconProvider.getTorchIcon(iconStyle, isTorch),
                 label = if (style == ControlDeckStyle.CHIP) "Torch" else null,
                 isActive = isTorch,
                 activeColor = Color(0xFFFFD54F),
@@ -134,13 +138,11 @@ fun QuickControlDeckWidget(
         }
 
         if (actions.contains(ControlDeckAction.RINGER)) {
-            val (ringerIcon, ringerActive, ringerText) = when (deckState.ringerState) {
-                ControlHelper.RingerState.SILENT -> Triple(Icons.Rounded.VolumeOff, false, "Silent")
-                ControlHelper.RingerState.VIBRATE -> Triple(Icons.Rounded.Vibration, true, "Vibrate")
-                ControlHelper.RingerState.NORMAL -> Triple(Icons.Rounded.VolumeUp, true, "Ring")
-            }
+            val ringerState = deckState.ringerState
+            val ringerActive = ringerState != ControlHelper.RingerState.SILENT
+            val ringerText = ringerState.label
             QuickControlButton(
-                icon = ringerIcon,
+                icon = ControlDeckIconProvider.getRingerIcon(iconStyle, ringerState),
                 label = if (style == ControlDeckStyle.CHIP) ringerText else null,
                 isActive = ringerActive,
                 activeColor = Color(0xFF3D5AFE),
@@ -157,7 +159,7 @@ fun QuickControlDeckWidget(
         if (actions.contains(ControlDeckAction.ROTATION)) {
             val isAuto = deckState.isAutoRotate
             QuickControlButton(
-                icon = if (isAuto) Icons.Rounded.ScreenRotation else Icons.Rounded.ScreenLockRotation,
+                icon = ControlDeckIconProvider.getRotationIcon(iconStyle, isAuto),
                 label = if (style == ControlDeckStyle.CHIP) "Rotate" else null,
                 isActive = isAuto,
                 activeColor = Color(0xFF00E676),
@@ -174,7 +176,7 @@ fun QuickControlDeckWidget(
         if (actions.contains(ControlDeckAction.DND)) {
             val isDnd = deckState.isDndActive
             QuickControlButton(
-                icon = if (isDnd) Icons.Rounded.DoNotDisturbOn else Icons.Rounded.DoNotDisturbOff,
+                icon = ControlDeckIconProvider.getDndIcon(iconStyle, isDnd),
                 label = if (style == ControlDeckStyle.CHIP) "DND" else null,
                 isActive = isDnd,
                 activeColor = Color(0xFFFF5252),
@@ -190,7 +192,7 @@ fun QuickControlDeckWidget(
 
         if (actions.contains(ControlDeckAction.HOTSPOT)) {
             QuickControlButton(
-                icon = Icons.Rounded.WifiTethering,
+                icon = ControlDeckIconProvider.getHotspotIcon(iconStyle),
                 label = if (style == ControlDeckStyle.CHIP) "Hotspot" else null,
                 isActive = false,
                 activeColor = Color(0xFF00E5FF),
@@ -205,7 +207,7 @@ fun QuickControlDeckWidget(
         if (actions.contains(ControlDeckAction.BLUETOOTH)) {
             val isBt = deckState.isBluetoothEnabled
             QuickControlButton(
-                icon = if (isBt) Icons.Rounded.Bluetooth else Icons.Rounded.BluetoothDisabled,
+                icon = ControlDeckIconProvider.getBluetoothIcon(iconStyle, isBt),
                 label = if (style == ControlDeckStyle.CHIP) "BT" else null,
                 isActive = isBt,
                 activeColor = Color(0xFF448AFF),
@@ -220,7 +222,7 @@ fun QuickControlDeckWidget(
         if (actions.contains(ControlDeckAction.WIFI)) {
             val isWifi = deckState.isWifiEnabled
             QuickControlButton(
-                icon = if (isWifi) Icons.Rounded.Wifi else Icons.Rounded.WifiOff,
+                icon = ControlDeckIconProvider.getWifiIcon(iconStyle, isWifi),
                 label = if (style == ControlDeckStyle.CHIP) "Wi-Fi" else null,
                 isActive = isWifi,
                 activeColor = Color(0xFF69F0AE),

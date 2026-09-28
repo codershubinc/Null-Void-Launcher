@@ -13,7 +13,7 @@ object Constants {
     }
 
     object App {
-        const val VERSION = "v0.1.1"
+        const val VERSION = "v0.1.2"
         const val VERSION_SUFFIX = "stable"
     }
 

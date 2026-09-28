@@ -37,6 +37,7 @@ enum class DoubleTapAction { CYCLE_WALLPAPER, NONE }
 enum class IconStyle { DEFAULT, MONOCHROME, MINIMAL_OUTLINE }
 enum class DrawerStyle { SPOTLIGHT, ELEGANT, GRID, TERMINAL, MINIMAL }
 enum class ControlDeckStyle { GLASS, MINIMAL, OUTLINE, SOLID, CHIP }
+enum class ControlDeckIconStyle { ROUNDED, OUTLINED, SHARP, TWO_TONE }
 enum class ControlDeckAction { TORCH, RINGER, ROTATION, HOTSPOT, DND, BLUETOOTH, WIFI }
 
 data class LauncherThemeConfig(
@@ -180,6 +181,9 @@ class UserManager(context: Context) {
 
     fun saveControlDeckStyle(v: ControlDeckStyle) = setEnum("control_deck_style", v)
     fun getControlDeckStyle() = getEnum("control_deck_style", ControlDeckStyle.GLASS)
+
+    fun saveControlDeckIconStyle(v: ControlDeckIconStyle) = setEnum("control_deck_icon_style", v)
+    fun getControlDeckIconStyle() = getEnum("control_deck_icon_style", ControlDeckIconStyle.ROUNDED)
 
     fun saveControlDeckCompact(v: Boolean) = setBool("control_deck_compact", v)
     fun getControlDeckCompact() = getBool("control_deck_compact", false)

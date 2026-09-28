@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.ControlDeckAction
+import com.codershubinc.nullvoidlauncher.data.ControlDeckIconStyle
 import com.codershubinc.nullvoidlauncher.data.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
@@ -38,6 +39,7 @@ fun ControlDeckWidgetTweaksPage(
     val context = LocalContext.current
     var showControlDeck by remember { mutableStateOf(userManager.getShowControlDeck()) }
     var deckStyle by remember { mutableStateOf(userManager.getControlDeckStyle()) }
+    var deckIconStyle by remember { mutableStateOf(userManager.getControlDeckIconStyle()) }
     var isCompact by remember { mutableStateOf(userManager.getControlDeckCompact()) }
     var enabledActions by remember { mutableStateOf(userManager.getControlDeckActions()) }
 
@@ -90,6 +92,7 @@ fun ControlDeckWidgetTweaksPage(
             ) {
                 QuickControlDeckWidget(
                     overrideStyle = deckStyle,
+                    overrideIconStyle = deckIconStyle,
                     overrideActions = enabledActions,
                     overrideCompact = isCompact
                 )
@@ -128,6 +131,42 @@ fun ControlDeckWidgetTweaksPage(
                         ControlDeckStyle.OUTLINE -> "Outline (Border)"
                         ControlDeckStyle.SOLID -> "Solid (Dark)"
                         ControlDeckStyle.CHIP -> "Chip (With Text)"
+                    }
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 4. Icon Style Selector
+        ModernCard {
+            Text(
+                text = "Control Icon Style",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Select icon glyph geometry across all deck buttons",
+                color = Color.White.copy(alpha = 0.5f),
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            WidgetStyleSelector(
+                title = "Icon Glyph Style",
+                styles = ControlDeckIconStyle.entries,
+                selectedStyle = deckIconStyle,
+                onStyleSelected = {
+                    deckIconStyle = it
+                    userManager.saveControlDeckIconStyle(it)
+                },
+                getLabel = { iconStyle ->
+                    when (iconStyle) {
+                        ControlDeckIconStyle.ROUNDED -> "Rounded (Smooth)"
+                        ControlDeckIconStyle.OUTLINED -> "Outlined (Clean)"
+                        ControlDeckIconStyle.SHARP -> "Sharp (Geometric)"
+                        ControlDeckIconStyle.TWO_TONE -> "Two-Tone (Duo)"
                     }
                 }
             )

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2026-09-28 — Health Connect Steps Sync & Quick Control Deck Overhaul
+
+The **v0.1.2** release introduces Google Fit & Health Connect integration for native step counter telemetry with automatic sensor fallback, a revamped Quick Control Deck with real-time hardware synchronization, customizable icon styles, and granular widget tweaks.
+
+### Added
+- **Health Connect & Google Fit Steps Telemetry**:
+  - Full Android Health Connect client integration (`androidx.health.connect:connect-client:1.1.0`).
+  - Native step count retrieval directly matching Google Fit records with package-level source filtering (`com.google.android.apps.fitness`).
+  - Dual Sync Engine: Automatic fallback to local hardware step detector / pedometer if Health Connect is unavailable or reports 0 records, preventing steps from zeroing out.
+  - Dedicated Steps Widget Tweaks page with live Health Connect & sensor fetch logs, manual step calibration, and custom daily goal settings.
+  - 6 distinctive visual step styles: `ELEGANT`, `MINIMAL`, `RING`, `GAUGE_BAR`, `TERMINAL`, and `RETRO`.
+- **Quick Control Deck Overhaul**:
+  - Real-time hardware & system state synchronization:
+    - **Flashlight / Torch**: Integrated Android `CameraManager.TorchCallback` so torch state updates dynamically even when toggled from the system notification shade.
+    - **Ringer & Sound Modes**: Synchronized via `RINGER_MODE_CHANGED_ACTION` with safe handling for Android DND policies (Normal ➔ Vibrate ➔ Silent). Long-press opens Sound Settings directly.
+    - **Auto-Rotate**: Real-time `ContentObserver` on system accelerometer rotation settings.
+    - **Do Not Disturb (DND)**: Interactive priority interruption toggle with notification policy awareness.
+    - **Wi-Fi & Bluetooth**: State-tracking indicators with instant shortcut launchers.
+    - **Hotspot / Tethering**: Direct shortcut to wireless tethering settings.
+  - **Multiple Icon Glyph Styles**:
+    - Select between `Rounded (Smooth)`, `Outlined (Clean)`, `Sharp (Geometric)`, and `Two-Tone (Duo)` icon sets across all control buttons.
+  - **5 Deck Aesthetic Styles**:
+    - Choose between `Glass (Frosted)`, `Minimal (Floating)`, `Outline (Border)`, `Solid (Dark)`, and `Chip (With Text)` containers.
+  - **Granular Toggle Management**:
+    - Reorderable / toggleable actions: Enable or disable any combination of the 7 individual quick controls.
+    - Compact size mode switch for smaller, minimal home screen footprints.
+    - Interactive live preview in settings with instant home screen reflection.
+
+### Changed & Improved
+- Fixed zero-record overwrite issue where empty Health Connect query responses previously cleared hardware sensor step accumulators.
+- Added comprehensive in-app sync and fetch diagnostic viewer for real-time sensor debugging.
+- Upgraded Gradle dependencies and aligned SDK targeting with compileSdk 37.
+
+---
+
 ## [0.1.1] - 2026-09-22 — Maintenance & Feature Release
 
 The **v0.1.1** release brings essential UI de-cluttering, streamlined power & battery telemetry, enhanced drawer search features, fresh app iconography, and removal of intrusive permissions for a smoother out-of-the-box user experience.
