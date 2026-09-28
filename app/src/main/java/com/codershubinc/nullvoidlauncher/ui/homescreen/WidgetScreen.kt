@@ -17,11 +17,16 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.toConfig
 import com.codershubinc.nullvoidlauncher.data.wallpaper.CloudWallpaperEngine
 
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.unit.dp
+import kotlin.math.abs
+
 @Composable
 fun WidgetScreen(
     isDrawerOpen: Boolean,
     theme: LauncherTheme,
     onOpenDrawer: () -> Unit,
+    onOpenGithubProfile: () -> Unit = {},
     onWallpaperChanged: (() -> Unit)? = null,
     onOpenNetworkUsage: () -> Unit = {},
     onOpenBluetoothSettings: () -> Unit = {},
@@ -52,12 +57,31 @@ fun WidgetScreen(
             }
             .pointerInput(isDrawerOpen) {
                 if (!isDrawerOpen) {
-                    detectVerticalDragGestures { change, dragAmount ->
-                        change.consume()
-                        if (dragAmount < -20) {
-                            onOpenDrawer()
+                    var totalX = 0f
+                    var totalY = 0f
+                    val swipeThreshold = 50.dp.toPx()
+
+                    detectDragGestures(
+                        onDragStart = {
+                            totalX = 0f
+                            totalY = 0f
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            totalX += dragAmount.x
+                            totalY += dragAmount.y
+                        },
+                        onDragEnd = {
+                            // Check if vertical upward swipe for App Drawer
+                            if (totalY < -swipeThreshold && abs(totalY) > abs(totalX) * 1.1f) {
+                                onOpenDrawer()
+                            }
+                            // Check if deliberate right swipe for GitHub Profile
+                            else if (totalX > swipeThreshold && abs(totalX) > abs(totalY) * 1.1f) {
+                                onOpenGithubProfile()
+                            }
                         }
-                    }
+                    )
                 }
             }
     ) {

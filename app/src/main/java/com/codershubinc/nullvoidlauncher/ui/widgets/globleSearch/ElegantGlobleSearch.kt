@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 fun ElegantSearchScreen(
     allApps: List<AppInfo>,
     userManager: UserManager,
+    font: com.codershubinc.nullvoidlauncher.data.WidgetFont = com.codershubinc.nullvoidlauncher.data.WidgetFont.SERIF,
     onClose: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -443,121 +444,15 @@ fun ElegantSearchScreen(
 
         // App Long-Press Action Modal BottomSheet
         if (selectedAppForMenu != null) {
-            val app = selectedAppForMenu!!
-            val appKey = app.componentName.flattenToString()
-            val isFav = favoritesList.contains(appKey)
-            val isHid = hiddenApps.contains(appKey)
-
-            AlertDialog(
-                onDismissRequest = { selectedAppForMenu = null },
-                containerColor = Color(0xFF141418),
-                shape = RoundedCornerShape(24.dp),
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(10.dp))
-                                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            LazyAppIcon(app, context)
-                        }
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column {
-                            Text(
-                                text = app.label,
-                                color = Color.White,
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = app.packageName,
-                                color = Color.White.copy(alpha = 0.4f),
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
-                },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // App Info
-                        AppMenuActionItem(
-                            icon = Icons.Rounded.Info,
-                            title = "App Info",
-                            subtitle = "System permissions, storage & battery"
-                        ) {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.parse("package:${app.packageName}")
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(intent)
-                            selectedAppForMenu = null
-                        }
-
-                        // Toggle Favorites
-                        AppMenuActionItem(
-                            icon = if (isFav) Icons.Rounded.StarBorder else Icons.Rounded.Star,
-                            title = if (isFav) "Remove from Favorites" else "Add to Favorites",
-                            subtitle = if (isFav) "Remove from quick launcher dock" else "Pin to quick launcher dock"
-                        ) {
-                            val current = favoritesList.toMutableList()
-                            if (isFav) {
-                                current.remove(appKey)
-                            } else {
-                                if (!current.contains(appKey)) current.add(appKey)
-                            }
-                            userManager.saveFavorites(current)
-                            favoritesList = current
-                            selectedAppForMenu = null
-                        }
-
-                        // Toggle Hide App
-                        AppMenuActionItem(
-                            icon = if (isHid) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
-                            title = if (isHid) "Unhide Application" else "Hide Application",
-                            subtitle = if (isHid) "Restore app to main drawer" else "Hide app from drawer search"
-                        ) {
-                            userManager.toggleHiddenApp(appKey)
-                            hiddenApps = userManager.getHiddenApps()
-                            selectedAppForMenu = null
-                        }
-
-                        // Uninstall App
-                        AppMenuActionItem(
-                            icon = Icons.Rounded.DeleteOutline,
-                            title = "Uninstall",
-                            subtitle = "Remove app from device",
-                            tint = Color(0xFFFF5252)
-                        ) {
-                            val uninstallIntent = Intent(Intent.ACTION_DELETE).apply {
-                                data = Uri.parse("package:${app.packageName}")
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(uninstallIntent)
-                            selectedAppForMenu = null
-                        }
-                    }
-                },
-                confirmButton = {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { selectedAppForMenu = null }
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
+            com.codershubinc.nullvoidlauncher.ui.drawer.AppMenuDialog(
+                app = selectedAppForMenu!!,
+                context = context,
+                userManager = userManager,
+                favoritesList = favoritesList,
+                hiddenApps = hiddenApps,
+                onFavoritesChanged = { favoritesList = it },
+                onHiddenAppsChanged = { hiddenApps = it },
+                onDismiss = { selectedAppForMenu = null }
             )
         }
     }

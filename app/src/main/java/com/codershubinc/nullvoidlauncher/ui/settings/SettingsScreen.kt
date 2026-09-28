@@ -51,6 +51,7 @@ fun SettingsScreen(
     onWallpaperBlurColorUpdated: (Int) -> Unit,
     onWallpaperBlurColorAlphaUpdated: (Float) -> Unit,
     onOpenWidgetSettings: () -> Unit,
+    onOpenDrawerTweaks: () -> Unit = {},
     onOpenAbout: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -250,6 +251,20 @@ fun SettingsScreen(
                                         selectedIconStyle = styles[nextIdx]
                                         userManager.saveIconStyle(selectedIconStyle)
                                     },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = Icons.Rounded.Search,
+                                    label = "App Drawer Theme",
+                                    value = when (userManager.getDrawerStyle()) {
+                                        DrawerStyle.SPOTLIGHT -> "Spotlight Search"
+                                        DrawerStyle.ELEGANT -> "Elegant (Serif & Gold)"
+                                        DrawerStyle.GRID -> "App Grid"
+                                        DrawerStyle.TERMINAL -> "Terminal (CLI)"
+                                        DrawerStyle.MINIMAL -> "Minimal Text"
+                                    },
+                                    onClick = onOpenDrawerTweaks,
                                     showChevron = true
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))

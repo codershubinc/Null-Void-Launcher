@@ -50,7 +50,7 @@ fun MinimalNetworkWidget(
 
     Row(
         modifier = modifier
-            .width(230.dp) // Fixed width container eliminates jitter
+            .width(230.dp)
             .clip(shape)
             .background(Color.White.copy(alpha = 0.06f))
             .border(1.dp, Color.White.copy(alpha = 0.12f), shape)

@@ -118,7 +118,14 @@ fun ElegantTheme(
                         )
                     }
                     if (showControlDeck) {
+                        val controlDeckStyle = remember(prefVersion) { userManager.getControlDeckStyle() }
+                        val controlDeckActions = remember(prefVersion) { userManager.getControlDeckActions() }
+                        val controlDeckCompact = remember(prefVersion) { userManager.getControlDeckCompact() }
+
                         com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget(
+                            overrideStyle = controlDeckStyle,
+                            overrideActions = controlDeckActions,
+                            overrideCompact = controlDeckCompact,
                             onLongClick = {
                                 onOpenWidgetTweaks?.invoke(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.CONTROL_DECK)
                             }

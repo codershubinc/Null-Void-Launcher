@@ -27,12 +27,17 @@ enum class NetworkStyle { ELEGANT, MINIMAL, TERMINAL, RETRO }
 enum class PowerStyle { ELEGANT, MINIMAL, GAUGE_BAR, RING, TERMINAL, RETRO }
 enum class BluetoothStyle { ELEGANT, MINIMAL, COMPACT, GLASS, TERMINAL, RETRO }
 enum class WeatherStyle { ELEGANT, MINIMAL, TERMINAL, RETRO }
+enum class StepsStyle { ELEGANT, MINIMAL, RING, GAUGE_BAR, TERMINAL, RETRO }
+enum class StepSyncMode { AUTO, HARDWARE_SENSOR, HEALTH_CONNECT }
 enum class LauncherTheme { ELEGANT }
 enum class MusicStyle { ELEGANT, RETRO, MINIMAL, VINYL, NEON }
 enum class FavoritesStyle { ELEGANT, RETRO, GRID, DOCK }
 enum class BottomBarStyle { PIXEL, NONE }
 enum class DoubleTapAction { CYCLE_WALLPAPER, NONE }
 enum class IconStyle { DEFAULT, MONOCHROME, MINIMAL_OUTLINE }
+enum class DrawerStyle { SPOTLIGHT, ELEGANT, GRID, TERMINAL, MINIMAL }
+enum class ControlDeckStyle { GLASS, MINIMAL, OUTLINE, SOLID, CHIP }
+enum class ControlDeckAction { TORCH, RINGER, ROTATION, HOTSPOT, DND, BLUETOOTH, WIFI }
 
 data class LauncherThemeConfig(
     val clockStyle: ClockStyle,
@@ -146,8 +151,69 @@ class UserManager(context: Context) {
     fun saveShowWeatherWidget(v: Boolean) = setBool("show_weather_widget", v)
     fun getShowWeatherWidget() = getBool("show_weather_widget", true)
 
+    fun saveShowStepsWidget(v: Boolean) = setBool("show_steps_widget", v)
+    fun getShowStepsWidget() = getBool("show_steps_widget", true)
+
+    fun saveStepsStyle(v: StepsStyle) = setEnum("steps_style", v)
+    fun getStepsStyle() = getEnum("steps_style", StepsStyle.ELEGANT)
+
+    fun saveStepsDailyGoal(v: Int) = setI("steps_daily_goal", v)
+    fun getStepsDailyGoal() = getI("steps_daily_goal", 6000)
+
+    fun saveStepSyncMode(v: StepSyncMode) = setEnum("step_sync_mode", v)
+    fun getStepSyncMode() = getEnum("step_sync_mode", StepSyncMode.AUTO)
+
+    fun saveStepsManualOffset(v: Int) = setI("steps_manual_offset", v)
+    fun getStepsManualOffset() = getI("steps_manual_offset", 0)
+
+    fun saveHealthConnectPromptDismissed(v: Boolean) = setBool("health_connect_prompt_dismissed", v)
+    fun getHealthConnectPromptDismissed() = getBool("health_connect_prompt_dismissed", false)
+
+    fun saveDrawerStyle(v: DrawerStyle) = setEnum("drawer_style", v)
+    fun getDrawerStyle() = getEnum("drawer_style", DrawerStyle.SPOTLIGHT)
+
+    fun saveDrawerFont(v: WidgetFont) = setEnum("drawer_font", v)
+    fun getDrawerFont() = getEnum("drawer_font", WidgetFont.DEFAULT)
+
     fun saveShowControlDeck(v: Boolean) = setBool("show_control_deck", v)
     fun getShowControlDeck() = getBool("show_control_deck", true)
+
+    fun saveControlDeckStyle(v: ControlDeckStyle) = setEnum("control_deck_style", v)
+    fun getControlDeckStyle() = getEnum("control_deck_style", ControlDeckStyle.GLASS)
+
+    fun saveControlDeckCompact(v: Boolean) = setBool("control_deck_compact", v)
+    fun getControlDeckCompact() = getBool("control_deck_compact", false)
+
+    fun saveControlDeckActions(actions: Set<ControlDeckAction>) {
+        val strSet = actions.map { it.name }.toSet()
+        prefs.edit { putStringSet("control_deck_enabled_actions", strSet) }
+    }
+
+    fun getControlDeckActions(): Set<ControlDeckAction> {
+        val strSet = prefs.getStringSet("control_deck_enabled_actions", null)
+        return if (strSet != null) {
+            strSet.mapNotNull {
+                try { ControlDeckAction.valueOf(it) } catch (_: Exception) { null }
+            }.toSet()
+        } else {
+            setOf(
+                ControlDeckAction.TORCH,
+                ControlDeckAction.RINGER,
+                ControlDeckAction.ROTATION,
+                ControlDeckAction.HOTSPOT
+            )
+        }
+    }
+
+    fun isControlDeckActionEnabled(action: ControlDeckAction): Boolean {
+        return getControlDeckActions().contains(action)
+    }
+
+    fun setControlDeckActionEnabled(action: ControlDeckAction, enabled: Boolean) {
+        val current = getControlDeckActions().toMutableSet()
+        if (enabled) current.add(action) else current.remove(action)
+        saveControlDeckActions(current)
+    }
 
     fun saveShowNetworkUsageOnWidget(v: Boolean) = setBool("show_network_usage_on_widget", v)
     fun getShowNetworkUsageOnWidget() = getBool("show_network_usage_on_widget", true)
@@ -185,6 +251,9 @@ class UserManager(context: Context) {
 
     fun saveWeatherFont(v: WidgetFont) = setEnum("weather_font", v)
     fun getWeatherFont() = getEnum("weather_font", WidgetFont.DEFAULT)
+
+    fun saveStepsFont(v: WidgetFont) = setEnum("steps_font", v)
+    fun getStepsFont() = getEnum("steps_font", WidgetFont.DEFAULT)
 
     // ── Widget Appearance ────────────────────────────────────────────────────────
     fun saveWidgetCornerRadius(v: Float) = setFlt("widget_corner_radius", v)

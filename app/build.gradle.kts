@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
     implementation(libs.org.json)
+    implementation(libs.androidx.health.connect)
 
     implementation(libs.coil.compose)
     implementation(libs.androidx.compose.material.icons.extended)

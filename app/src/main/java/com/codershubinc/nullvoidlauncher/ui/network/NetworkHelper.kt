@@ -12,6 +12,7 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -61,6 +62,7 @@ data class NetworkInfoState(
             ssid != "Wi-Fi" -> ssid
             else -> ""
         }
+
 
     val hasDisplaySsid: Boolean
         get() = displaySsid.isNotBlank()

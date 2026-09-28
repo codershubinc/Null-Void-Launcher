@@ -29,7 +29,7 @@ import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 import com.codershubinc.nullvoidlauncher.ui.focus.FocusModeScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
-import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
+import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawer
 import com.codershubinc.nullvoidlauncher.ui.about.AboutScreen
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
 import kotlinx.coroutines.Dispatchers
@@ -108,6 +108,11 @@ fun HomeScreen() {
         else if (isFocusModeOpen) isFocusModeOpen = false
         else if (isAboutOpen) isAboutOpen = false
         else if (isDrawerOpen) isDrawerOpen = false
+        else if (pagerState.currentPage == 0) {
+            scope.launch {
+                pagerState.animateScrollToPage(1)
+            }
+        }
     }
 
     Box(modifier = Modifier
@@ -139,6 +144,7 @@ fun HomeScreen() {
 
         HorizontalPager(
             state = pagerState,
+            userScrollEnabled = pagerState.currentPage == 0,
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
@@ -158,6 +164,11 @@ fun HomeScreen() {
                     isDrawerOpen = isDrawerOpen,
                     theme = currentTheme,
                     onOpenDrawer = { isDrawerOpen = true },
+                    onOpenGithubProfile = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }
+                    },
                     onWallpaperChanged = {
                         wallpaperUri = userManager.getWallpaperUri()
                         showWallpaper = userManager.getShowWallpaper()
@@ -176,7 +187,7 @@ fun HomeScreen() {
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
-            ElegantSearchScreen(
+            AppDrawer(
                 allApps = allApps,
                 userManager = userManager,
                 onClose = { isDrawerOpen = false }
@@ -218,6 +229,9 @@ fun HomeScreen() {
                     wallpaperBlurColorAlpha = alpha
                 },
                 onOpenWidgetSettings = { isWidgetSettingsOpen = true },
+                onOpenDrawerTweaks = {
+                    targetWidgetSubPage = com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DRAWER
+                },
                 onOpenAbout = { isAboutOpen = true },
                 onClose = { isSettingsOpen = false }
             )

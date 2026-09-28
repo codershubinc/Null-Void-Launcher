@@ -27,6 +27,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothHelper
 import com.codershubinc.nullvoidlauncher.ui.homescreen.HomeScreen
@@ -39,11 +41,29 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { /* Handled */ }
 
+    private val activityRecognitionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.registerStepSensor(this)
+            com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
+        }
+    }
+
+    private val healthConnectLauncher = registerForActivityResult(
+        androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+    ) {
+        com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         applySystemBarsVisibility()
         checkBluetoothPermission()
+        checkStepsPermission()
+        com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.registerStepSensor(this)
+        com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
         setContent {
             NullVoidLauncherTheme {
                 HomeScreen()
@@ -60,9 +80,38 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun checkStepsPermission() {
+        if (userManager.getShowStepsWidget()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                !com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.hasActivityRecognitionPermission(this)
+            ) {
+                activityRecognitionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+            } else {
+                com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.registerStepSensor(this)
+                com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
+            }
+
+            // If Health Connect is available on the device, prompt to connect Google Fit / Health Connect once
+            if (com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.isHealthConnectAvailable(this) &&
+                !userManager.getHealthConnectPromptDismissed()
+            ) {
+                lifecycleScope.launch {
+                    val hasPerm = com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.hasHealthConnectPermission(this@MainActivity)
+                    if (!hasPerm) {
+                        userManager.saveHealthConnectPromptDismissed(true)
+                        healthConnectLauncher.launch(com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.HEALTH_CONNECT_PERMISSIONS)
+                    }
+                }
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         applySystemBarsVisibility()
+        if (userManager.getShowStepsWidget()) {
+            com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

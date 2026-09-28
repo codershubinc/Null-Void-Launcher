@@ -71,6 +71,9 @@ fun ElegantClock(
     val showWeather = remember(prefVersion) { userManager.getShowWeatherWidget() }
     val weatherStyle = remember(prefVersion) { userManager.getWeatherStyle() }
     val weatherFont = remember(prefVersion) { userManager.getWeatherFont() }
+    val showSteps = remember(prefVersion) { userManager.getShowStepsWidget() }
+    val stepsStyle = remember(prefVersion) { userManager.getStepsStyle() }
+    val stepsFont = remember(prefVersion) { userManager.getStepsFont() }
     val isCharging = batteryStatus == "Charging"
 
     Column(
@@ -115,6 +118,18 @@ fun ElegantClock(
                     font = weatherFont,
                     onLongClick = {
                         if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.WEATHER)
+                        else onLongClick?.invoke()
+                    }
+                )
+            }
+
+            // Steps / Google Fit Widget
+            if (showSteps) {
+                com.codershubinc.nullvoidlauncher.ui.widgets.StepsWidget(
+                    style = stepsStyle,
+                    font = stepsFont,
+                    onLongClick = {
+                        if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.STEPS)
                         else onLongClick?.invoke()
                     }
                 )

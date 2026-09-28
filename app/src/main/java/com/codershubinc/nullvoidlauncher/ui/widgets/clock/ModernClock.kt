@@ -63,6 +63,9 @@ fun ModernClock(
     val showPower = remember(prefVersion) { userManager.getShowPowerWidget() }
     val powerStyle = remember(prefVersion) { userManager.getPowerStyle() }
     val powerFont = remember(prefVersion) { userManager.getPowerFont() }
+    val showSteps = remember(prefVersion) { userManager.getShowStepsWidget() }
+    val stepsStyle = remember(prefVersion) { userManager.getStepsStyle() }
+    val stepsFont = remember(prefVersion) { userManager.getStepsFont() }
     val isCharging = batteryStatus.equals("CHARGING", ignoreCase = true) || batteryStatus.equals("Charging", ignoreCase = true)
 
     val parts = timeText.split(":")
@@ -147,6 +150,19 @@ fun ModernClock(
                     )
                 }
             }
+        }
+
+        if (showSteps) {
+            Spacer(modifier = Modifier.height(14.dp))
+            com.codershubinc.nullvoidlauncher.ui.widgets.StepsWidget(
+                modifier = Modifier.padding(start = 2.dp),
+                style = stepsStyle,
+                font = stepsFont,
+                onLongClick = {
+                    if (onOpenWidgetTweaks != null) onOpenWidgetTweaks(com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.STEPS)
+                    else onLongClick?.invoke()
+                }
+            )
         }
 
         if (showStorage) {

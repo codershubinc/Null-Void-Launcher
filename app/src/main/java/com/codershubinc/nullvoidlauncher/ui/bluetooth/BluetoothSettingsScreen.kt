@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.BluetoothStyle
@@ -40,6 +41,8 @@ import com.codershubinc.nullvoidlauncher.ui.widgets.BluetoothWidget
  * Allows users to choose which device to display, toggle auto-hide when disconnected,
  * and customize widget style and typography.
  */
+
+
 @Composable
 fun BluetoothSettingsScreen(
     userManager: UserManager,
@@ -70,6 +73,67 @@ fun BluetoothSettingsScreen(
         }
     }
 
+    fun saveAndClose() {
+        userManager.saveShowBluetoothWidget(showBluetooth)
+        userManager.saveBluetoothShowOnlyIfConnected(onlyConnected)
+        userManager.savePreferredBluetoothDevice(preferredAddress)
+        userManager.saveBluetoothStyle(style)
+        userManager.saveBluetoothFont(font)
+        onClose()
+    }
+
+    BluetoothSettingsContent(
+        showBluetooth = showBluetooth,
+        onShowBluetoothChange = {
+            showBluetooth = it
+            userManager.saveShowBluetoothWidget(it)
+        },
+        onlyConnected = onlyConnected,
+        onOnlyConnectedChange = {
+            onlyConnected = it
+            userManager.saveBluetoothShowOnlyIfConnected(it)
+        },
+        preferredAddress = preferredAddress,
+        onPreferredAddressChange = {
+            preferredAddress = it
+            userManager.savePreferredBluetoothDevice(it)
+        },
+        style = style,
+        onStyleChange = { style = it },
+        font = font,
+        onFontChange = { font = it },
+        bluetoothInfo = bluetoothInfo,
+        onRequestPermission = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+        },
+        onRefreshInfo = { refreshInfo() },
+        onOpenAppSettings = { BluetoothHelper.openAppSettings(context) },
+        onOpenBluetoothSettings = { BluetoothHelper.openBluetoothSettings(context) },
+        onClose = { saveAndClose() }
+    )
+}
+
+@Composable
+fun BluetoothSettingsContent(
+    showBluetooth: Boolean,
+    onShowBluetoothChange: (Boolean) -> Unit,
+    onlyConnected: Boolean,
+    onOnlyConnectedChange: (Boolean) -> Unit,
+    preferredAddress: String,
+    onPreferredAddressChange: (String) -> Unit,
+    style: BluetoothStyle,
+    onStyleChange: (BluetoothStyle) -> Unit,
+    font: WidgetFont,
+    onFontChange: (WidgetFont) -> Unit,
+    bluetoothInfo: BluetoothInfoState,
+    onRequestPermission: () -> Unit,
+    onRefreshInfo: () -> Unit,
+    onOpenAppSettings: () -> Unit,
+    onOpenBluetoothSettings: () -> Unit,
+    onClose: () -> Unit
+) {
     val previewInfo = remember(bluetoothInfo, preferredAddress) {
         if (bluetoothInfo.connectedDevices.isNotEmpty()) {
             bluetoothInfo
@@ -101,15 +165,6 @@ fun BluetoothSettingsScreen(
     val accent = Color(0xFF00E5FF)
     val scrollState = rememberScrollState()
 
-    fun saveAndClose() {
-        userManager.saveShowBluetoothWidget(showBluetooth)
-        userManager.saveBluetoothShowOnlyIfConnected(onlyConnected)
-        userManager.savePreferredBluetoothDevice(preferredAddress)
-        userManager.saveBluetoothStyle(style)
-        userManager.saveBluetoothFont(font)
-        onClose()
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +179,7 @@ fun BluetoothSettingsScreen(
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(Color.White.copy(alpha = 0.05f))
-                .clickable { saveAndClose() },
+                .clickable { onClose() },
             contentAlignment = Alignment.Center
         ) {
             Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -169,7 +224,7 @@ fun BluetoothSettingsScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(if (selected) accent else Color.White.copy(alpha = 0.1f))
-                            .clickable { style = s }
+                            .clickable { onStyleChange(s) }
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                     ) {
                         Text(
@@ -194,7 +249,7 @@ fun BluetoothSettingsScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(if (selected) accent else Color.White.copy(alpha = 0.1f))
-                            .clickable { font = f }
+                            .clickable { onFontChange(f) }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Text(
@@ -255,11 +310,7 @@ fun BluetoothSettingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-                            }
-                        },
+                        onClick = onRequestPermission,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = accent),
                         shape = RoundedCornerShape(10.dp)
@@ -268,7 +319,7 @@ fun BluetoothSettingsScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { BluetoothHelper.openAppSettings(context) },
+                        onClick = onOpenAppSettings,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
@@ -291,7 +342,7 @@ fun BluetoothSettingsScreen(
                     Text("Device to Display", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Text("Select which device the widget should track", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
                 }
-                IconButton(onClick = { refreshInfo() }) {
+                IconButton(onClick = onRefreshInfo) {
                     Icon(Icons.Rounded.Refresh, contentDescription = "Refresh", tint = accent)
                 }
             }
@@ -310,10 +361,7 @@ fun BluetoothSettingsScreen(
                         if (isAutoSelected) accent.copy(alpha = 0.4f) else Color.Transparent,
                         RoundedCornerShape(12.dp)
                     )
-                    .clickable {
-                        preferredAddress = ""
-                        userManager.savePreferredBluetoothDevice("")
-                    }
+                    .clickable { onPreferredAddressChange("") }
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -358,10 +406,10 @@ fun BluetoothSettingsScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
                         .clickable {
-                            if (!bluetoothInfo.hasPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                            if (!bluetoothInfo.hasPermission) {
+                                onRequestPermission()
                             } else {
-                                BluetoothHelper.openBluetoothSettings(context)
+                                onOpenBluetoothSettings()
                             }
                         }
                         .background(if (!bluetoothInfo.hasPermission) accent.copy(alpha = 0.08f) else Color.Transparent)
@@ -389,10 +437,7 @@ fun BluetoothSettingsScreen(
                                 if (isDevSelected) accent.copy(alpha = 0.4f) else Color.Transparent,
                                 RoundedCornerShape(12.dp)
                             )
-                            .clickable {
-                                preferredAddress = dev.address
-                                userManager.savePreferredBluetoothDevice(dev.address)
-                            }
+                            .clickable { onPreferredAddressChange(dev.address) }
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -473,10 +518,7 @@ fun BluetoothSettingsScreen(
                 }
                 Switch(
                     checked = onlyConnected,
-                    onCheckedChange = {
-                        onlyConnected = it
-                        userManager.saveBluetoothShowOnlyIfConnected(it)
-                    },
+                    onCheckedChange = onOnlyConnectedChange,
                     colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
                 )
             }
@@ -497,10 +539,7 @@ fun BluetoothSettingsScreen(
                 }
                 Switch(
                     checked = showBluetooth,
-                    onCheckedChange = {
-                        showBluetooth = it
-                        userManager.saveShowBluetoothWidget(it)
-                    },
+                    onCheckedChange = onShowBluetoothChange,
                     colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
                 )
             }
@@ -516,7 +555,7 @@ fun BluetoothSettingsScreen(
                     .clip(RoundedCornerShape(12.dp))
                     .background(accent.copy(alpha = 0.12f))
                     .border(1.dp, accent.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                    .clickable { BluetoothHelper.openBluetoothSettings(context) }
+                    .clickable { onOpenBluetoothSettings() }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -548,4 +587,79 @@ fun BluetoothSettingsScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF080808)
+@Composable
+fun BluetoothSettingsScreenPreview() {
+    var showWidget by remember { mutableStateOf(true) }
+    var onlyConnected by remember { mutableStateOf(false) }
+    var preferredAddress by remember { mutableStateOf("00:11:22:33:44:55") }
+    var style by remember { mutableStateOf(BluetoothStyle.GLASS) }
+    var font by remember { mutableStateOf(WidgetFont.DEFAULT) }
+
+    val mockBluetoothInfo = remember {
+        BluetoothInfoState(
+            isBluetoothEnabled = true,
+            hasPermission = true,
+            connectedDevices = listOf(
+                BluetoothDeviceInfo(
+                    name = "AirPods Pro",
+                    address = "00:11:22:33:44:55",
+                    isConnected = true,
+                    batteryLevel = 85,
+                    deviceType = BluetoothDeviceType.BUDS
+                )
+            ),
+            pairedDevices = listOf(
+                BluetoothDeviceInfo(
+                    name = "AirPods Pro",
+                    address = "00:11:22:33:44:55",
+                    isConnected = true,
+                    batteryLevel = 85,
+                    deviceType = BluetoothDeviceType.BUDS
+                ),
+                BluetoothDeviceInfo(
+                    name = "Sony WH-1000XM5",
+                    address = "AA:BB:CC:DD:EE:FF",
+                    isConnected = false,
+                    batteryLevel = -1,
+                    deviceType = BluetoothDeviceType.HEADPHONES
+                ),
+                BluetoothDeviceInfo(
+                    name = "JBL Charge 5",
+                    address = "11:22:33:44:55:66",
+                    isConnected = false,
+                    batteryLevel = -1,
+                    deviceType = BluetoothDeviceType.SPEAKER
+                )
+            ),
+            activeDevice = BluetoothDeviceInfo(
+                name = "AirPods Pro",
+                address = "00:11:22:33:44:55",
+                isConnected = true,
+                batteryLevel = 85,
+                deviceType = BluetoothDeviceType.BUDS
+            )
+        )
+    }
+
+    BluetoothSettingsContent(
+        showBluetooth = showWidget,
+        onShowBluetoothChange = { showWidget = it },
+        onlyConnected = onlyConnected,
+        onOnlyConnectedChange = { onlyConnected = it },
+        preferredAddress = preferredAddress,
+        onPreferredAddressChange = { preferredAddress = it },
+        style = style,
+        onStyleChange = { style = it },
+        font = font,
+        onFontChange = { font = it },
+        bluetoothInfo = mockBluetoothInfo,
+        onRequestPermission = {},
+        onRefreshInfo = {},
+        onOpenAppSettings = {},
+        onOpenBluetoothSettings = {},
+        onClose = {}
+    )
 }

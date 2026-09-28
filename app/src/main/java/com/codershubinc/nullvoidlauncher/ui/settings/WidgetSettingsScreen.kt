@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,8 +39,10 @@ enum class WidgetSubPage {
     DAY,
     STORAGE,
     WEATHER,
+    STEPS,
     CONTROL_DECK,
-    APPEARANCE
+    APPEARANCE,
+    DRAWER
 }
 
 @Composable
@@ -86,11 +89,17 @@ fun WidgetSettingsScreen(
         WidgetSubPage.WEATHER -> {
             WeatherWidgetTweaksPage(userManager = userManager, onBack = handleBack)
         }
+        WidgetSubPage.STEPS -> {
+            StepsWidgetTweaksPage(userManager = userManager, onBack = handleBack)
+        }
         WidgetSubPage.CONTROL_DECK -> {
             ControlDeckWidgetTweaksPage(userManager = userManager, onBack = handleBack)
         }
         WidgetSubPage.APPEARANCE -> {
             AppearanceTweaksPage(userManager = userManager, onBack = handleBack)
+        }
+        WidgetSubPage.DRAWER -> {
+            DrawerTweaksPage(userManager = userManager, onBack = handleBack)
         }
         WidgetSubPage.NONE -> {
             WidgetHubScreen(
@@ -253,6 +262,37 @@ private fun WidgetHubScreen(
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
 
+            // Steps & Google Fit
+            WidgetTweakRowItem(
+                icon = Icons.AutoMirrored.Rounded.DirectionsWalk,
+                title = "Steps & Google Fit Widget",
+                subtitle = "Style: ${userManager.getStepsStyle().name} • Goal: ${userManager.getStepsDailyGoal()} steps",
+                isActive = userManager.getShowStepsWidget(),
+                onClick = { onNavigate(WidgetSubPage.STEPS) }
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+
+            // Add Direct Google Fit App Widget
+            val currentContext = androidx.compose.ui.platform.LocalContext.current
+            val isFitInstalled = remember { com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.isGoogleFitInstalled(currentContext) }
+            WidgetTweakRowItem(
+                icon = Icons.Rounded.FitnessCenter,
+                title = "Add Direct Google Fit App Widget",
+                subtitle = if (isFitInstalled) "Pin official Google Fit widget directly to home screen" else "Install Google Fit to pin official widgets",
+                isActive = isFitInstalled,
+                onClick = {
+                    if (isFitInstalled) {
+                        val ok = com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.requestPinGoogleFitWidget(currentContext)
+                        if (!ok) {
+                            onNavigate(WidgetSubPage.STEPS)
+                        }
+                    } else {
+                        com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.openGoogleFitOrHealth(currentContext)
+                    }
+                }
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+
             // Quick Control Deck
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Tune,
@@ -260,6 +300,17 @@ private fun WidgetHubScreen(
                 subtitle = "Flashlight, ringer modes and device controls",
                 isActive = userManager.getShowControlDeck(),
                 onClick = { onNavigate(WidgetSubPage.CONTROL_DECK) }
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+
+            // App Drawer Theme
+            WidgetTweakRowItem(
+                icon = Icons.Rounded.Search,
+                title = "App Drawer Theme",
+                subtitle = "Style: ${userManager.getDrawerStyle().name} • Spotlight, Grid, Terminal...",
+                isActive = true,
+                badgeText = userManager.getDrawerStyle().name,
+                onClick = { onNavigate(WidgetSubPage.DRAWER) }
             )
         }
 
