@@ -1,0 +1,4 @@
+VERSION=0.1.3
+CHANNEL=stable
+BUILD_NUMBER=5
+CODENAME=Singularity

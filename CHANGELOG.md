@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2026-10-03 — Automated Release Pipeline & In-App Release Updater
+
+The **v0.1.3** patch release introduces a production-grade release engineering pipeline (`build.sh`), an automated background update engine that periodically checks GitHub Releases, and an interactive update dialog with snooze and in-app installation capabilities.
+
+### Added
+- **Automated Background Update Checker**:
+  - Periodic background check with a 6-hour polling throttle on app launch.
+  - Interactive update dialog ([`UpdatePromptDialog`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/components/UpdatePromptDialog.kt)) displaying full release notes, version delta, and package download size.
+  - Flexible user options:
+    - **Update Now**: Triggers in-app streaming download with progress bar and seamless package installation.
+    - **Remind Tomorrow**: Snoozes update alerts for 24 hours.
+    - **Skip Version**: Ignores notifications for that specific release tag.
+  - New **Auto Check Updates** toggle under the System card in Settings (supported on both phone and tablet layouts).
+- **Production-Grade Release Pipeline (`build.sh`)**:
+  - Unified POSIX bash build script with `set -euo pipefail`.
+  - Single source of truth versioning powered by [RELEASE](file:///home/swap/Github/NullVoidLauncher/RELEASE) dynamically synced into Gradle builds.
+  - Structured output directory (`dist/`) with standardized versioned filenames and generic convenience symlinks.
+  - Cryptographic verification with automatic `dist/SHA256SUMS` generation.
+  - Rich CLI options (`--release`, `--clean`, `--install` via `adb`, `--multiarch`, `--help`).
+  - Formatted ANSI console summaries with artifact sizes and hash prefixes.
+
+### Changed & Improved
+- Cleaned up build artifacts and ignored `dist/` in version control.
+- Streamlined `AppUpdater` installation flow with direct unknown-source settings fallbacks.
+
+---
+
 ## [0.1.2] - 2026-09-28 — Health Connect Steps Sync & Quick Control Deck Overhaul
 
 The **v0.1.2** release introduces Google Fit & Health Connect integration for native step counter telemetry with automatic sensor fallback, a revamped Quick Control Deck with real-time hardware synchronization, customizable icon styles, and granular widget tweaks.
