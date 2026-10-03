@@ -17,7 +17,14 @@ data class GithubProfile(
     val bio: String,
     val company: String,
     val publicRepos: Int,
-    val avatarUrl: String
+    val avatarUrl: String,
+    val followers: Int = 0,
+    val following: Int = 0,
+    val location: String = "",
+    val blog: String = "",
+    val publicGists: Int = 0,
+    val hireable: Boolean = false,
+    val createdAt: String = ""
 )
 
 enum class ClockStyle { ELEGANT, MINIMAL, MODERN, RETRO, TERMINAL }
@@ -355,6 +362,13 @@ class UserManager(context: Context) {
             putString("gh_company", info.company)
             putInt("gh_public_repos", info.publicRepos)
             putString("gh_avatar_url", info.avatarUrl)
+            putInt("gh_followers", info.followers)
+            putInt("gh_following", info.following)
+            putString("gh_location", info.location)
+            putString("gh_blog", info.blog)
+            putInt("gh_public_gists", info.publicGists)
+            putBoolean("gh_hireable", info.hireable)
+            putString("gh_created_at", info.createdAt)
         }
     }
 
@@ -366,7 +380,14 @@ class UserManager(context: Context) {
             bio = prefs.getString("gh_bio", "") ?: "",
             company = prefs.getString("gh_company", "") ?: "",
             publicRepos = prefs.getInt("gh_public_repos", 0),
-            avatarUrl = prefs.getString("gh_avatar_url", "") ?: ""
+            avatarUrl = prefs.getString("gh_avatar_url", "") ?: "",
+            followers = prefs.getInt("gh_followers", 0),
+            following = prefs.getInt("gh_following", 0),
+            location = prefs.getString("gh_location", "") ?: "",
+            blog = prefs.getString("gh_blog", "") ?: "",
+            publicGists = prefs.getInt("gh_public_gists", 0),
+            hireable = prefs.getBoolean("gh_hireable", false),
+            createdAt = prefs.getString("gh_created_at", "") ?: ""
         )
     }
 
@@ -392,7 +413,14 @@ class UserManager(context: Context) {
                     bio = json.optString("bio", "No bio available.").replace("\r\n", " "),
                     company = json.optString("company", "Independent"),
                     publicRepos = json.optInt("public_repos", 0),
-                    avatarUrl = json.optString("avatar_url", "")
+                    avatarUrl = json.optString("avatar_url", ""),
+                    followers = json.optInt("followers", 0),
+                    following = json.optInt("following", 0),
+                    location = json.optString("location", ""),
+                    blog = json.optString("blog", ""),
+                    publicGists = json.optInt("public_gists", 0),
+                    hireable = json.optBoolean("hireable", false),
+                    createdAt = json.optString("created_at", "")
                 )
                 saveUserInfo(profile)
                 return@withContext profile

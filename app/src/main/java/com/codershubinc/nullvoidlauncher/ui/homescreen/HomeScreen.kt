@@ -221,8 +221,10 @@ fun HomeScreen() {
                 0 -> GithubProfileScreen(
                     username = githubUsername,
                     userManager = userManager,
+                    onUsernameChanged = { newHandle ->
+                        githubUsername = newHandle
+                    },
                     onOpenSettings = { isSettingsOpen = true },
-                    onOpenFocusMode = { isFocusModeOpen = true },
                     onOpenAbout = { isAboutOpen = true },
                     onClose = {
                         scope.launch {

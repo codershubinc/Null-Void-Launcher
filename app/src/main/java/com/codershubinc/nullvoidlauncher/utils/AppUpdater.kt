@@ -233,7 +233,7 @@ object AppUpdater {
     }
 
     private const val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000L
-    private const val CHECK_INTERVAL_MILLIS = 6 * 60 * 60 * 1000L // 6 hours
+    private const val CHECK_INTERVAL_MILLIS = 1 * 60 * 60 * 1000L // 1 hour
 
     fun shouldCheckForPeriodicUpdate(userManager: com.codershubinc.nullvoidlauncher.data.UserManager): Boolean {
         if (!userManager.getAutoCheckUpdates()) return false
