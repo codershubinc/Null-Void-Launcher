@@ -16,7 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +58,59 @@ fun HomeScreen() {
 
     var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
+    // ── Update Checker & Dialog State ─────────────────────────────────────────
+    var pendingUpdateInfo by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.utils.UpdateInfo?>(null) }
+    var isUpdateDownloading by remember { mutableStateOf(false) }
+    var updateDownloadProgress by remember { mutableFloatStateOf(0f) }
+    var updateDownloadedBytes by remember { mutableLongStateOf(0L) }
+    var updateDownloadTotalBytes by remember { mutableLongStateOf(0L) }
+    var updateDownloadError by remember { mutableStateOf<String?>(null) }
+    var showInstallPermissionDialog by remember { mutableStateOf(false) }
+    var downloadedApkToInstall by remember { mutableStateOf<java.io.File?>(null) }
+
+    fun triggerInstall(file: java.io.File) {
+        if (com.codershubinc.nullvoidlauncher.utils.AppUpdater.canInstallPackages(context)) {
+            val installed = com.codershubinc.nullvoidlauncher.utils.AppUpdater.installApk(context, file)
+            if (!installed) {
+                updateDownloadError = "Failed to launch package installer"
+            }
+        } else {
+            downloadedApkToInstall = file
+            showInstallPermissionDialog = true
+        }
+    }
+
+    fun startInAppDownload(info: com.codershubinc.nullvoidlauncher.utils.UpdateInfo) {
+        val downloadUrl = info.apkDownloadUrl
+        if (downloadUrl.isNullOrEmpty()) {
+            val uriHandler = android.net.Uri.parse(info.releaseUrl)
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uriHandler)
+            try { context.startActivity(intent) } catch (_: Exception) {}
+            return
+        }
+
+        scope.launch {
+            isUpdateDownloading = true
+            updateDownloadProgress = 0f
+            updateDownloadError = null
+            val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.downloadApk(
+                context = context,
+                downloadUrl = downloadUrl,
+                onProgress = { progress, downloaded, total ->
+                    updateDownloadProgress = progress
+                    updateDownloadedBytes = downloaded
+                    updateDownloadTotalBytes = total
+                }
+            )
+            isUpdateDownloading = false
+            result.onSuccess { apkFile ->
+                triggerInstall(apkFile)
+            }.onFailure { error ->
+                updateDownloadError = error.localizedMessage ?: "Download failed"
+            }
+        }
+    }
+
     fun refreshApps() {
         scope.launch {
             val apps = withContext(Dispatchers.IO) {
@@ -63,6 +122,17 @@ fun HomeScreen() {
 
     LaunchedEffect(Unit) {
         refreshApps()
+
+        // Periodic Background Check for updates
+        if (com.codershubinc.nullvoidlauncher.utils.AppUpdater.shouldCheckForPeriodicUpdate(userManager)) {
+            val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.checkForUpdates(context)
+            userManager.saveLastUpdateCheckTime(System.currentTimeMillis())
+            result.onSuccess { info ->
+                if (info.isUpdateAvailable && info.latestVersion != userManager.getSkippedVersion()) {
+                    pendingUpdateInfo = info
+                }
+            }
+        }
     }
 
     DisposableEffect(context) {
@@ -294,6 +364,89 @@ fun HomeScreen() {
             com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothSettingsScreen(
                 userManager = userManager,
                 onClose = { isBluetoothSettingsOpen = false }
+            )
+        }
+
+        // Periodic Update Popup Dialog
+        val currentPendingUpdate = pendingUpdateInfo
+        if (currentPendingUpdate != null && currentPendingUpdate.isUpdateAvailable) {
+            com.codershubinc.nullvoidlauncher.ui.components.UpdatePromptDialog(
+                updateInfo = currentPendingUpdate,
+                isDownloading = isUpdateDownloading,
+                downloadProgress = updateDownloadProgress,
+                downloadedBytes = updateDownloadedBytes,
+                totalBytes = updateDownloadTotalBytes,
+                downloadError = updateDownloadError,
+                onUpdateNow = {
+                    startInAppDownload(currentPendingUpdate)
+                },
+                onRemindTomorrow = {
+                    com.codershubinc.nullvoidlauncher.utils.AppUpdater.postponeUpdateTomorrow(userManager)
+                    pendingUpdateInfo = null
+                },
+                onDismiss = {
+                    pendingUpdateInfo = null
+                },
+                onSkipVersion = {
+                    com.codershubinc.nullvoidlauncher.utils.AppUpdater.skipVersion(userManager, currentPendingUpdate.latestVersion)
+                    pendingUpdateInfo = null
+                }
+            )
+        }
+
+        // Install Permission Dialog fallback
+        if (showInstallPermissionDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showInstallPermissionDialog = false },
+                title = {
+                    androidx.compose.material3.Text(
+                        text = "Permission Required",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    androidx.compose.material3.Text(
+                        text = "NullVoid Launcher needs permission to install unknown apps to complete this update. Please enable it in system settings.",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF3D5AFE))
+                            .clickable {
+                                showInstallPermissionDialog = false
+                                com.codershubinc.nullvoidlauncher.utils.AppUpdater.openInstallPermissionSettings(context)
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "Settings",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                },
+                dismissButton = {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showInstallPermissionDialog = false }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "Cancel",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                },
+                containerColor = Color(0xFF141416),
+                shape = RoundedCornerShape(16.dp)
             )
         }
     }

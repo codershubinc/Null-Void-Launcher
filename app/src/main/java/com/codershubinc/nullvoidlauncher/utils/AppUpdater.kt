@@ -231,4 +231,26 @@ object AppUpdater {
             false
         }
     }
+
+    private const val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000L
+    private const val CHECK_INTERVAL_MILLIS = 6 * 60 * 60 * 1000L // 6 hours
+
+    fun shouldCheckForPeriodicUpdate(userManager: com.codershubinc.nullvoidlauncher.data.UserManager): Boolean {
+        if (!userManager.getAutoCheckUpdates()) return false
+        val now = System.currentTimeMillis()
+        val postponedUntil = userManager.getUpdatePostponedUntil()
+        if (now < postponedUntil) return false
+
+        val lastCheck = userManager.getLastUpdateCheckTime()
+        return (now - lastCheck) > CHECK_INTERVAL_MILLIS
+    }
+
+    fun postponeUpdateTomorrow(userManager: com.codershubinc.nullvoidlauncher.data.UserManager) {
+        val tomorrow = System.currentTimeMillis() + ONE_DAY_MILLIS
+        userManager.saveUpdatePostponedUntil(tomorrow)
+    }
+
+    fun skipVersion(userManager: com.codershubinc.nullvoidlauncher.data.UserManager, versionTag: String) {
+        userManager.saveSkippedVersion(versionTag)
+    }
 }

@@ -12,6 +12,15 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val releasePropertiesFile = rootProject.file("RELEASE")
+val releaseProperties = Properties()
+if (releasePropertiesFile.exists()) {
+    releaseProperties.load(FileInputStream(releasePropertiesFile))
+}
+
+val releaseVersionName = releaseProperties.getProperty("VERSION", "0.1.2")
+val releaseVersionCode = releaseProperties.getProperty("BUILD_NUMBER", "4").toIntOrNull() ?: 4
+
 android {
     namespace = "com.codershubinc.nullvoidlauncher"
     compileSdk = 37
@@ -20,8 +29,8 @@ android {
         applicationId = "com.codershubinc.nullvoidlauncher"
         minSdk = 29
         targetSdk = 37
-        versionCode = 4
-        versionName = "0.1.2"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resConfigs("en")

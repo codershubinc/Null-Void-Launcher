@@ -333,6 +333,19 @@ class UserManager(context: Context) {
         saveHiddenApps(current)
     }
 
+    // ── Auto Updates & Periodic Check ───────────────────────────────────────────
+    fun saveAutoCheckUpdates(v: Boolean) = setBool("auto_check_updates", v)
+    fun getAutoCheckUpdates(): Boolean = getBool("auto_check_updates", true)
+
+    fun saveLastUpdateCheckTime(timestampMillis: Long) = prefs.edit { putLong("last_update_check_time", timestampMillis) }
+    fun getLastUpdateCheckTime(): Long = prefs.getLong("last_update_check_time", 0L)
+
+    fun saveUpdatePostponedUntil(timestampMillis: Long) = prefs.edit { putLong("update_postponed_until", timestampMillis) }
+    fun getUpdatePostponedUntil(): Long = prefs.getLong("update_postponed_until", 0L)
+
+    fun saveSkippedVersion(versionTag: String) = setStr("skipped_update_version", versionTag)
+    fun getSkippedVersion(): String = getStr("skipped_update_version", "")
+
     // ── GitHub Profile & Network ─────────────────────────────────────────────────
     fun saveUserInfo(info: GithubProfile) {
         prefs.edit {

@@ -68,6 +68,7 @@ fun SettingsScreen(
     var doubleTapAction by remember { mutableStateOf(userManager.getDoubleTapAction()) }
     var selectedIconStyle by remember { mutableStateOf(userManager.getIconStyle()) }
     var hideStatusBar by remember { mutableStateOf(userManager.getHideStatusBar()) }
+    var autoCheckUpdates by remember { mutableStateOf(userManager.getAutoCheckUpdates()) }
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
     
     var isSelectingApps by remember { mutableStateOf(false) }
@@ -303,6 +304,17 @@ fun SettingsScreen(
                             )
                             ModernCard {
                                 InfoRow(
+                                    icon = Icons.Rounded.Update,
+                                    label = "Auto Check Updates",
+                                    value = if (autoCheckUpdates) "Enabled" else "Disabled",
+                                    onClick = {
+                                        autoCheckUpdates = !autoCheckUpdates
+                                        userManager.saveAutoCheckUpdates(autoCheckUpdates)
+                                    },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
                                     icon = Icons.Rounded.DataUsage,
                                     label = "Data Usage & Logs",
                                     value = "Local Storage",
@@ -462,6 +474,17 @@ fun SettingsScreen(
                             modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
                         )
                         ModernCard {
+                            InfoRow(
+                                icon = Icons.Rounded.Update,
+                                label = "Auto Check Updates",
+                                value = if (autoCheckUpdates) "Enabled" else "Disabled",
+                                onClick = {
+                                    autoCheckUpdates = !autoCheckUpdates
+                                    userManager.saveAutoCheckUpdates(autoCheckUpdates)
+                                },
+                                showChevron = true
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                             InfoRow(
                                 icon = Icons.Rounded.DataUsage,
                                 label = "Data Usage & Logs",

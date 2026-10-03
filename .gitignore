@@ -18,3 +18,7 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Build distribution output
+dist/
+.kotlin/
