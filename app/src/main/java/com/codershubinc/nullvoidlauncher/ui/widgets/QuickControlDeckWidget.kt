@@ -30,8 +30,9 @@ import com.codershubinc.nullvoidlauncher.data.model.ControlDeckAction
 import com.codershubinc.nullvoidlauncher.data.model.ControlDeckIconStyle
 import com.codershubinc.nullvoidlauncher.data.model.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.system.controls.ControlDeckState
+import com.codershubinc.nullvoidlauncher.system.controls.ControlHelper
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlDeckIconProvider
-import com.codershubinc.nullvoidlauncher.ui.controls.ControlHelper
 
 @Composable
 fun QuickControlDeckWidget(

@@ -18,7 +18,7 @@ object Constants {
     }
 
     object System {
-        const val CODENAME = "ELEGANCE"
+        const val CODENAME = "Singularity"
         const val ORGANIZATION = "CodersHub INC"
         const val BUILD_TYPE = "Maintenance & Feature Release"
         const val UI_ENGINE = "Compose Modern"

@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.codershubinc.nullvoidlauncher.data.model.MusicStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.music.MusicTrack
 import com.codershubinc.nullvoidlauncher.ui.widgets.music.ElegantMusicWidget
@@ -45,17 +46,7 @@ fun MusicWidget(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.musicFont }
 

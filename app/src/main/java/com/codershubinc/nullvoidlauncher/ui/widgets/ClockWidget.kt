@@ -23,6 +23,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 
 @Composable
@@ -43,17 +44,7 @@ fun ClockWidget(
     val context = LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.clockFont }
     var timeText by remember { mutableStateOf(previewTimeText ?: "") }

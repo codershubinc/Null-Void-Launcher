@@ -7,6 +7,7 @@ class UpdatePrefs(prefs: SharedPreferences) : BasePrefs(prefs) {
     var lastUpdateCheckTime: Long by longPref("last_update_check_time", 0L)
     var updatePostponedUntil: Long by longPref("update_postponed_until", 0L)
     var skippedVersion: String by stringPref("skipped_update_version", "")
+    var skippedUpdateVersion: String get() = skippedVersion; set(v) { skippedVersion = v }
     var networkTriggerUrl: String by stringPref("network_trigger_url", "")
     var networkTriggerPayload: String by stringPref("network_trigger_payload", "")
 }

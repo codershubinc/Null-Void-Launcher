@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.model.BluetoothStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
+import com.codershubinc.nullvoidlauncher.ui.bluetooth.components.BluetoothDeviceRow
+import com.codershubinc.nullvoidlauncher.ui.bluetooth.components.BluetoothHeaderCard
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.widgets.BluetoothWidget
 
@@ -271,70 +273,12 @@ fun BluetoothSettingsContent(
         Spacer(modifier = Modifier.height(20.dp))
 
         // ── Permission Request Banner (if permission missing) ───────────────
-        if (!bluetoothInfo.hasPermission) {
-            ModernCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFFFB300).copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.BluetoothDisabled,
-                            contentDescription = null,
-                            tint = Color(0xFFFFB300),
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Bluetooth Permission Required",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Null Void Launcher needs Nearby Devices permission to detect connected accessories and battery levels.",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 11.5.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = onRequestPermission,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = accent),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text("Grant Permission", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    }
-
-                    OutlinedButton(
-                        onClick = onOpenAppSettings,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text("App Settings", color = Color.White, fontSize = 12.sp)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-        }
+        BluetoothHeaderCard(
+            bluetoothInfo = bluetoothInfo,
+            accent = accent,
+            onRequestPermission = onRequestPermission,
+            onOpenAppSettings = onOpenAppSettings
+        )
 
         // ── Device Selection Card ───────────────────────────────────────────
         ModernCard {
@@ -431,73 +375,12 @@ fun BluetoothSettingsContent(
             } else {
                 bluetoothInfo.pairedDevices.forEach { dev ->
                     val isDevSelected = preferredAddress.equals(dev.address, ignoreCase = true)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (isDevSelected) accent.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.04f))
-                            .border(
-                                1.dp,
-                                if (isDevSelected) accent.copy(alpha = 0.4f) else Color.Transparent,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .clickable { onPreferredAddressChange(dev.address) }
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        val devIcon = com.codershubinc.nullvoidlauncher.ui.widgets.bluetooth.resolveBluetoothDeviceIcon(
-                            dev.deviceType,
-                            dev.isConnected
-                        )
-
-                        Icon(
-                            imageVector = devIcon,
-                            contentDescription = null,
-                            tint = if (dev.isConnected) Color(0xFF00E676) else Color.White.copy(alpha = 0.4f),
-                            modifier = Modifier.size(20.dp)
-                        )
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = dev.name,
-                                color = Color.White,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text(
-                                    text = if (dev.isConnected) "Connected" else "Paired",
-                                    color = if (dev.isConnected) Color(0xFF00E676) else Color.White.copy(alpha = 0.4f),
-                                    fontSize = 11.sp
-                                )
-                                if (dev.hasBattery) {
-                                    Text(text = "•", color = Color.White.copy(alpha = 0.3f), fontSize = 9.sp)
-                                    Text(
-                                        text = "${dev.batteryLevel}% Battery",
-                                        color = Color(0xFF00E676),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-
-                        if (isDevSelected) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = null,
-                                tint = accent,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
+                    BluetoothDeviceRow(
+                        device = dev,
+                        isSelected = isDevSelected,
+                        accent = accent,
+                        onSelect = { onPreferredAddressChange(dev.address) }
+                    )
                 }
             }
         }

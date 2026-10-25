@@ -6,6 +6,7 @@ import androidx.core.content.edit
 class WallpaperPrefs(prefs: SharedPreferences) : BasePrefs(prefs) {
     var showWallpaper: Boolean by booleanPref("show_wallpaper", false)
     var wallpaperRes: Int by intPref("wallpaper_res_id", -1)
+    var wallpaperResId: Int get() = wallpaperRes; set(v) { wallpaperRes = v }
     var wallpaperUri: String? by nullableStringPref("wallpaper_uri", null)
 
     fun clearWallpaperUri() {

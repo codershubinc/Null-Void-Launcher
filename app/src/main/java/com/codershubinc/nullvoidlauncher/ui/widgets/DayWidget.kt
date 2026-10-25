@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.codershubinc.nullvoidlauncher.data.model.DayStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.widgets.day.*
 import kotlinx.coroutines.delay
@@ -30,17 +31,7 @@ fun DayWidget(
     val context = LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.dayStyle }
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.dayFont }

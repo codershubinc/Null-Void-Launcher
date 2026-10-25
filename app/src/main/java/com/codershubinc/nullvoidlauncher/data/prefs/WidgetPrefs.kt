@@ -70,6 +70,7 @@ class WidgetPrefs(prefs: SharedPreferences) : BasePrefs(prefs) {
 
     // ── Network & Bluetooth Options ──────────────────────────────────────────────
     var showNetworkUsageOnWidget: Boolean by booleanPref("show_network_usage_on_widget", true)
+    var networkUsageEnabled: Boolean get() = showNetworkUsageOnWidget; set(v) { showNetworkUsageOnWidget = v }
     var bluetoothOnlyConnected: Boolean by booleanPref("bluetooth_only_connected", true)
     var bluetoothShowOnlyIfConnected: Boolean get() = bluetoothOnlyConnected; set(v) { bluetoothOnlyConnected = v }
     var preferredBluetoothDevice: String by stringPref("bluetooth_preferred_device", "")

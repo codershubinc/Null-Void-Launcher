@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.data.model.LauncherThemeConfig
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothHelper
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkHelper
 import com.codershubinc.nullvoidlauncher.ui.widgets.BluetoothWidget
@@ -37,17 +38,7 @@ fun ElegantTheme(
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
 
-    // Reactive preference version trigger for instant recomposition on tweaks change
-    var prefVersion by remember { mutableIntStateOf(0) }
-    DisposableEffect(userManager) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     // Read values keyed on prefVersion so home screen instantly refreshes when tweaked
     val showClock = remember(prefVersion) { userManager.widgets.showClock }

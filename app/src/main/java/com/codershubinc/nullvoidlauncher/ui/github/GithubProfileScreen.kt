@@ -17,8 +17,6 @@
 
 package com.codershubinc.nullvoidlauncher.ui.github
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +27,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -39,18 +36,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.codershubinc.nullvoidlauncher.data.model.GithubProfile
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.components.ProfileDetailRow
+import com.codershubinc.nullvoidlauncher.ui.github.components.EditUsernameDialog
+import com.codershubinc.nullvoidlauncher.ui.github.components.GithubProfileHeader
+import com.codershubinc.nullvoidlauncher.ui.github.components.GithubStatsGrid
 import com.codershubinc.nullvoidlauncher.utils.NetworkImage
 import kotlinx.coroutines.launch
 
@@ -63,7 +59,6 @@ fun GithubProfileScreen(
     onOpenAbout: () -> Unit,
     onClose: () -> Unit
 ) {
-    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
 
@@ -72,7 +67,6 @@ fun GithubProfileScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isRefreshing by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
-    var editUsernameInput by remember { mutableStateOf(activeUsername) }
     var syncErrorMessage by remember { mutableStateOf<String?>(null) }
 
     val scrollState = rememberScrollState()
@@ -132,110 +126,15 @@ fun GithubProfileScreen(
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Navigation Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Back Button (Smooth return to Home Screen)
-                Box(
-                    modifier = Modifier
-                        .size(46.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.05f))
-                        .clickable { onClose() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                // Quick Action Buttons
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // Sync / Refresh button
-                    Box(
-                        modifier = Modifier
-                            .size(46.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.05f))
-                            .clickable(enabled = !isRefreshing) {
-                                loadProfile(activeUsername, true)
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = "Refresh Profile",
-                            tint = if (isRefreshing) Color(0xFF3D5AFE) else Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    QuickActionButton(Icons.Rounded.Settings, onOpenSettings)
-                    QuickActionButton(Icons.Rounded.Info, onOpenAbout)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // Header with Edit Username Action
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Developer",
-                        color = Color.White,
-                        fontSize = 38.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.SansSerif
-                    )
-                    Text(
-                        text = "GitHub Profile Synchronization",
-                        color = Color.White.copy(alpha = 0.45f),
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-                }
-
-                // Edit Username Pill Button
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF3D5AFE).copy(alpha = 0.15f))
-                        .border(1.dp, Color(0xFF3D5AFE).copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-                        .clickable {
-                            editUsernameInput = activeUsername
-                            showEditDialog = true
-                        }
-                        .padding(horizontal = 14.dp, vertical = 8.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = "Edit Username",
-                            tint = Color(0xFF3D5AFE),
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Edit",
-                            color = Color.White,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
+            // Header with navigation & quick action buttons
+            GithubProfileHeader(
+                onClose = onClose,
+                onRefresh = { loadProfile(activeUsername, true) },
+                isRefreshing = isRefreshing,
+                onOpenSettings = onOpenSettings,
+                onOpenAbout = onOpenAbout,
+                onEditUsername = { showEditDialog = true }
+            )
 
             Spacer(modifier = Modifier.height(28.dp))
 
@@ -320,14 +219,7 @@ fun GithubProfileScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Social Counter Matrix (Repos, Followers, Following)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        ProfileStatBadge("Repositories", p.publicRepos.toString(), Icons.Rounded.Code)
-                        ProfileStatBadge("Followers", p.followers.toString(), Icons.Rounded.Group)
-                        ProfileStatBadge("Following", p.following.toString(), Icons.Rounded.PersonAdd)
-                    }
+                    GithubStatsGrid(profile = p)
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
@@ -344,7 +236,7 @@ fun GithubProfileScreen(
                     )
 
                     ProfileDetailRow(Icons.Rounded.Business, "Company / Org", p.company.ifEmpty { "Independent" })
-                    
+
                     if (p.location.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(14.dp))
                         ProfileDetailRow(Icons.Rounded.LocationOn, "Location", p.location)
@@ -485,164 +377,17 @@ fun GithubProfileScreen(
 
         // Edit Username Dialog
         if (showEditDialog) {
-            Dialog(onDismissRequest = { showEditDialog = false }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(Color(0xFF141416))
-                        .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(24.dp))
-                        .padding(22.dp)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Edit GitHub Username",
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "Close",
-                                tint = Color.White.copy(alpha = 0.6f),
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable { showEditDialog = false }
-                            )
-                        }
-
-                        Text(
-                            text = "Enter any public GitHub handle to synchronize and display its profile.",
-                            color = Color.White.copy(alpha = 0.5f),
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-                        )
-
-                        OutlinedTextField(
-                            value = editUsernameInput,
-                            onValueChange = { editUsernameInput = it.trim() },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            placeholder = {
-                                Text(
-                                    text = "e.g. torvalds",
-                                    color = Color.White.copy(alpha = 0.3f),
-                                    fontSize = 14.sp
-                                )
-                            },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedBorderColor = Color(0xFF3D5AFE),
-                                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                                cursorColor = Color(0xFF3D5AFE)
-                            ),
-                            shape = RoundedCornerShape(14.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color.White.copy(alpha = 0.05f))
-                                    .clickable { showEditDialog = false }
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Cancel",
-                                    color = Color.White.copy(alpha = 0.7f),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF3D5AFE))
-                                    .clickable {
-                                        if (editUsernameInput.isNotBlank()) {
-                                            val newHandle = editUsernameInput.trim()
-                                            activeUsername = newHandle
-                                            userManager.github.username = newHandle
-                                            onUsernameChanged?.invoke(newHandle)
-                                            showEditDialog = false
-                                            loadProfile(newHandle, true)
-                                        }
-                                    }
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Save & Sync",
-                                    color = Color.White,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
+            EditUsernameDialog(
+                initialUsername = activeUsername,
+                onDismiss = { showEditDialog = false },
+                onSave = { newHandle ->
+                    activeUsername = newHandle
+                    userManager.github.username = newHandle
+                    onUsernameChanged?.invoke(newHandle)
+                    showEditDialog = false
+                    loadProfile(newHandle, true)
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileStatBadge(label: String, value: String, icon: ImageVector) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color(0xFF3D5AFE),
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
             )
         }
-        Text(
-            text = label,
-            color = Color.White.copy(alpha = 0.45f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-fun QuickActionButton(icon: ImageVector, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(46.dp)
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.05f))
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(20.dp)
-        )
     }
 }

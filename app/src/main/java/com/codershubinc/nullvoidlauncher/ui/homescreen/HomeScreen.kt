@@ -59,24 +59,19 @@ fun HomeScreen() {
     var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
     // ── Update Checker & Dialog State ─────────────────────────────────────────
-    var pendingUpdateInfo by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.utils.UpdateInfo?>(null) }
-    var isUpdateDownloading by remember { mutableStateOf(false) }
-    var updateDownloadProgress by remember { mutableFloatStateOf(0f) }
-    var updateDownloadedBytes by remember { mutableLongStateOf(0L) }
-    var updateDownloadTotalBytes by remember { mutableLongStateOf(0L) }
-    var updateDownloadError by remember { mutableStateOf<String?>(null) }
-    var showInstallPermissionDialog by remember { mutableStateOf(false) }
-    var downloadedApkToInstall by remember { mutableStateOf<java.io.File?>(null) }
+    var updateState by remember { mutableStateOf(UpdateDownloadState()) }
 
     fun triggerInstall(file: java.io.File) {
         if (com.codershubinc.nullvoidlauncher.utils.AppUpdater.canInstallPackages(context)) {
             val installed = com.codershubinc.nullvoidlauncher.utils.AppUpdater.installApk(context, file)
             if (!installed) {
-                updateDownloadError = "Failed to launch package installer"
+                updateState = updateState.copy(error = "Failed to launch package installer")
             }
         } else {
-            downloadedApkToInstall = file
-            showInstallPermissionDialog = true
+            updateState = updateState.copy(
+                downloadedApk = file,
+                showInstallPermissionDialog = true
+            )
         }
     }
 
@@ -90,24 +85,24 @@ fun HomeScreen() {
         }
 
         scope.launch {
-            isUpdateDownloading = true
-            updateDownloadProgress = 0f
-            updateDownloadError = null
+            updateState = updateState.copy(isDownloading = true, progress = 0f, error = null)
             val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.downloadApk(
                 context = context,
                 downloadUrl = downloadUrl,
                 expectedSha256 = info.expectedSha256,
                 onProgress = { progress, downloaded, total ->
-                    updateDownloadProgress = progress
-                    updateDownloadedBytes = downloaded
-                    updateDownloadTotalBytes = total
+                    updateState = updateState.copy(
+                        progress = progress,
+                        downloadedBytes = downloaded,
+                        totalBytes = total
+                    )
                 }
             )
-            isUpdateDownloading = false
+            updateState = updateState.copy(isDownloading = false)
             result.onSuccess { apkFile ->
                 triggerInstall(apkFile)
             }.onFailure { error ->
-                updateDownloadError = error.localizedMessage ?: "Download failed"
+                updateState = updateState.copy(error = error.localizedMessage ?: "Download failed")
             }
         }
     }
@@ -130,7 +125,7 @@ fun HomeScreen() {
             userManager.updates.lastUpdateCheckTime = System.currentTimeMillis()
             result.onSuccess { info ->
                 if (info.isUpdateAvailable && info.latestVersion != userManager.updates.skippedVersion) {
-                    pendingUpdateInfo = info
+                    updateState = updateState.copy(pendingUpdate = info)
                 }
             }
         }
@@ -151,13 +146,7 @@ fun HomeScreen() {
         }
     }
 
-    var isDrawerOpen by remember { mutableStateOf(false) }
-    var isSettingsOpen by remember { mutableStateOf(false) }
-    var isAboutOpen by remember { mutableStateOf(false) }
-    var isWidgetSettingsOpen by remember { mutableStateOf(false) }
-    var targetWidgetSubPage by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage?>(null) }
-    var isNetworkUsageOpen by remember { mutableStateOf(false) }
-    var isBluetoothSettingsOpen by remember { mutableStateOf(false) }
+    var activeOverlay by remember { mutableStateOf<HomeOverlay>(HomeOverlay.None) }
     val pagerState = rememberPagerState(initialPage = 1) { 2 }
 
     val blurRadius by remember {
@@ -169,17 +158,30 @@ fun HomeScreen() {
         }
     }
 
-    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || targetWidgetSubPage != null || isSettingsOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
-        if (targetWidgetSubPage != null) targetWidgetSubPage = null
-        else if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
-        else if (isNetworkUsageOpen) isNetworkUsageOpen = false
-        else if (isWidgetSettingsOpen) isWidgetSettingsOpen = false
-        else if (isSettingsOpen) isSettingsOpen = false
-        else if (isAboutOpen) isAboutOpen = false
-        else if (isDrawerOpen) isDrawerOpen = false
-        else if (pagerState.currentPage == 0) {
-            scope.launch {
-                pagerState.animateScrollToPage(1)
+    BackHandler(enabled = activeOverlay != HomeOverlay.None || pagerState.currentPage == 0) {
+        when (val current = activeOverlay) {
+            is HomeOverlay.WidgetTweaks -> {
+                activeOverlay = if (current.returnToWidgetSettings) {
+                    HomeOverlay.WidgetSettings
+                } else {
+                    HomeOverlay.None
+                }
+            }
+            is HomeOverlay.Drawer,
+            is HomeOverlay.Settings,
+            is HomeOverlay.FocusMode,
+            is HomeOverlay.About,
+            is HomeOverlay.NetworkUsage,
+            is HomeOverlay.BluetoothSettings,
+            is HomeOverlay.WidgetSettings -> {
+                activeOverlay = HomeOverlay.None
+            }
+            HomeOverlay.None -> {
+                if (pagerState.currentPage == 0) {
+                    scope.launch {
+                        pagerState.animateScrollToPage(1)
+                    }
+                }
             }
         }
     }
@@ -223,8 +225,8 @@ fun HomeScreen() {
                     onUsernameChanged = { newHandle ->
                         githubUsername = newHandle
                     },
-                    onOpenSettings = { isSettingsOpen = true },
-                    onOpenAbout = { isAboutOpen = true },
+                    onOpenSettings = { activeOverlay = HomeOverlay.Settings },
+                    onOpenAbout = { activeOverlay = HomeOverlay.About },
                     onClose = {
                         scope.launch {
                             pagerState.animateScrollToPage(1)
@@ -232,9 +234,9 @@ fun HomeScreen() {
                     }
                 )
                 1 -> WidgetScreen(
-                    isDrawerOpen = isDrawerOpen,
+                    isDrawerOpen = activeOverlay is HomeOverlay.Drawer,
                     theme = currentTheme,
-                    onOpenDrawer = { isDrawerOpen = true },
+                    onOpenDrawer = { activeOverlay = HomeOverlay.Drawer },
                     onOpenGithubProfile = {
                         scope.launch {
                             pagerState.animateScrollToPage(0)
@@ -244,16 +246,16 @@ fun HomeScreen() {
                         wallpaperUri = userManager.wallpaper.wallpaperUri
                         showWallpaper = userManager.wallpaper.showWallpaper
                     },
-                    onOpenNetworkUsage = { isNetworkUsageOpen = true },
-                    onOpenBluetoothSettings = { isBluetoothSettingsOpen = true },
-                    onOpenWidgetSettings = { isWidgetSettingsOpen = true },
-                    onOpenWidgetTweaks = { subPage -> targetWidgetSubPage = subPage }
+                    onOpenNetworkUsage = { activeOverlay = HomeOverlay.NetworkUsage },
+                    onOpenBluetoothSettings = { activeOverlay = HomeOverlay.BluetoothSettings },
+                    onOpenWidgetSettings = { activeOverlay = HomeOverlay.WidgetSettings },
+                    onOpenWidgetTweaks = { subPage -> activeOverlay = HomeOverlay.WidgetTweaks(subPage) }
                 )
             }
         }
 
         AnimatedVisibility(
-            visible = isDrawerOpen,
+            visible = activeOverlay is HomeOverlay.Drawer,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
@@ -261,12 +263,12 @@ fun HomeScreen() {
             AppDrawer(
                 allApps = allApps,
                 userManager = userManager,
-                onClose = { isDrawerOpen = false }
+                onClose = { activeOverlay = HomeOverlay.None }
             )
         }
 
         AnimatedVisibility(
-            visible = isSettingsOpen,
+            visible = activeOverlay is HomeOverlay.Settings,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.fillMaxSize()
@@ -299,97 +301,102 @@ fun HomeScreen() {
                 onWallpaperBlurColorAlphaUpdated = { alpha ->
                     wallpaperBlurColorAlpha = alpha
                 },
-                onOpenWidgetSettings = { isWidgetSettingsOpen = true },
+                onOpenWidgetSettings = { activeOverlay = HomeOverlay.WidgetSettings },
                 onOpenDrawerTweaks = {
-                    targetWidgetSubPage = com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DRAWER
+                    activeOverlay = HomeOverlay.WidgetTweaks(
+                        com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.DRAWER,
+                        returnToWidgetSettings = false
+                    )
                 },
-                onOpenAbout = { isAboutOpen = true },
-                onClose = { isSettingsOpen = false }
+                onOpenAbout = { activeOverlay = HomeOverlay.About },
+                onClose = { activeOverlay = HomeOverlay.None }
             )
         }
 
         AnimatedVisibility(
-            visible = isAboutOpen,
+            visible = activeOverlay is HomeOverlay.About,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
             AboutScreen(
                 userManager = userManager,
-                onClose = { isAboutOpen = false }
+                onClose = { activeOverlay = HomeOverlay.None }
             )
         }
 
+        val showWidgetSettings = activeOverlay is HomeOverlay.WidgetSettings || activeOverlay is HomeOverlay.WidgetTweaks
         AnimatedVisibility(
-            visible = isWidgetSettingsOpen || targetWidgetSubPage != null,
+            visible = showWidgetSettings,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
+            val initialPage = (activeOverlay as? HomeOverlay.WidgetTweaks)?.subPage
+                ?: com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.NONE
             com.codershubinc.nullvoidlauncher.ui.settings.WidgetSettingsScreen(
                 userManager = userManager,
-                initialPage = targetWidgetSubPage ?: com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage.NONE,
+                initialPage = initialPage,
                 onClose = {
-                    isWidgetSettingsOpen = false
-                    targetWidgetSubPage = null
+                    activeOverlay = HomeOverlay.None
                 }
             )
         }
 
         AnimatedVisibility(
-            visible = isNetworkUsageOpen,
+            visible = activeOverlay is HomeOverlay.NetworkUsage,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
             NetworkUsageScreen(
-                onClose = { isNetworkUsageOpen = false }
+                onClose = { activeOverlay = HomeOverlay.None }
             )
         }
 
         AnimatedVisibility(
-            visible = isBluetoothSettingsOpen,
+            visible = activeOverlay is HomeOverlay.BluetoothSettings,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier.fillMaxSize()
         ) {
             com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothSettingsScreen(
                 userManager = userManager,
-                onClose = { isBluetoothSettingsOpen = false }
+                onClose = { activeOverlay = HomeOverlay.None }
             )
         }
 
         // Periodic Update Popup Dialog
-        val currentPendingUpdate = pendingUpdateInfo
+        val currentPendingUpdate = updateState.pendingUpdate
         if (currentPendingUpdate != null && currentPendingUpdate.isUpdateAvailable) {
             com.codershubinc.nullvoidlauncher.ui.components.UpdatePromptDialog(
                 updateInfo = currentPendingUpdate,
-                isDownloading = isUpdateDownloading,
-                downloadProgress = updateDownloadProgress,
-                downloadedBytes = updateDownloadedBytes,
-                totalBytes = updateDownloadTotalBytes,
-                downloadError = updateDownloadError,
+                isDownloading = updateState.isDownloading,
+                downloadProgress = updateState.progress,
+                downloadedBytes = updateState.downloadedBytes,
+                totalBytes = updateState.totalBytes,
+                downloadError = updateState.error,
                 onUpdateNow = {
                     startInAppDownload(currentPendingUpdate)
                 },
                 onRemindTomorrow = {
                     com.codershubinc.nullvoidlauncher.utils.AppUpdater.postponeUpdateTomorrow(userManager)
-                    pendingUpdateInfo = null
+                    updateState = updateState.copy(pendingUpdate = null)
                 },
                 onDismiss = {
-                    pendingUpdateInfo = null
+                    updateState = updateState.copy(pendingUpdate = null)
                 },
                 onSkipVersion = {
                     com.codershubinc.nullvoidlauncher.utils.AppUpdater.skipVersion(userManager, currentPendingUpdate.latestVersion)
-                    pendingUpdateInfo = null
+                    updateState = updateState.copy(pendingUpdate = null)
                 }
             )
         }
 
         // Install Permission Dialog fallback
-        if (showInstallPermissionDialog) {
+        if (updateState.showInstallPermissionDialog) {
             androidx.compose.material3.AlertDialog(
-                onDismissRequest = { showInstallPermissionDialog = false },
+                onDismissRequest = { updateState = updateState.copy(showInstallPermissionDialog = false) },
                 title = {
                     androidx.compose.material3.Text(
                         text = "Permission Required",
@@ -410,7 +417,7 @@ fun HomeScreen() {
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFF3D5AFE))
                             .clickable {
-                                showInstallPermissionDialog = false
+                                updateState = updateState.copy(showInstallPermissionDialog = false)
                                 com.codershubinc.nullvoidlauncher.utils.AppUpdater.openInstallPermissionSettings(context)
                             }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -427,7 +434,7 @@ fun HomeScreen() {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { showInstallPermissionDialog = false }
+                            .clickable { updateState = updateState.copy(showInstallPermissionDialog = false) }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         androidx.compose.material3.Text(

@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import com.codershubinc.nullvoidlauncher.data.model.DrawerStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
+import com.codershubinc.nullvoidlauncher.ui.widgets.globalSearch.ElegantSearchScreen
 
 /**
  * AppDrawer: Dispatches to the user's selected drawer style theme:

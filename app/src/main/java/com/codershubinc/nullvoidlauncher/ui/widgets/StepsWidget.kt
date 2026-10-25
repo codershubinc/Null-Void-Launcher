@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.data.model.StepsStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper
 import com.codershubinc.nullvoidlauncher.ui.steps.StepsInfoState
@@ -29,17 +30,7 @@ fun StepsWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     DisposableEffect(context) {
         StepsHelper.registerStepSensor(context)

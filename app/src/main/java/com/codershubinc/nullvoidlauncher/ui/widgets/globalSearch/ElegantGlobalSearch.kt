@@ -1,4 +1,4 @@
-package com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch
+package com.codershubinc.nullvoidlauncher.ui.widgets.globalSearch
 
 import android.content.Context
 import android.content.Intent
@@ -44,6 +44,15 @@ import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ElegantGlobalSearch(
+    allApps: List<AppInfo>,
+    userManager: UserManager,
+    font: com.codershubinc.nullvoidlauncher.data.WidgetFont = com.codershubinc.nullvoidlauncher.data.WidgetFont.SERIF,
+    onClose: () -> Unit = {}
+) = ElegantSearchScreen(allApps, userManager, font, onClose)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

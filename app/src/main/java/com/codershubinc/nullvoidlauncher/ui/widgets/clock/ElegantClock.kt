@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.model.StorageStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
@@ -48,17 +49,7 @@ fun ElegantClock(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     val showDay = remember(prefVersion) { userManager.widgets.showDay }
     val dayStyle = remember(prefVersion) { userManager.widgets.dayStyle }

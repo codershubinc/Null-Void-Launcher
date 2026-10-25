@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.codershubinc.nullvoidlauncher.data.model.StorageStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.widgets.storage.*
 import com.codershubinc.nullvoidlauncher.utils.StorageInfoState
@@ -27,17 +28,7 @@ fun StorageWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    var prefVersion by remember { mutableIntStateOf(0) }
-
-    DisposableEffect(userManager) {
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            prefVersion++
-        }
-        userManager.prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            userManager.prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
-    }
+    val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.storageStyle }
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.storageFont }
