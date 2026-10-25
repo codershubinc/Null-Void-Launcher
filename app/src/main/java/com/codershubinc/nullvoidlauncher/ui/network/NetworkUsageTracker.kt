@@ -54,6 +54,13 @@ object NetworkUsageTracker {
     @Volatile
     private var currentDownSpeedBps: Long = 0L
 
+    @Volatile
+    private var lastDiskFlushTimeMs: Long = 0L
+
+    private var inMemoryDailyJson: JSONObject? = null
+    private var inMemoryMonthlyJson: JSONObject? = null
+    private var isDirty = false
+
     private val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val monthFormat = SimpleDateFormat("yyyy-MM", Locale.US)
     private val displayDayFormat = SimpleDateFormat("EEE, MMM d", Locale.US)
@@ -61,6 +68,22 @@ object NetworkUsageTracker {
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    private fun getDailyJson(prefs: SharedPreferences): JSONObject {
+        if (inMemoryDailyJson == null) {
+            val dailyRaw = prefs.getString(KEY_DAILY_LOGS, "{}") ?: "{}"
+            inMemoryDailyJson = try { JSONObject(dailyRaw) } catch (_: Exception) { JSONObject() }
+        }
+        return inMemoryDailyJson!!
+    }
+
+    private fun getMonthlyJson(prefs: SharedPreferences): JSONObject {
+        if (inMemoryMonthlyJson == null) {
+            val monthlyRaw = prefs.getString(KEY_MONTHLY_LOGS, "{}") ?: "{}"
+            inMemoryMonthlyJson = try { JSONObject(monthlyRaw) } catch (_: Exception) { JSONObject() }
+        }
+        return inMemoryMonthlyJson!!
     }
 
     /**
@@ -112,10 +135,14 @@ object NetworkUsageTracker {
                 lastTotalRxBytes = curRx
                 lastTotalTxBytes = curTx
 
-                prefs.edit {
-                    putLong(KEY_LAST_TOTAL_RX, curRx)
-                    putLong(KEY_LAST_TOTAL_TX, curTx)
-                    putLong(KEY_LAST_SAMPLE_TIME, now)
+                val elapsedSinceFlush = now - lastDiskFlushTimeMs
+                if (elapsedSinceFlush > 30000L) {
+                    prefs.edit {
+                        putLong(KEY_LAST_TOTAL_RX, curRx)
+                        putLong(KEY_LAST_TOTAL_TX, curTx)
+                        putLong(KEY_LAST_SAMPLE_TIME, now)
+                    }
+                    flushToDisk(prefs)
                 }
             }
         } else {
@@ -140,12 +167,11 @@ object NetworkUsageTracker {
 
     private fun recordDeltas(prefs: SharedPreferences, rxDelta: Long, txDelta: Long) {
         val now = Date()
-        val todayKey = dayFormat.format(now)
-        val monthKey = monthFormat.format(now)
+        val todayKey = synchronized(dayFormat) { dayFormat.format(now) }
+        val monthKey = synchronized(monthFormat) { monthFormat.format(now) }
 
-        // Update daily logs
-        val dailyRaw = prefs.getString(KEY_DAILY_LOGS, "{}") ?: "{}"
-        val dailyJson = try { JSONObject(dailyRaw) } catch (_: Exception) { JSONObject() }
+        // Update in-memory daily logs
+        val dailyJson = getDailyJson(prefs)
         val todayObj = if (dailyJson.has(todayKey)) dailyJson.getJSONObject(todayKey) else JSONObject()
         val curDayRx = todayObj.optLong("rx", 0L) + rxDelta
         val curDayTx = todayObj.optLong("tx", 0L) + txDelta
@@ -153,15 +179,23 @@ object NetworkUsageTracker {
         todayObj.put("tx", curDayTx)
         dailyJson.put(todayKey, todayObj)
 
-        // Update monthly logs
-        val monthlyRaw = prefs.getString(KEY_MONTHLY_LOGS, "{}") ?: "{}"
-        val monthlyJson = try { JSONObject(monthlyRaw) } catch (_: Exception) { JSONObject() }
+        // Update in-memory monthly logs
+        val monthlyJson = getMonthlyJson(prefs)
         val monthObj = if (monthlyJson.has(monthKey)) monthlyJson.getJSONObject(monthKey) else JSONObject()
         val curMonthRx = monthObj.optLong("rx", 0L) + rxDelta
         val curMonthTx = monthObj.optLong("tx", 0L) + txDelta
         monthObj.put("rx", curMonthRx)
         monthObj.put("tx", curMonthTx)
         monthlyJson.put(monthKey, monthObj)
+
+        isDirty = true
+    }
+
+    @Synchronized
+    fun flushToDisk(prefs: SharedPreferences) {
+        if (!isDirty) return
+        val dailyJson = inMemoryDailyJson ?: return
+        val monthlyJson = inMemoryMonthlyJson ?: return
 
         // Prune older daily logs (> 90 days) to preserve storage
         if (dailyJson.length() > 90) {
@@ -179,13 +213,14 @@ object NetworkUsageTracker {
             putString(KEY_DAILY_LOGS, dailyJson.toString())
             putString(KEY_MONTHLY_LOGS, monthlyJson.toString())
         }
+        lastDiskFlushTimeMs = SystemClock.elapsedRealtime()
+        isDirty = false
     }
 
     fun getTodayUsage(context: Context): UsageLogEntry {
-        val todayKey = dayFormat.format(Date())
+        val todayKey = synchronized(dayFormat) { dayFormat.format(Date()) }
         val prefs = getPrefs(context)
-        val dailyRaw = prefs.getString(KEY_DAILY_LOGS, "{}") ?: "{}"
-        val dailyJson = try { JSONObject(dailyRaw) } catch (_: Exception) { JSONObject() }
+        val dailyJson = getDailyJson(prefs)
         val obj = dailyJson.optJSONObject(todayKey)
         val rx = obj?.optLong("rx", 0L) ?: 0L
         val tx = obj?.optLong("tx", 0L) ?: 0L
@@ -204,10 +239,9 @@ object NetworkUsageTracker {
     }
 
     fun getMonthUsage(context: Context): UsageLogEntry {
-        val monthKey = monthFormat.format(Date())
+        val monthKey = synchronized(monthFormat) { monthFormat.format(Date()) }
         val prefs = getPrefs(context)
-        val monthlyRaw = prefs.getString(KEY_MONTHLY_LOGS, "{}") ?: "{}"
-        val monthlyJson = try { JSONObject(monthlyRaw) } catch (_: Exception) { JSONObject() }
+        val monthlyJson = getMonthlyJson(prefs)
         val obj = monthlyJson.optJSONObject(monthKey)
         val rx = obj?.optLong("rx", 0L) ?: 0L
         val tx = obj?.optLong("tx", 0L) ?: 0L
@@ -227,12 +261,11 @@ object NetworkUsageTracker {
 
     fun getDailyLogs(context: Context): List<UsageLogEntry> {
         val prefs = getPrefs(context)
-        val raw = prefs.getString(KEY_DAILY_LOGS, "{}") ?: "{}"
-        val json = try { JSONObject(raw) } catch (_: Exception) { JSONObject() }
-        val todayKey = dayFormat.format(Date())
+        val json = getDailyJson(prefs)
+        val todayKey = synchronized(dayFormat) { dayFormat.format(Date()) }
         val cal = Calendar.getInstance()
         cal.add(Calendar.DAY_OF_YEAR, -1)
-        val yesterdayKey = dayFormat.format(cal.time)
+        val yesterdayKey = synchronized(dayFormat) { dayFormat.format(cal.time) }
 
         val list = mutableListOf<UsageLogEntry>()
         val keys = json.keys()
@@ -268,9 +301,8 @@ object NetworkUsageTracker {
 
     fun getMonthlyLogs(context: Context): List<UsageLogEntry> {
         val prefs = getPrefs(context)
-        val raw = prefs.getString(KEY_MONTHLY_LOGS, "{}") ?: "{}"
-        val json = try { JSONObject(raw) } catch (_: Exception) { JSONObject() }
-        val thisMonthKey = monthFormat.format(Date())
+        val json = getMonthlyJson(prefs)
+        val thisMonthKey = synchronized(monthFormat) { monthFormat.format(Date()) }
 
         val list = mutableListOf<UsageLogEntry>()
         val keys = json.keys()
@@ -301,6 +333,9 @@ object NetworkUsageTracker {
     }
 
     fun clearAllLogs(context: Context) {
+        inMemoryDailyJson = JSONObject()
+        inMemoryMonthlyJson = JSONObject()
+        isDirty = false
         getPrefs(context).edit {
             remove(KEY_DAILY_LOGS)
             remove(KEY_MONTHLY_LOGS)

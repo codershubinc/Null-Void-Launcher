@@ -3,7 +3,7 @@ package com.codershubinc.nullvoidlauncher.ui.widgets
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.NetworkStyle
+import com.codershubinc.nullvoidlauncher.data.model.NetworkStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkHelper
@@ -45,8 +45,8 @@ fun NetworkWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getNetworkFont() }
-    val effectiveShowUsage = showUsage ?: remember(prefVersion) { userManager.getShowNetworkUsageOnWidget() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.networkFont }
+    val effectiveShowUsage = showUsage ?: remember(prefVersion) { userManager.widgets.showNetworkUsageOnWidget }
     var networkInfo by remember { mutableStateOf(previewInfo ?: NetworkInfoState()) }
 
     LaunchedEffect(previewInfo) {

@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.codershubinc.nullvoidlauncher.data.GithubProfile
+import com.codershubinc.nullvoidlauncher.data.model.GithubProfile
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.components.ProfileDetailRow
@@ -81,7 +81,7 @@ fun GithubProfileScreen(
         scope.launch {
             if (force) isRefreshing = true else isLoading = true
             syncErrorMessage = null
-            val fetched = userManager.fetchGithubProfile(userToFetch, force)
+            val fetched = userManager.github.fetchGithubProfile(userToFetch, force)
             if (fetched != null) {
                 profile = fetched
             } else {
@@ -577,7 +577,7 @@ fun GithubProfileScreen(
                                         if (editUsernameInput.isNotBlank()) {
                                             val newHandle = editUsernameInput.trim()
                                             activeUsername = newHandle
-                                            userManager.saveUsername(newHandle)
+                                            userManager.github.username = newHandle
                                             onUsernameChanged?.invoke(newHandle)
                                             showEditDialog = false
                                             loadProfile(newHandle, true)

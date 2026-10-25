@@ -15,6 +15,7 @@ import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.MessageDigest
 
 data class AppVersion(
     val major: Int,
@@ -55,10 +56,20 @@ data class UpdateInfo(
     val releaseUrl: String,
     val apkDownloadUrl: String?,
     val apkName: String?,
-    val apkSize: Long = 0L
+    val apkSize: Long = 0L,
+    val expectedSha256: String? = null
 )
 
 object AppUpdater {
+
+    private val httpClient by lazy {
+        OkHttpClient.Builder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    }
 
     fun getCurrentVersionName(context: Context): String {
         return try {
@@ -118,6 +129,9 @@ object AppUpdater {
                     }
                 }
 
+                val shaRegex = Regex("(?i)\\b([a-f0-9]{64})\\b")
+                val expectedSha = shaRegex.find(releaseNotes)?.groupValues?.get(1)
+
                 Result.success(
                     UpdateInfo(
                         isUpdateAvailable = isNewer,
@@ -128,7 +142,8 @@ object AppUpdater {
                         releaseUrl = releaseUrl,
                         apkDownloadUrl = apkDownloadUrl,
                         apkName = apkName,
-                        apkSize = apkSize
+                        apkSize = apkSize,
+                        expectedSha256 = expectedSha
                     )
                 )
             } else {
@@ -142,20 +157,16 @@ object AppUpdater {
     suspend fun downloadApk(
         context: Context,
         downloadUrl: String,
+        expectedSha256: String? = null,
         onProgress: (progress: Float, downloadedBytes: Long, totalBytes: Long) -> Unit
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
-            val client = OkHttpClient.Builder()
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .build()
-
             val request = Request.Builder()
                 .url(downloadUrl)
                 .header("User-Agent", Constants.Github.USER_AGENT)
                 .build()
 
-            val response = client.newCall(request).execute()
+            val response = httpClient.newCall(request).execute()
             if (!response.isSuccessful) {
                 return@withContext Result.failure(Exception("HTTP error: ${response.code}"))
             }
@@ -181,10 +192,44 @@ object AppUpdater {
                     output.flush()
                 }
             }
+
+            // Verify downloaded package belongs to this application
+            val pInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageArchiveInfo(apkFile.absolutePath, PackageManager.PackageInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageArchiveInfo(apkFile.absolutePath, 0)
+            }
+            if (pInfo == null || pInfo.packageName != context.packageName) {
+                apkFile.delete()
+                return@withContext Result.failure(SecurityException("Downloaded package does not match ${context.packageName}"))
+            }
+
+            // Verify SHA-256 checksum if provided
+            if (!expectedSha256.isNullOrBlank()) {
+                val actualSha256 = calculateSha256(apkFile)
+                if (!actualSha256.equals(expectedSha256.trim(), ignoreCase = true)) {
+                    apkFile.delete()
+                    return@withContext Result.failure(SecurityException("SHA-256 integrity verification failed"))
+                }
+            }
+
             Result.success(apkFile)
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    fun calculateSha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(8192)
+            var read: Int
+            while (input.read(buffer).also { read = it } != -1) {
+                digest.update(buffer, 0, read)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
     fun canInstallPackages(context: Context): Boolean {
@@ -236,21 +281,21 @@ object AppUpdater {
     private const val CHECK_INTERVAL_MILLIS = 1 * 60 * 60 * 1000L // 1 hour
 
     fun shouldCheckForPeriodicUpdate(userManager: com.codershubinc.nullvoidlauncher.data.UserManager): Boolean {
-        if (!userManager.getAutoCheckUpdates()) return false
+        if (!userManager.updates.autoCheckUpdates) return false
         val now = System.currentTimeMillis()
-        val postponedUntil = userManager.getUpdatePostponedUntil()
+        val postponedUntil = userManager.updates.updatePostponedUntil
         if (now < postponedUntil) return false
 
-        val lastCheck = userManager.getLastUpdateCheckTime()
+        val lastCheck = userManager.updates.lastUpdateCheckTime
         return (now - lastCheck) > CHECK_INTERVAL_MILLIS
     }
 
     fun postponeUpdateTomorrow(userManager: com.codershubinc.nullvoidlauncher.data.UserManager) {
         val tomorrow = System.currentTimeMillis() + ONE_DAY_MILLIS
-        userManager.saveUpdatePostponedUntil(tomorrow)
+        userManager.updates.updatePostponedUntil = tomorrow
     }
 
     fun skipVersion(userManager: com.codershubinc.nullvoidlauncher.data.UserManager, versionTag: String) {
-        userManager.saveSkippedVersion(versionTag)
+        userManager.updates.skippedVersion = versionTag
     }
 }

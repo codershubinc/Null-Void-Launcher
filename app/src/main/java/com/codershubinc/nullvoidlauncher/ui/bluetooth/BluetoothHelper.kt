@@ -141,7 +141,7 @@ object BluetoothHelper {
         }
 
         val userManager = UserManager(context)
-        val preferredAddress = userManager.getPreferredBluetoothDevice()
+        val preferredAddress = userManager.widgets.preferredBluetoothDevice
 
         val bonded = try {
             adapter.bondedDevices?.toList() ?: emptyList()

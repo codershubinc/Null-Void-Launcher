@@ -41,10 +41,10 @@ fun ElegantFavoritesWidget(
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
     
-    val widgetColor = Color(userManager.getWidgetColor())
-    val cornerRadius = userManager.getWidgetCornerRadius()
-    val blurIntensity = userManager.getWidgetBlurIntensity()
-    val glassEffect = userManager.getWidgetGlassEffect()
+    val widgetColor = Color(userManager.widgets.color)
+    val cornerRadius = userManager.widgets.cornerRadius
+    val blurIntensity = userManager.widgets.blurIntensity
+    val glassEffect = userManager.widgets.glassEffect
 
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
@@ -57,7 +57,7 @@ fun ElegantFavoritesWidget(
         }
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.getFavorites()
+            val savedFavs = userManager.drawer.favorites
             
             favoriteApps = if (savedFavs.isNotEmpty()) {
                 savedFavs.mapNotNull { pkg ->
@@ -116,8 +116,7 @@ fun ElegantFavoritesWidget(
                             shape = shape
                         )
                         .clickable {
-                            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                            launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                            com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -125,7 +124,7 @@ fun ElegantFavoritesWidget(
                         app = app,
                         context = context,
                         size = 32,
-                        iconStyle = userManager.getIconStyle()
+                        iconStyle = userManager.theme.iconStyle
                     )
                 }
             }

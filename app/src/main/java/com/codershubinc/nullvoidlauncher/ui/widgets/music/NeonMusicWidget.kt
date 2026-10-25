@@ -49,7 +49,7 @@ fun NeonMusicWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val cornerRadius = userManager.getWidgetCornerRadius()
+    val cornerRadius = userManager.widgets.cornerRadius
     val shape = RoundedCornerShape(cornerRadius.dp)
 
     var track by remember { mutableStateOf(previewTrack) }

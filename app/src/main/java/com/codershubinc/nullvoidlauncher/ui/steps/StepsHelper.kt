@@ -469,7 +469,12 @@ object StepsHelper {
                     addAction(Intent.ACTION_TIME_CHANGED)
                     addAction(Intent.ACTION_DATE_CHANGED)
                 }
-                app.registerReceiver(screenReceiver, filter)
+                androidx.core.content.ContextCompat.registerReceiver(
+                    app,
+                    screenReceiver,
+                    filter,
+                    androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+                )
                 receiverRegistered = true
                 log("Registered screen & time broadcast receiver for step auto-sync")
             } catch (e: Exception) {
@@ -513,6 +518,13 @@ object StepsHelper {
     }
 
     fun unregisterStepSensor() {
+        if (receiverRegistered) {
+            try {
+                appContext?.unregisterReceiver(screenReceiver)
+                receiverRegistered = false
+                log("Unregistered screenReceiver")
+            } catch (_: Exception) {}
+        }
         if (!listenerRegistered) return
         try {
             sensorManager?.unregisterListener(stepListener)
@@ -528,14 +540,14 @@ object StepsHelper {
 
         helperScope.launch {
             log("--- Syncing Steps ---")
-            val syncMode = userManager.getStepSyncMode()
+            val syncMode = userManager.widgets.stepSyncMode
             log("Configured Sync Mode: $syncMode")
 
             val hcAvailable = isHealthConnectAvailable(app)
             val hcPermitted = if (hcAvailable) hasHealthConnectPermission(app) else false
             log("Health Connect status: available=$hcAvailable, permitted=$hcPermitted")
 
-            if (syncMode != com.codershubinc.nullvoidlauncher.data.StepSyncMode.HARDWARE_SENSOR && hcPermitted) {
+            if (syncMode != com.codershubinc.nullvoidlauncher.data.model.StepSyncMode.HARDWARE_SENSOR && hcPermitted) {
                 val hcResult = readHealthConnectSteps(app)
                 if (hcResult != null && hcResult.first > 0) {
                     val stepsInt = hcResult.first.toInt().coerceAtLeast(0)

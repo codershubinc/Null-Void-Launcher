@@ -57,8 +57,8 @@ object CloudWallpaperEngine {
         prefs.edit { putInt("cloud_wallpaper_idx", nextIndex) }
 
         val wallpaper = curatedWallpapers[nextIndex]
-        userManager.saveWallpaperUri(wallpaper.url)
-        userManager.saveShowWallpaper(true)
+        userManager.wallpaper.wallpaperUri = wallpaper.url
+        userManager.wallpaper.showWallpaper = true
 
         Toast.makeText(context, "Wallpaper: ${wallpaper.name}", Toast.LENGTH_SHORT).show()
         return wallpaper

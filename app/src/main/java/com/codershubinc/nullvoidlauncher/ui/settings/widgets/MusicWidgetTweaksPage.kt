@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.MusicStyle
+import com.codershubinc.nullvoidlauncher.data.model.MusicStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.music.MusicTrack
@@ -33,9 +33,9 @@ fun MusicWidgetTweaksPage(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showMusic by remember { mutableStateOf(userManager.getShowMusicWidget()) }
-    var musicStyle by remember { mutableStateOf(userManager.getMusicStyle()) }
-    var musicFont by remember { mutableStateOf(userManager.getMusicFont()) }
+    var showMusic by remember { mutableStateOf(userManager.widgets.showMusic) }
+    var musicStyle by remember { mutableStateOf(userManager.widgets.musicStyle) }
+    var musicFont by remember { mutableStateOf(userManager.widgets.musicFont) }
 
     val previewTrack = remember {
         MusicTrack(
@@ -56,7 +56,7 @@ fun MusicWidgetTweaksPage(
             visible = showMusic,
             onVisibleChange = {
                 showMusic = it
-                userManager.saveShowMusicWidget(it)
+                userManager.widgets.showMusic = it
             }
         )
 
@@ -95,7 +95,7 @@ fun MusicWidgetTweaksPage(
                 selectedStyle = musicStyle,
                 onStyleSelected = {
                     musicStyle = it
-                    userManager.saveMusicStyle(it)
+                    userManager.widgets.musicStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -104,7 +104,7 @@ fun MusicWidgetTweaksPage(
                 selectedFont = musicFont,
                 onFontSelected = {
                     musicFont = it
-                    userManager.saveMusicFont(it)
+                    userManager.widgets.musicFont = it
                 }
             )
 

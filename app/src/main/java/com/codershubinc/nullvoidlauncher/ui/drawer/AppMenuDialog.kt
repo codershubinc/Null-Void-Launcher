@@ -116,7 +116,7 @@ fun AppMenuDialog(
                     } else {
                         if (!current.contains(appKey)) current.add(appKey)
                     }
-                    userManager.saveFavorites(current)
+                    userManager.drawer.favorites = current
                     onFavoritesChanged(current)
                     onDismiss()
                 }
@@ -127,8 +127,8 @@ fun AppMenuDialog(
                     title = if (isHid) "Unhide Application" else "Hide Application",
                     subtitle = if (isHid) "Restore app to main drawer" else "Hide app from drawer search"
                 ) {
-                    userManager.toggleHiddenApp(appKey)
-                    onHiddenAppsChanged(userManager.getHiddenApps())
+                    userManager.drawer.toggleHiddenApp(appKey)
+                    onHiddenAppsChanged(userManager.drawer.hiddenApps)
                     onDismiss()
                 }
 

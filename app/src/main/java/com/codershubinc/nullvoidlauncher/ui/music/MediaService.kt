@@ -61,6 +61,15 @@ class MediaService : NotificationListenerService() {
         _instance = null
     }
 
+    override fun onDestroy() {
+        if (_instance == this) {
+            _instance = null
+        }
+        lastCompressedArtwork = null
+        lastFullArtwork = null
+        super.onDestroy()
+    }
+
     private var lastTrackId: String? = null
     private var lastCompressedArtwork: Bitmap? = null
     private var lastFullArtwork: Bitmap? = null

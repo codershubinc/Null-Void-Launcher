@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.DrawerStyle
+import com.codershubinc.nullvoidlauncher.data.model.DrawerStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
@@ -35,8 +35,8 @@ fun DrawerTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var drawerStyle by remember { mutableStateOf(userManager.getDrawerStyle()) }
-    var drawerFont by remember { mutableStateOf(userManager.getDrawerFont()) }
+    var drawerStyle by remember { mutableStateOf(userManager.drawer.drawerStyle) }
+    var drawerFont by remember { mutableStateOf(userManager.drawer.drawerFont) }
 
     WidgetPageScaffold(
         title = "App Drawer Theme",
@@ -188,7 +188,7 @@ fun DrawerTweaksPage(
                 selectedStyle = drawerStyle,
                 onStyleSelected = {
                     drawerStyle = it
-                    userManager.saveDrawerStyle(it)
+                    userManager.drawer.drawerStyle = it
                 },
                 getLabel = {
                     when (it) {
@@ -208,7 +208,7 @@ fun DrawerTweaksPage(
                 selectedFont = drawerFont,
                 onFontSelected = {
                     drawerFont = it
-                    userManager.saveDrawerFont(it)
+                    userManager.drawer.drawerFont = it
                 }
             )
         }

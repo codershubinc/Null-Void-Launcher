@@ -24,7 +24,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.codershubinc.nullvoidlauncher.data.MusicStyle
+import com.codershubinc.nullvoidlauncher.data.model.MusicStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.music.MusicTrack
@@ -57,7 +57,7 @@ fun MusicWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getMusicFont() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.musicFont }
 
     val gestureModifier = if (onLongClick != null) {
         Modifier.pointerInput(Unit) {

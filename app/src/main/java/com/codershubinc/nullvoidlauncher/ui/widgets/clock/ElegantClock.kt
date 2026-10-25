@@ -24,7 +24,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.StorageStyle
+import com.codershubinc.nullvoidlauncher.data.model.StorageStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
@@ -60,20 +60,20 @@ fun ElegantClock(
         }
     }
 
-    val showDay = remember(prefVersion) { userManager.getShowDayWidget() }
-    val dayStyle = remember(prefVersion) { userManager.getDayStyle() }
-    val showPower = remember(prefVersion) { userManager.getShowPowerWidget() }
-    val powerStyle = remember(prefVersion) { userManager.getPowerStyle() }
-    val powerFont = remember(prefVersion) { userManager.getPowerFont() }
-    val showStorage = remember(prefVersion) { userManager.getShowStorageWidget() }
-    val storageStyle = remember(prefVersion) { userManager.getStorageStyle() }
-    val storageFont = remember(prefVersion) { userManager.getStorageFont() }
-    val showWeather = remember(prefVersion) { userManager.getShowWeatherWidget() }
-    val weatherStyle = remember(prefVersion) { userManager.getWeatherStyle() }
-    val weatherFont = remember(prefVersion) { userManager.getWeatherFont() }
-    val showSteps = remember(prefVersion) { userManager.getShowStepsWidget() }
-    val stepsStyle = remember(prefVersion) { userManager.getStepsStyle() }
-    val stepsFont = remember(prefVersion) { userManager.getStepsFont() }
+    val showDay = remember(prefVersion) { userManager.widgets.showDay }
+    val dayStyle = remember(prefVersion) { userManager.widgets.dayStyle }
+    val showPower = remember(prefVersion) { userManager.widgets.showPower }
+    val powerStyle = remember(prefVersion) { userManager.widgets.powerStyle }
+    val powerFont = remember(prefVersion) { userManager.widgets.powerFont }
+    val showStorage = remember(prefVersion) { userManager.widgets.showStorage }
+    val storageStyle = remember(prefVersion) { userManager.widgets.storageStyle }
+    val storageFont = remember(prefVersion) { userManager.widgets.storageFont }
+    val showWeather = remember(prefVersion) { userManager.widgets.showWeather }
+    val weatherStyle = remember(prefVersion) { userManager.widgets.weatherStyle }
+    val weatherFont = remember(prefVersion) { userManager.widgets.weatherFont }
+    val showSteps = remember(prefVersion) { userManager.widgets.showSteps }
+    val stepsStyle = remember(prefVersion) { userManager.widgets.stepsStyle }
+    val stepsFont = remember(prefVersion) { userManager.widgets.stepsFont }
     val isCharging = batteryStatus == "Charging"
 
     Column(

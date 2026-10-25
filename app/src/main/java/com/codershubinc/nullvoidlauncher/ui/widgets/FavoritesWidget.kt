@@ -24,7 +24,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.codershubinc.nullvoidlauncher.data.FavoritesStyle
+import com.codershubinc.nullvoidlauncher.data.model.FavoritesStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
@@ -56,7 +56,7 @@ fun FavoritesWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getFavoritesFont() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.favoritesFont }
 
     val gestureModifier = if (onLongClick != null) {
         Modifier.pointerInput(Unit) {

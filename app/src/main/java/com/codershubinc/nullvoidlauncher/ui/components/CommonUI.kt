@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.codershubinc.nullvoidlauncher.data.LauncherTheme
+import com.codershubinc.nullvoidlauncher.data.model.LauncherTheme
 
 @Composable
 fun ModernCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {

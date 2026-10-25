@@ -11,10 +11,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.codershubinc.nullvoidlauncher.data.DoubleTapAction
-import com.codershubinc.nullvoidlauncher.data.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.data.toConfig
+import com.codershubinc.nullvoidlauncher.data.model.DoubleTapAction
+import com.codershubinc.nullvoidlauncher.data.model.LauncherTheme
+import com.codershubinc.nullvoidlauncher.data.model.toConfig
 import com.codershubinc.nullvoidlauncher.data.wallpaper.CloudWallpaperEngine
 
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -44,7 +44,7 @@ fun WidgetScreen(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = {
-                        when (userManager.getDoubleTapAction()) {
+                        when (userManager.theme.doubleTapAction) {
                             DoubleTapAction.CYCLE_WALLPAPER -> {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 CloudWallpaperEngine.cycleNextWallpaper(context, userManager)

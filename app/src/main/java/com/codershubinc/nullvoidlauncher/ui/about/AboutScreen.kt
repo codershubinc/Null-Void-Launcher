@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.GithubProfile
+import com.codershubinc.nullvoidlauncher.data.model.GithubProfile
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.InfoRow
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
@@ -72,7 +72,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
 
     LaunchedEffect(Unit) {
         isDevLoading = true
-        devProfile = userManager.fetchGithubProfile(Constants.Github.USERNAME, false)
+        devProfile = userManager.github.fetchGithubProfile(Constants.Github.USERNAME, false)
         isDevLoading = false
     }
 
@@ -101,6 +101,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
             val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.downloadApk(
                 context = context,
                 downloadUrl = downloadUrl,
+                expectedSha256 = info.expectedSha256,
                 onProgress = { progress, downloaded, total ->
                     downloadProgress = progress
                     downloadedBytes = downloaded

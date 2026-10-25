@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.BluetoothStyle
+import com.codershubinc.nullvoidlauncher.data.model.BluetoothStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothDeviceInfo
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothDeviceType
@@ -40,9 +40,9 @@ fun BluetoothWidgetTweaksPage(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showBluetooth by remember { mutableStateOf(userManager.getShowBluetoothWidget()) }
-    var bluetoothStyle by remember { mutableStateOf(userManager.getBluetoothStyle()) }
-    var bluetoothFont by remember { mutableStateOf(userManager.getBluetoothFont()) }
+    var showBluetooth by remember { mutableStateOf(userManager.widgets.showBluetooth) }
+    var bluetoothStyle by remember { mutableStateOf(userManager.widgets.bluetoothStyle) }
+    var bluetoothFont by remember { mutableStateOf(userManager.widgets.bluetoothFont) }
     var isBluetoothConfigOpen by remember { mutableStateOf(false) }
 
     var hasBtPermission by remember { mutableStateOf(BluetoothHelper.hasBluetoothPermission(context)) }
@@ -86,7 +86,7 @@ fun BluetoothWidgetTweaksPage(
             visible = showBluetooth,
             onVisibleChange = {
                 showBluetooth = it
-                userManager.saveShowBluetoothWidget(it)
+                userManager.widgets.showBluetooth = it
             }
         )
 
@@ -126,7 +126,7 @@ fun BluetoothWidgetTweaksPage(
                 selectedStyle = bluetoothStyle,
                 onStyleSelected = {
                     bluetoothStyle = it
-                    userManager.saveBluetoothStyle(it)
+                    userManager.widgets.bluetoothStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -135,7 +135,7 @@ fun BluetoothWidgetTweaksPage(
                 selectedFont = bluetoothFont,
                 onFontSelected = {
                     bluetoothFont = it
-                    userManager.saveBluetoothFont(it)
+                    userManager.widgets.bluetoothFont = it
                 }
             )
 
@@ -221,9 +221,9 @@ fun BluetoothWidgetTweaksPage(
             userManager = userManager,
             onClose = {
                 isBluetoothConfigOpen = false
-                showBluetooth = userManager.getShowBluetoothWidget()
-                bluetoothStyle = userManager.getBluetoothStyle()
-                bluetoothFont = userManager.getBluetoothFont()
+                showBluetooth = userManager.widgets.showBluetooth
+                bluetoothStyle = userManager.widgets.bluetoothStyle
+                bluetoothFont = userManager.widgets.bluetoothFont
             }
         )
     }

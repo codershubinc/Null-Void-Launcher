@@ -32,10 +32,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.*
+import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.WidgetFont
+import com.codershubinc.nullvoidlauncher.data.model.*
+import com.codershubinc.nullvoidlauncher.data.fonts.FontManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.ui.components.*
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
+import com.codershubinc.nullvoidlauncher.ui.settings.fonts.GoogleFontsDialog
 import com.codershubinc.nullvoidlauncher.ui.settings.components.*
 
 @Composable
@@ -56,20 +60,21 @@ fun SettingsScreen(
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
-    var inputUsername by remember { mutableStateOf(userManager.getUsername()) }
-    var selectedTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
-    var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
-    var wallpaperUri by remember { mutableStateOf(userManager.getWallpaperUri()) }
-    var wallpaperBlur by remember { mutableStateOf(userManager.getWallpaperBlur()) }
-    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.getWallpaperBlurIntensity()) }
-    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.getWallpaperBlurColor())) }
-    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.getWallpaperBlurColorAlpha()) }
-    var selectedFavorites by remember { mutableStateOf(userManager.getFavorites().toSet()) }
-    var doubleTapAction by remember { mutableStateOf(userManager.getDoubleTapAction()) }
-    var selectedIconStyle by remember { mutableStateOf(userManager.getIconStyle()) }
-    var hideStatusBar by remember { mutableStateOf(userManager.getHideStatusBar()) }
-    var autoCheckUpdates by remember { mutableStateOf(userManager.getAutoCheckUpdates()) }
+    var inputUsername by remember { mutableStateOf(userManager.github.username) }
+    var selectedTheme by remember { mutableStateOf(userManager.theme.launcherTheme) }
+    var showWallpaper by remember { mutableStateOf(userManager.wallpaper.showWallpaper) }
+    var wallpaperUri by remember { mutableStateOf(userManager.wallpaper.wallpaperUri) }
+    var wallpaperBlur by remember { mutableStateOf(userManager.wallpaper.blur) }
+    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.wallpaper.blurIntensity) }
+    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.wallpaper.blurColor)) }
+    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.wallpaper.blurColorAlpha) }
+    var selectedFavorites by remember { mutableStateOf(userManager.drawer.favorites.toSet()) }
+    var doubleTapAction by remember { mutableStateOf(userManager.theme.doubleTapAction) }
+    var selectedIconStyle by remember { mutableStateOf(userManager.theme.iconStyle) }
+    var hideStatusBar by remember { mutableStateOf(userManager.theme.hideStatusBar) }
+    var autoCheckUpdates by remember { mutableStateOf(userManager.updates.autoCheckUpdates) }
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
+    var showGoogleFontsDialog by remember { mutableStateOf(false) }
     
     var isSelectingApps by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
@@ -200,7 +205,7 @@ fun SettingsScreen(
                                     doubleTapAction = doubleTapAction,
                                     onDoubleTapActionChange = {
                                         doubleTapAction = it
-                                        userManager.saveDoubleTapAction(it)
+                                        userManager.theme.doubleTapAction = it
                                     }
                                 )
                             }
@@ -250,7 +255,7 @@ fun SettingsScreen(
                                         val styles = IconStyle.values()
                                         val nextIdx = (selectedIconStyle.ordinal + 1) % styles.size
                                         selectedIconStyle = styles[nextIdx]
-                                        userManager.saveIconStyle(selectedIconStyle)
+                                        userManager.theme.iconStyle = selectedIconStyle
                                     },
                                     showChevron = true
                                 )
@@ -258,7 +263,7 @@ fun SettingsScreen(
                                 InfoRow(
                                     icon = Icons.Rounded.Search,
                                     label = "App Drawer Theme",
-                                    value = when (userManager.getDrawerStyle()) {
+                                    value = when (userManager.drawer.drawerStyle) {
                                         DrawerStyle.SPOTLIGHT -> "Spotlight Search"
                                         DrawerStyle.ELEGANT -> "Elegant (Serif & Gold)"
                                         DrawerStyle.GRID -> "App Grid"
@@ -270,12 +275,28 @@ fun SettingsScreen(
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
                                 InfoRow(
+                                    icon = Icons.Rounded.FontDownload,
+                                    label = "Google Fonts & Typography",
+                                    value = "${FontManager.getDownloadedFonts().size} installed",
+                                    onClick = { showGoogleFontsDialog = true },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = Icons.Rounded.FontDownload,
+                                    label = "Google Fonts & Typography",
+                                    value = "${FontManager.getDownloadedFonts().size} installed",
+                                    onClick = { showGoogleFontsDialog = true },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
                                     icon = if (hideStatusBar) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                                     label = "System Status Bar",
                                     value = if (hideStatusBar) "Hidden" else "Visible",
                                     onClick = {
                                         hideStatusBar = !hideStatusBar
-                                        userManager.saveHideStatusBar(hideStatusBar)
+                                        userManager.theme.hideStatusBar = hideStatusBar
                                         val activity = context as? android.app.Activity
                                         if (activity != null) {
                                             val controller = androidx.core.view.WindowCompat.getInsetsController(activity.window, activity.window.decorView)
@@ -309,7 +330,7 @@ fun SettingsScreen(
                                     value = if (autoCheckUpdates) "Enabled" else "Disabled",
                                     onClick = {
                                         autoCheckUpdates = !autoCheckUpdates
-                                        userManager.saveAutoCheckUpdates(autoCheckUpdates)
+                                        userManager.updates.autoCheckUpdates = autoCheckUpdates
                                     },
                                     showChevron = true
                                 )
@@ -395,8 +416,16 @@ fun SettingsScreen(
                                         val styles = IconStyle.values()
                                         val nextIdx = (selectedIconStyle.ordinal + 1) % styles.size
                                         selectedIconStyle = styles[nextIdx]
-                                        userManager.saveIconStyle(selectedIconStyle)
+                                        userManager.theme.iconStyle = selectedIconStyle
                                     },
+                                    showChevron = true
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
+                                InfoRow(
+                                    icon = Icons.Rounded.FontDownload,
+                                    label = "Google Fonts & Typography",
+                                    value = "${FontManager.getDownloadedFonts().size} installed",
+                                    onClick = { showGoogleFontsDialog = true },
                                     showChevron = true
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -406,7 +435,7 @@ fun SettingsScreen(
                                     value = if (hideStatusBar) "Hidden" else "Visible",
                                     onClick = {
                                         hideStatusBar = !hideStatusBar
-                                        userManager.saveHideStatusBar(hideStatusBar)
+                                        userManager.theme.hideStatusBar = hideStatusBar
                                         val activity = context as? android.app.Activity
                                         if (activity != null) {
                                             val controller = androidx.core.view.WindowCompat.getInsetsController(activity.window, activity.window.decorView)
@@ -458,7 +487,7 @@ fun SettingsScreen(
                                 doubleTapAction = doubleTapAction,
                                 onDoubleTapActionChange = {
                                     doubleTapAction = it
-                                    userManager.saveDoubleTapAction(it)
+                                    userManager.theme.doubleTapAction = it
                                 }
                             )
                         }
@@ -480,7 +509,7 @@ fun SettingsScreen(
                                 value = if (autoCheckUpdates) "Enabled" else "Disabled",
                                 onClick = {
                                     autoCheckUpdates = !autoCheckUpdates
-                                    userManager.saveAutoCheckUpdates(autoCheckUpdates)
+                                    userManager.updates.autoCheckUpdates = autoCheckUpdates
                                 },
                                 showChevron = true
                             )
@@ -514,20 +543,20 @@ fun SettingsScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color(0xFF3D5AFE))
                         .clickable {
-                            userManager.saveUsername(inputUsername)
-                            userManager.saveLauncherTheme(selectedTheme)
-                            userManager.saveShowWallpaper(showWallpaper)
+                            userManager.github.username = inputUsername
+                            userManager.theme.launcherTheme = selectedTheme
+                            userManager.wallpaper.showWallpaper = showWallpaper
                             if (wallpaperUri != null) {
-                                userManager.saveWallpaperUri(wallpaperUri!!)
+                                userManager.wallpaper.wallpaperUri = wallpaperUri
                             } else {
-                                userManager.clearWallpaperUri()
+                                userManager.wallpaper.clearWallpaperUri()
                             }
-                            userManager.saveWallpaperBlur(wallpaperBlur)
-                            userManager.saveWallpaperBlurIntensity(wallpaperBlurIntensity)
-                            userManager.saveWallpaperBlurColor(wallpaperBlurColor.toArgb())
-                            userManager.saveWallpaperBlurColorAlpha(wallpaperBlurColorAlpha)
-                            userManager.saveFavorites(selectedFavorites.toList())
-                            userManager.saveDoubleTapAction(doubleTapAction)
+                            userManager.wallpaper.blur = wallpaperBlur
+                            userManager.wallpaper.blurIntensity = wallpaperBlurIntensity
+                            userManager.wallpaper.blurColor = wallpaperBlurColor.toArgb()
+                            userManager.wallpaper.blurColorAlpha = wallpaperBlurColorAlpha
+                            userManager.drawer.favorites = selectedFavorites.toList()
+                            userManager.theme.doubleTapAction = doubleTapAction
 
                             onUsernameUpdated(inputUsername)
                             onThemeUpdated(selectedTheme)
@@ -623,6 +652,10 @@ fun SettingsScreen(
 
         if (isNetworkUsageOpen) {
             NetworkUsageScreen(onClose = { isNetworkUsageOpen = false })
+        }
+
+        if (showGoogleFontsDialog) {
+            GoogleFontsDialog(onDismiss = { showGoogleFontsDialog = false })
         }
     }
 }

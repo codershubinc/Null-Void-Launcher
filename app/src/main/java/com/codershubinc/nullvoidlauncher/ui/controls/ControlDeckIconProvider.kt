@@ -14,7 +14,7 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.sharp.*
 import androidx.compose.material.icons.twotone.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.codershubinc.nullvoidlauncher.data.ControlDeckIconStyle
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckIconStyle
 
 object ControlDeckIconProvider {
 

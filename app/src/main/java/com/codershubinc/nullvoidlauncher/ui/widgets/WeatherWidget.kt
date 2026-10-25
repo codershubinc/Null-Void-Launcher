@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codershubinc.nullvoidlauncher.data.model.WeatherStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.data.WeatherStyle
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.weather.WeatherHelper
 import com.codershubinc.nullvoidlauncher.ui.weather.WeatherInfoState
@@ -54,7 +54,7 @@ fun WeatherWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getWeatherFont() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.weatherFont }
     val weather = remember { previewInfo ?: WeatherHelper.getWeatherInfo() }
 
     val gestureModifier = if (onLongClick != null) {

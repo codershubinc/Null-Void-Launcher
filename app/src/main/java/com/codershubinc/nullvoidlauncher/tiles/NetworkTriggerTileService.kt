@@ -78,8 +78,13 @@ class NetworkTriggerTileService : TileService() {
     private suspend fun executeNetworkRequest(): Result<String> = withContext(Dispatchers.IO) {
         var connection: HttpURLConnection? = null
         try {
-            // Replace with your local environment endpoint as needed
-            val url = URL("http://192.168.1.50/command")
+            val userManager = com.codershubinc.nullvoidlauncher.data.UserManager(this@NetworkTriggerTileService)
+            val endpointUrl = userManager.updates.networkTriggerUrl
+            if (endpointUrl.isBlank()) {
+                return@withContext Result.failure(Exception("Endpoint URL not configured in launcher settings"))
+            }
+
+            val url = URL(endpointUrl)
             connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.connectTimeout = 3000
@@ -88,7 +93,8 @@ class NetworkTriggerTileService : TileService() {
             connection.setRequestProperty("Content-Type", "application/json; utf-8")
             connection.setRequestProperty("Accept", "application/json")
 
-            val jsonInputString = "{\"command\": \"trigger_adb\", \"timestamp\": ${System.currentTimeMillis()}}"
+            val customPayload = userManager.updates.networkTriggerPayload
+            val jsonInputString = if (customPayload.isNotBlank()) customPayload else "{\"command\": \"trigger\", \"timestamp\": ${System.currentTimeMillis()}}"
             
             connection.outputStream.use { os ->
                 OutputStreamWriter(os, "UTF-8").use { writer ->

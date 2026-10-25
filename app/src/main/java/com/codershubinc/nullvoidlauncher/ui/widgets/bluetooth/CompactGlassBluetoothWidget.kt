@@ -69,8 +69,8 @@ fun CompactGlassBluetoothWidget(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    val widgetColor = Color(userManager.getWidgetColor())
-    val cornerRadius = userManager.getWidgetCornerRadius()
+    val widgetColor = Color(userManager.widgets.color)
+    val cornerRadius = userManager.widgets.cornerRadius
     val shape = RoundedCornerShape(cornerRadius.dp.coerceAtLeast(16.dp))
 
     val activeDevice = bluetoothInfo.activeDevice ?: bluetoothInfo.connectedDevices.firstOrNull()

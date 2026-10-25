@@ -3,7 +3,7 @@ package com.codershubinc.nullvoidlauncher.ui.widgets
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.StorageStyle
+import com.codershubinc.nullvoidlauncher.data.model.StorageStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.widgets.storage.*
@@ -39,8 +39,8 @@ fun StorageWidget(
         }
     }
 
-    val effectiveStyle = style ?: remember(prefVersion) { userManager.getStorageStyle() }
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getStorageFont() }
+    val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.storageStyle }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.storageFont }
     val storageInfo = previewInfo ?: remember { StorageUtils.getStorageInfo(context) }
 
     when (effectiveStyle) {

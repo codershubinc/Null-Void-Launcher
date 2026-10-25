@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.StepsStyle
+import com.codershubinc.nullvoidlauncher.data.model.StepsStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper
@@ -49,9 +49,9 @@ fun StepsWidget(
         }
     }
 
-    val effectiveStyle = style ?: remember(prefVersion) { userManager.getStepsStyle() }
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getStepsFont() }
-    val dailyGoal = remember(prefVersion) { userManager.getStepsDailyGoal() }
+    val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.stepsStyle }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.stepsFont }
+    val dailyGoal = remember(prefVersion) { userManager.widgets.stepsDailyGoal }
 
     val liveStepsInfo by StepsHelper.stepsState.collectAsState()
     Log.d("StepsWidget", "Live steps info: $liveStepsInfo")

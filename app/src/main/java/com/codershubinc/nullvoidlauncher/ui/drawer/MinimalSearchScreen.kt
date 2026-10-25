@@ -65,8 +65,8 @@ fun MinimalSearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     var selectedAppForMenu by remember { mutableStateOf<AppInfo?>(null) }
-    var hiddenApps by remember { mutableStateOf(userManager.getHiddenApps()) }
-    var favoritesList by remember { mutableStateOf(userManager.getFavorites()) }
+    var hiddenApps by remember { mutableStateOf(userManager.drawer.hiddenApps) }
+    var favoritesList by remember { mutableStateOf(userManager.drawer.favorites) }
     var showHiddenAppsOnly by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -212,8 +212,7 @@ fun MinimalSearchScreen(
                             .fillMaxWidth()
                             .combinedClickable(
                                 onClick = {
-                                    val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                                    launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                                    com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                                     keyboardController?.hide()
                                     onClose()
                                 },

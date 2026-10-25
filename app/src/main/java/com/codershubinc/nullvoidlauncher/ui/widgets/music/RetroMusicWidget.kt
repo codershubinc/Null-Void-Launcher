@@ -52,7 +52,7 @@ fun RetroMusicWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val cornerRadius = userManager.getWidgetCornerRadius()
+    val cornerRadius = userManager.widgets.cornerRadius
 
     var track by remember { mutableStateOf<MusicTrack?>(previewTrack) }
     var hasPermission by remember { mutableStateOf(previewTrack != null || MediaService.isPermissionGranted(context)) }

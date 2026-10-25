@@ -23,9 +23,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.ControlDeckAction
-import com.codershubinc.nullvoidlauncher.data.ControlDeckIconStyle
-import com.codershubinc.nullvoidlauncher.data.ControlDeckStyle
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckAction
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckIconStyle
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlHelper
@@ -37,11 +37,11 @@ fun ControlDeckWidgetTweaksPage(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showControlDeck by remember { mutableStateOf(userManager.getShowControlDeck()) }
-    var deckStyle by remember { mutableStateOf(userManager.getControlDeckStyle()) }
-    var deckIconStyle by remember { mutableStateOf(userManager.getControlDeckIconStyle()) }
-    var isCompact by remember { mutableStateOf(userManager.getControlDeckCompact()) }
-    var enabledActions by remember { mutableStateOf(userManager.getControlDeckActions()) }
+    var showControlDeck by remember { mutableStateOf(userManager.controlDeck.showControlDeck) }
+    var deckStyle by remember { mutableStateOf(userManager.controlDeck.style) }
+    var deckIconStyle by remember { mutableStateOf(userManager.controlDeck.iconStyle) }
+    var isCompact by remember { mutableStateOf(userManager.controlDeck.compact) }
+    var enabledActions by remember { mutableStateOf(userManager.controlDeck.actions) }
 
     LaunchedEffect(Unit) {
         ControlHelper.register(context)
@@ -60,7 +60,7 @@ fun ControlDeckWidgetTweaksPage(
             visible = showControlDeck,
             onVisibleChange = {
                 showControlDeck = it
-                userManager.saveShowControlDeck(it)
+                userManager.controlDeck.showControlDeck = it
             }
         )
 
@@ -122,7 +122,7 @@ fun ControlDeckWidgetTweaksPage(
                 selectedStyle = deckStyle,
                 onStyleSelected = {
                     deckStyle = it
-                    userManager.saveControlDeckStyle(it)
+                    userManager.controlDeck.style = it
                 },
                 getLabel = { style ->
                     when (style) {
@@ -159,7 +159,7 @@ fun ControlDeckWidgetTweaksPage(
                 selectedStyle = deckIconStyle,
                 onStyleSelected = {
                     deckIconStyle = it
-                    userManager.saveControlDeckIconStyle(it)
+                    userManager.controlDeck.iconStyle = it
                 },
                 getLabel = { iconStyle ->
                     when (iconStyle) {
@@ -198,7 +198,7 @@ fun ControlDeckWidgetTweaksPage(
                     checked = isCompact,
                     onCheckedChange = {
                         isCompact = it
-                        userManager.saveControlDeckCompact(it)
+                        userManager.controlDeck.compact = it
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
@@ -237,7 +237,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.TORCH) else updated.remove(ControlDeckAction.TORCH)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -253,7 +253,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.RINGER) else updated.remove(ControlDeckAction.RINGER)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -269,7 +269,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.ROTATION) else updated.remove(ControlDeckAction.ROTATION)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -285,7 +285,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.DND) else updated.remove(ControlDeckAction.DND)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -301,7 +301,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.HOTSPOT) else updated.remove(ControlDeckAction.HOTSPOT)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -317,7 +317,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.BLUETOOTH) else updated.remove(ControlDeckAction.BLUETOOTH)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
 
@@ -333,7 +333,7 @@ fun ControlDeckWidgetTweaksPage(
                     val updated = enabledActions.toMutableSet()
                     if (active) updated.add(ControlDeckAction.WIFI) else updated.remove(ControlDeckAction.WIFI)
                     enabledActions = updated
-                    userManager.saveControlDeckActions(updated)
+                    userManager.controlDeck.actions = updated
                 }
             )
         }

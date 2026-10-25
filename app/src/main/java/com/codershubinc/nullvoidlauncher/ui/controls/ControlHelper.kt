@@ -38,6 +38,7 @@ object ControlHelper {
     private var appContext: Context? = null
     private var torchCallback: CameraManager.TorchCallback? = null
     private var rotationObserver: ContentObserver? = null
+    private var stateReceiver: BroadcastReceiver? = null
 
     enum class RingerState(val label: String) {
         NORMAL("Ring"),
@@ -87,7 +88,13 @@ object ControlHelper {
                     refreshState(targetCtx)
                 }
             }
-            app.registerReceiver(receiver, filter)
+            stateReceiver = receiver
+            androidx.core.content.ContextCompat.registerReceiver(
+                app,
+                receiver,
+                filter,
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+            )
         } catch (_: Exception) {}
 
         // 4. ContentObserver for Auto-Rotate
@@ -106,6 +113,30 @@ object ControlHelper {
         } catch (_: Exception) {}
 
         registered = true
+    }
+
+    fun unregister() {
+        if (!registered) return
+        val app = appContext ?: return
+        try {
+            torchCallback?.let {
+                val cameraManager = app.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
+                cameraManager?.unregisterTorchCallback(it)
+            }
+        } catch (_: Exception) {}
+        torchCallback = null
+
+        try {
+            stateReceiver?.let { app.unregisterReceiver(it) }
+        } catch (_: Exception) {}
+        stateReceiver = null
+
+        try {
+            rotationObserver?.let { app.contentResolver.unregisterContentObserver(it) }
+        } catch (_: Exception) {}
+        rotationObserver = null
+
+        registered = false
     }
 
     fun refreshState(context: Context) {

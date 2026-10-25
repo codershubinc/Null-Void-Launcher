@@ -49,11 +49,11 @@ fun ElegantMusicWidget(
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
     
-    val widgetColor = Color(userManager.getWidgetColor())
-    val cornerRadius = userManager.getWidgetCornerRadius()
-    val blurIntensity = userManager.getWidgetBlurIntensity()
-    val glassEffect = userManager.getWidgetGlassEffect()
-    val preset = userManager.getWidgetPreset()
+    val widgetColor = Color(userManager.widgets.color)
+    val cornerRadius = userManager.widgets.cornerRadius
+    val blurIntensity = userManager.widgets.blurIntensity
+    val glassEffect = userManager.widgets.glassEffect
+    val preset = userManager.widgets.preset
 
     var track by remember { mutableStateOf<MusicTrack?>(previewTrack) }
     var tapCount by remember { mutableIntStateOf(0) }

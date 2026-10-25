@@ -107,6 +107,29 @@ private fun resolveCategory(packageName: String, label: String): AppCategory {
 }
 
 // 2. Function to fetch installed apps (Now super fast!)
+fun safeLaunchApp(context: Context, app: AppInfo): Boolean {
+    return try {
+        val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as? LauncherApps
+        if (launcherApps != null) {
+            launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+            true
+        } else {
+            val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
+            if (intent != null) {
+                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                true
+            } else {
+                android.widget.Toast.makeText(context, "App cannot be launched", android.widget.Toast.LENGTH_SHORT).show()
+                false
+            }
+        }
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(context, "Failed to launch ${app.label}", android.widget.Toast.LENGTH_SHORT).show()
+        false
+    }
+}
+
 fun getInstalledApps(context: Context): List<AppInfo> {
     val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
@@ -181,7 +204,11 @@ fun LazyAppIcon(
         if (imageBitmap == null) {
             withContext(Dispatchers.IO) {
                 val bmp = try {
-                    val drawable = context.packageManager.getActivityIcon(app.componentName)
+                    val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as? LauncherApps
+                    val activityList = launcherApps?.getActivityList(app.packageName, app.userHandle)
+                    val activityInfo = activityList?.firstOrNull { it.componentName == app.componentName }
+                    val drawable = activityInfo?.getBadgedIcon(context.resources.displayMetrics.densityDpi)
+                        ?: context.packageManager.getActivityIcon(app.componentName)
                     drawableToBitmap(drawable).asImageBitmap()
                 } catch (e: Exception) {
                     try {

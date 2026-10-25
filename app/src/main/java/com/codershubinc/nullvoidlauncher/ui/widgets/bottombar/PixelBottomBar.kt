@@ -51,7 +51,7 @@ fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.getFavorites()
+            val savedFavs = userManager.drawer.favorites
             
             favoriteApps = if (savedFavs.isNotEmpty()) {
                 savedFavs.mapNotNull { pkg ->
@@ -100,8 +100,7 @@ fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
                             .size(36.dp)
                             .background(Color.Black, shape = RoundedCornerShape(18.dp))
                             .clickable {
-                                val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                                launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                                com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                             },
                         contentAlignment = Alignment.Center
                     ) {

@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.FavoritesStyle
+import com.codershubinc.nullvoidlauncher.data.model.FavoritesStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
@@ -29,9 +29,9 @@ fun FavoritesWidgetTweaksPage(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showFavorites by remember { mutableStateOf(userManager.getShowFavoritesWidget()) }
-    var favoritesStyle by remember { mutableStateOf(userManager.getFavoritesStyle()) }
-    var favoritesFont by remember { mutableStateOf(userManager.getFavoritesFont()) }
+    var showFavorites by remember { mutableStateOf(userManager.widgets.showFavorites) }
+    var favoritesStyle by remember { mutableStateOf(userManager.widgets.favoritesStyle) }
+    var favoritesFont by remember { mutableStateOf(userManager.widgets.favoritesFont) }
 
     var previewApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
     LaunchedEffect(Unit) {
@@ -51,7 +51,7 @@ fun FavoritesWidgetTweaksPage(
             visible = showFavorites,
             onVisibleChange = {
                 showFavorites = it
-                userManager.saveShowFavoritesWidget(it)
+                userManager.widgets.showFavorites = it
             }
         )
 
@@ -90,7 +90,7 @@ fun FavoritesWidgetTweaksPage(
                 selectedStyle = favoritesStyle,
                 onStyleSelected = {
                     favoritesStyle = it
-                    userManager.saveFavoritesStyle(it)
+                    userManager.widgets.favoritesStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -99,7 +99,7 @@ fun FavoritesWidgetTweaksPage(
                 selectedFont = favoritesFont,
                 onFontSelected = {
                     favoritesFont = it
-                    userManager.saveFavoritesFont(it)
+                    userManager.widgets.favoritesFont = it
                 }
             )
         }

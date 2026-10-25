@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.BluetoothStyle
+import com.codershubinc.nullvoidlauncher.data.model.BluetoothStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
@@ -49,11 +49,11 @@ fun BluetoothSettingsScreen(
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
-    var showBluetooth by remember { mutableStateOf(userManager.getShowBluetoothWidget()) }
-    var onlyConnected by remember { mutableStateOf(userManager.getBluetoothShowOnlyIfConnected()) }
-    var preferredAddress by remember { mutableStateOf(userManager.getPreferredBluetoothDevice()) }
-    var style by remember { mutableStateOf(userManager.getBluetoothStyle()) }
-    var font by remember { mutableStateOf(userManager.getBluetoothFont()) }
+    var showBluetooth by remember { mutableStateOf(userManager.widgets.showBluetooth) }
+    var onlyConnected by remember { mutableStateOf(userManager.widgets.bluetoothOnlyConnected) }
+    var preferredAddress by remember { mutableStateOf(userManager.widgets.preferredBluetoothDevice) }
+    var style by remember { mutableStateOf(userManager.widgets.bluetoothStyle) }
+    var font by remember { mutableStateOf(userManager.widgets.bluetoothFont) }
 
     var bluetoothInfo by remember { mutableStateOf(BluetoothHelper.getBluetoothInfo(context)) }
 
@@ -74,11 +74,11 @@ fun BluetoothSettingsScreen(
     }
 
     fun saveAndClose() {
-        userManager.saveShowBluetoothWidget(showBluetooth)
-        userManager.saveBluetoothShowOnlyIfConnected(onlyConnected)
-        userManager.savePreferredBluetoothDevice(preferredAddress)
-        userManager.saveBluetoothStyle(style)
-        userManager.saveBluetoothFont(font)
+        userManager.widgets.showBluetooth = showBluetooth
+        userManager.widgets.bluetoothOnlyConnected = onlyConnected
+        userManager.widgets.preferredBluetoothDevice = preferredAddress
+        userManager.widgets.bluetoothStyle = style
+        userManager.widgets.bluetoothFont = font
         onClose()
     }
 
@@ -86,17 +86,17 @@ fun BluetoothSettingsScreen(
         showBluetooth = showBluetooth,
         onShowBluetoothChange = {
             showBluetooth = it
-            userManager.saveShowBluetoothWidget(it)
+            userManager.widgets.showBluetooth = it
         },
         onlyConnected = onlyConnected,
         onOnlyConnectedChange = {
             onlyConnected = it
-            userManager.saveBluetoothShowOnlyIfConnected(it)
+            userManager.widgets.bluetoothOnlyConnected = it
         },
         preferredAddress = preferredAddress,
         onPreferredAddressChange = {
             preferredAddress = it
-            userManager.savePreferredBluetoothDevice(it)
+            userManager.widgets.preferredBluetoothDevice = it
         },
         style = style,
         onStyleChange = { style = it },
@@ -249,7 +249,12 @@ fun BluetoothSettingsContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(if (selected) accent else Color.White.copy(alpha = 0.1f))
-                            .clickable { onFontChange(f) }
+                            .clickable {
+                                if (f.isGoogleFont && f.googleFontFamily != null && !com.codershubinc.nullvoidlauncher.data.fonts.FontManager.isFontDownloaded(f)) {
+                                    com.codershubinc.nullvoidlauncher.data.fonts.FontManager.downloadFont(f)
+                                }
+                                onFontChange(f)
+                            }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Text(

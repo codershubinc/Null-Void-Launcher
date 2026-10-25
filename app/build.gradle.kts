@@ -77,7 +77,6 @@ android {
 
 dependencies {
     implementation(libs.okhttp)
-    implementation(libs.okhttp.sse)
     implementation(libs.org.json)
     implementation(libs.androidx.health.connect)
 

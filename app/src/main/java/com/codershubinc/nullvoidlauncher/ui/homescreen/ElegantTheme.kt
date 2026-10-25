@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.codershubinc.nullvoidlauncher.data.LauncherThemeConfig
+import com.codershubinc.nullvoidlauncher.data.model.LauncherThemeConfig
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothHelper
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkHelper
@@ -50,26 +50,26 @@ fun ElegantTheme(
     }
 
     // Read values keyed on prefVersion so home screen instantly refreshes when tweaked
-    val showClock = remember(prefVersion) { userManager.getShowClockWidget() }
-    val showFavorites = remember(prefVersion) { userManager.getShowFavoritesWidget() }
-    val showMusic = remember(prefVersion) { userManager.getShowMusicWidget() }
-    val showNetwork = remember(prefVersion) { userManager.getShowNetworkWidget() }
-    val showBluetooth = remember(prefVersion) { userManager.getShowBluetoothWidget() }
-    val showControlDeck = remember(prefVersion) { userManager.getShowControlDeck() }
+    val showClock = remember(prefVersion) { userManager.widgets.showClock }
+    val showFavorites = remember(prefVersion) { userManager.widgets.showFavorites }
+    val showMusic = remember(prefVersion) { userManager.widgets.showMusic }
+    val showNetwork = remember(prefVersion) { userManager.widgets.showNetwork }
+    val showBluetooth = remember(prefVersion) { userManager.widgets.showBluetooth }
+    val showControlDeck = remember(prefVersion) { userManager.controlDeck.showControlDeck }
 
-    val musicStyle = remember(prefVersion) { userManager.getMusicStyle() }
-    val favoritesStyle = remember(prefVersion) { userManager.getFavoritesStyle() }
-    val clockStyle = remember(prefVersion) { userManager.getClockStyle() }
-    val networkStyle = remember(prefVersion) { userManager.getNetworkStyle() }
-    val bluetoothStyle = remember(prefVersion) { userManager.getBluetoothStyle() }
+    val musicStyle = remember(prefVersion) { userManager.widgets.musicStyle }
+    val favoritesStyle = remember(prefVersion) { userManager.widgets.favoritesStyle }
+    val clockStyle = remember(prefVersion) { userManager.widgets.clockStyle }
+    val networkStyle = remember(prefVersion) { userManager.widgets.networkStyle }
+    val bluetoothStyle = remember(prefVersion) { userManager.widgets.bluetoothStyle }
 
-    val clockFont = remember(prefVersion) { userManager.getClockFont() }
-    val networkFont = remember(prefVersion) { userManager.getNetworkFont() }
-    val bluetoothFont = remember(prefVersion) { userManager.getBluetoothFont() }
-    val favoritesFont = remember(prefVersion) { userManager.getFavoritesFont() }
-    val musicFont = remember(prefVersion) { userManager.getMusicFont() }
+    val clockFont = remember(prefVersion) { userManager.widgets.clockFont }
+    val networkFont = remember(prefVersion) { userManager.widgets.networkFont }
+    val bluetoothFont = remember(prefVersion) { userManager.widgets.bluetoothFont }
+    val favoritesFont = remember(prefVersion) { userManager.widgets.favoritesFont }
+    val musicFont = remember(prefVersion) { userManager.widgets.musicFont }
 
-    val hideStatusBar = remember(prefVersion) { userManager.getHideStatusBar() }
+    val hideStatusBar = remember(prefVersion) { userManager.theme.hideStatusBar }
 
     // Theme Content Box
     Box(
@@ -118,10 +118,10 @@ fun ElegantTheme(
                         )
                     }
                     if (showControlDeck) {
-                        val controlDeckStyle = remember(prefVersion) { userManager.getControlDeckStyle() }
-                        val controlDeckIconStyle = remember(prefVersion) { userManager.getControlDeckIconStyle() }
-                        val controlDeckActions = remember(prefVersion) { userManager.getControlDeckActions() }
-                        val controlDeckCompact = remember(prefVersion) { userManager.getControlDeckCompact() }
+                        val controlDeckStyle = remember(prefVersion) { userManager.controlDeck.style }
+                        val controlDeckIconStyle = remember(prefVersion) { userManager.controlDeck.iconStyle }
+                        val controlDeckActions = remember(prefVersion) { userManager.controlDeck.actions }
+                        val controlDeckCompact = remember(prefVersion) { userManager.controlDeck.compact }
 
                         com.codershubinc.nullvoidlauncher.ui.widgets.QuickControlDeckWidget(
                             overrideStyle = controlDeckStyle,

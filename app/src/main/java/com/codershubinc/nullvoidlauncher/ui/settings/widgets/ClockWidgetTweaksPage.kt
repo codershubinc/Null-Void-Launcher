@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.ClockStyle
+import com.codershubinc.nullvoidlauncher.data.model.ClockStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.widgets.ClockWidget
@@ -23,9 +23,9 @@ fun ClockWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showClock by remember { mutableStateOf(userManager.getShowClockWidget()) }
-    var clockStyle by remember { mutableStateOf(userManager.getClockStyle()) }
-    var clockFont by remember { mutableStateOf(userManager.getClockFont()) }
+    var showClock by remember { mutableStateOf(userManager.widgets.showClock) }
+    var clockStyle by remember { mutableStateOf(userManager.widgets.clockStyle) }
+    var clockFont by remember { mutableStateOf(userManager.widgets.clockFont) }
 
     WidgetPageScaffold(
         title = "Clock Widget",
@@ -38,7 +38,7 @@ fun ClockWidgetTweaksPage(
             visible = showClock,
             onVisibleChange = {
                 showClock = it
-                userManager.saveShowClockWidget(it)
+                userManager.widgets.showClock = it
             }
         )
 
@@ -82,7 +82,7 @@ fun ClockWidgetTweaksPage(
                 selectedStyle = clockStyle,
                 onStyleSelected = {
                     clockStyle = it
-                    userManager.saveClockStyle(it)
+                    userManager.widgets.clockStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -91,7 +91,7 @@ fun ClockWidgetTweaksPage(
                 selectedFont = clockFont,
                 onFontSelected = {
                     clockFont = it
-                    userManager.saveClockFont(it)
+                    userManager.widgets.clockFont = it
                 }
             )
         }

@@ -19,6 +19,7 @@ class KeepAwakeService : Service() {
     companion object {
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = "keep_awake_channel"
+        const val MAX_KEEP_AWAKE_MS = 30 * 60 * 1000L // 30 minutes auto-timeout to prevent burn-in
         
         @Volatile
         var isRunning = false
@@ -26,6 +27,10 @@ class KeepAwakeService : Service() {
     }
 
     private var wakeLock: PowerManager.WakeLock? = null
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val autoStopRunnable = Runnable {
+        stopSelf()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,14 +38,16 @@ class KeepAwakeService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
         acquireWakeLock()
+        handler.postDelayed(autoStopRunnable, MAX_KEEP_AWAKE_MS)
         updateTile()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
+        handler.removeCallbacks(autoStopRunnable)
         releaseWakeLock()
         isRunning = false
         updateTile()
@@ -57,7 +64,7 @@ class KeepAwakeService : Service() {
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
             "NullVoidLauncher::KeepAwakeWakeLock"
         ).apply {
-            acquire()
+            acquire(MAX_KEEP_AWAKE_MS)
         }
     }
 

@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkBluetoothPermission() {
-        if (userManager.getShowBluetoothWidget() &&
+        if (userManager.widgets.showBluetooth &&
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             !BluetoothHelper.hasBluetoothPermission(this)
         ) {
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkStepsPermission() {
-        if (userManager.getShowStepsWidget()) {
+        if (userManager.widgets.showSteps) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                 !com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.hasActivityRecognitionPermission(this)
             ) {
@@ -93,12 +93,12 @@ class MainActivity : ComponentActivity() {
 
             // If Health Connect is available on the device, prompt to connect Google Fit / Health Connect once
             if (com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.isHealthConnectAvailable(this) &&
-                !userManager.getHealthConnectPromptDismissed()
+                !userManager.widgets.healthConnectPromptDismissed
             ) {
                 lifecycleScope.launch {
                     val hasPerm = com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.hasHealthConnectPermission(this@MainActivity)
                     if (!hasPerm) {
-                        userManager.saveHealthConnectPromptDismissed(true)
+                        userManager.widgets.healthConnectPromptDismissed = true
                         healthConnectLauncher.launch(com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.HEALTH_CONNECT_PERMISSIONS)
                     }
                 }
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         applySystemBarsVisibility()
-        if (userManager.getShowStepsWidget()) {
+        if (userManager.widgets.showSteps) {
             com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper.syncSteps(this)
         }
     }
@@ -126,7 +126,7 @@ class MainActivity : ComponentActivity() {
         windowInsetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-        if (userManager.getHideStatusBar()) {
+        if (userManager.theme.hideStatusBar) {
             windowInsetsController.hide(WindowInsetsCompat.Type.statusBars())
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.statusBars())

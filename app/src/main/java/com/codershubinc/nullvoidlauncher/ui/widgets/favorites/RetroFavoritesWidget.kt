@@ -44,7 +44,7 @@ fun RetroFavoritesWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val cornerRadius = userManager.getWidgetCornerRadius()
+    val cornerRadius = userManager.widgets.cornerRadius
 
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
@@ -57,7 +57,7 @@ fun RetroFavoritesWidget(
         }
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.getFavorites()
+            val savedFavs = userManager.drawer.favorites
             favoriteApps = if (savedFavs.isNotEmpty()) {
                 savedFavs.mapNotNull { pkg -> all.find { it.componentName.flattenToString() == pkg } }
             } else all.take(4)
@@ -91,8 +91,7 @@ fun RetroFavoritesWidget(
                         .background(Color(0xFF1A1208))
                         .border(1.dp, amber.copy(alpha = 0.3f), shape)
                         .clickable {
-                            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                            launcherApps.startMainActivity(app.componentName, app.userHandle, null, null)
+                            com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                         }
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,

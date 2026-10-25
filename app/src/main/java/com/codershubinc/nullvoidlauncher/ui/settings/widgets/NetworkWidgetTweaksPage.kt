@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.NetworkStyle
+import com.codershubinc.nullvoidlauncher.data.model.NetworkStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkInfoState
@@ -32,10 +32,10 @@ fun NetworkWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showNetwork by remember { mutableStateOf(userManager.getShowNetworkWidget()) }
-    var networkStyle by remember { mutableStateOf(userManager.getNetworkStyle()) }
-    var networkFont by remember { mutableStateOf(userManager.getNetworkFont()) }
-    var showNetworkUsageOnWidget by remember { mutableStateOf(userManager.getShowNetworkUsageOnWidget()) }
+    var showNetwork by remember { mutableStateOf(userManager.widgets.showNetwork) }
+    var networkStyle by remember { mutableStateOf(userManager.widgets.networkStyle) }
+    var networkFont by remember { mutableStateOf(userManager.widgets.networkFont) }
+    var showNetworkUsageOnWidget by remember { mutableStateOf(userManager.widgets.showNetworkUsageOnWidget) }
     var isDetailedUsageOpen by remember { mutableStateOf(false) }
 
     val previewNetwork = remember {
@@ -65,7 +65,7 @@ fun NetworkWidgetTweaksPage(
             visible = showNetwork,
             onVisibleChange = {
                 showNetwork = it
-                userManager.saveShowNetworkWidget(it)
+                userManager.widgets.showNetwork = it
             }
         )
 
@@ -105,7 +105,7 @@ fun NetworkWidgetTweaksPage(
                 selectedStyle = networkStyle,
                 onStyleSelected = {
                     networkStyle = it
-                    userManager.saveNetworkStyle(it)
+                    userManager.widgets.networkStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -114,7 +114,7 @@ fun NetworkWidgetTweaksPage(
                 selectedFont = networkFont,
                 onFontSelected = {
                     networkFont = it
-                    userManager.saveNetworkFont(it)
+                    userManager.widgets.networkFont = it
                 }
             )
 
@@ -128,7 +128,7 @@ fun NetworkWidgetTweaksPage(
                     .clickable {
                         val newValue = !showNetworkUsageOnWidget
                         showNetworkUsageOnWidget = newValue
-                        userManager.saveShowNetworkUsageOnWidget(newValue)
+                        userManager.widgets.showNetworkUsageOnWidget = newValue
                     }
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -151,7 +151,7 @@ fun NetworkWidgetTweaksPage(
                     checked = showNetworkUsageOnWidget,
                     onCheckedChange = {
                         showNetworkUsageOnWidget = it
-                        userManager.saveShowNetworkUsageOnWidget(it)
+                        userManager.widgets.showNetworkUsageOnWidget = it
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,

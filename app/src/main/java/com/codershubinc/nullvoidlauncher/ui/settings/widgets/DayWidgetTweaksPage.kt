@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.DayStyle
+import com.codershubinc.nullvoidlauncher.data.model.DayStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.widgets.DayWidget
@@ -23,9 +23,9 @@ fun DayWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showDay by remember { mutableStateOf(userManager.getShowDayWidget()) }
-    var dayStyle by remember { mutableStateOf(userManager.getDayStyle()) }
-    var dayFont by remember { mutableStateOf(userManager.getDayFont()) }
+    var showDay by remember { mutableStateOf(userManager.widgets.showDay) }
+    var dayStyle by remember { mutableStateOf(userManager.widgets.dayStyle) }
+    var dayFont by remember { mutableStateOf(userManager.widgets.dayFont) }
 
     WidgetPageScaffold(
         title = "Day Widget",
@@ -38,7 +38,7 @@ fun DayWidgetTweaksPage(
             visible = showDay,
             onVisibleChange = {
                 showDay = it
-                userManager.saveShowDayWidget(it)
+                userManager.widgets.showDay = it
             }
         )
 
@@ -77,7 +77,7 @@ fun DayWidgetTweaksPage(
                 selectedStyle = dayStyle,
                 onStyleSelected = {
                     dayStyle = it
-                    userManager.saveDayStyle(it)
+                    userManager.widgets.dayStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -86,7 +86,7 @@ fun DayWidgetTweaksPage(
                 selectedFont = dayFont,
                 onFontSelected = {
                     dayFont = it
-                    userManager.saveDayFont(it)
+                    userManager.widgets.dayFont = it
                 }
             )
         }

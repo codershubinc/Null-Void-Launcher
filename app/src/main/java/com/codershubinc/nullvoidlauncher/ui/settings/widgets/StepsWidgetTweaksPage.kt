@@ -31,7 +31,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.PermissionController
-import com.codershubinc.nullvoidlauncher.data.StepsStyle
+import com.codershubinc.nullvoidlauncher.data.model.StepSyncMode
+import com.codershubinc.nullvoidlauncher.data.model.StepsStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.steps.StepsHelper
@@ -46,10 +47,10 @@ fun StepsWidgetTweaksPage(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showSteps by remember { mutableStateOf(userManager.getShowStepsWidget()) }
-    var stepsStyle by remember { mutableStateOf(userManager.getStepsStyle()) }
-    var stepsFont by remember { mutableStateOf(userManager.getStepsFont()) }
-    var dailyGoal by remember { mutableIntStateOf(userManager.getStepsDailyGoal()) }
+    var showSteps by remember { mutableStateOf(userManager.widgets.showSteps) }
+    var stepsStyle by remember { mutableStateOf(userManager.widgets.stepsStyle) }
+    var stepsFont by remember { mutableStateOf(userManager.widgets.stepsFont) }
+    var dailyGoal by remember { mutableIntStateOf(userManager.widgets.stepsDailyGoal) }
     var hasSensorPermission by remember { mutableStateOf(StepsHelper.hasActivityRecognitionPermission(context)) }
 
     var showCalibrationDialog by remember { mutableStateOf(false) }
@@ -158,7 +159,7 @@ fun StepsWidgetTweaksPage(
             visible = showSteps,
             onVisibleChange = {
                 showSteps = it
-                userManager.saveShowStepsWidget(it)
+                userManager.widgets.showSteps = it
             }
         )
 
@@ -219,7 +220,7 @@ fun StepsWidgetTweaksPage(
             }
 
             // Sync Source Mode Selector
-            var syncMode by remember { mutableStateOf(userManager.getStepSyncMode()) }
+            var syncMode by remember { mutableStateOf(userManager.widgets.stepSyncMode) }
             Spacer(modifier = Modifier.height(14.dp))
             Text(
                 text = "Sync Source Mode",
@@ -232,12 +233,12 @@ fun StepsWidgetTweaksPage(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                com.codershubinc.nullvoidlauncher.data.StepSyncMode.entries.forEach { mode ->
+                StepSyncMode.entries.forEach { mode ->
                     val isSelected = syncMode == mode
                     val label = when (mode) {
-                        com.codershubinc.nullvoidlauncher.data.StepSyncMode.AUTO -> "Auto"
-                        com.codershubinc.nullvoidlauncher.data.StepSyncMode.HARDWARE_SENSOR -> "Sensor Only"
-                        com.codershubinc.nullvoidlauncher.data.StepSyncMode.HEALTH_CONNECT -> "Google Fit Only"
+                        StepSyncMode.AUTO -> "Auto"
+                        StepSyncMode.HARDWARE_SENSOR -> "Sensor Only"
+                        StepSyncMode.HEALTH_CONNECT -> "Google Fit Only"
                     }
                     Box(
                         modifier = Modifier
@@ -247,7 +248,7 @@ fun StepsWidgetTweaksPage(
                             .border(1.dp, if (isSelected) GoogleFitBlue else Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                             .clickable {
                                 syncMode = mode
-                                userManager.saveStepSyncMode(mode)
+                                userManager.widgets.stepSyncMode = mode
                                 StepsHelper.syncSteps(context)
                             }
                             .padding(vertical = 8.dp),
@@ -500,7 +501,7 @@ fun StepsWidgetTweaksPage(
                 selectedStyle = stepsStyle,
                 onStyleSelected = {
                     stepsStyle = it
-                    userManager.saveStepsStyle(it)
+                    userManager.widgets.stepsStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -509,7 +510,7 @@ fun StepsWidgetTweaksPage(
                 selectedFont = stepsFont,
                 onFontSelected = {
                     stepsFont = it
-                    userManager.saveStepsFont(it)
+                    userManager.widgets.stepsFont = it
                 }
             )
         }
@@ -554,7 +555,7 @@ fun StepsWidgetTweaksPage(
                             )
                             .clickable {
                                 dailyGoal = goal
-                                userManager.saveStepsDailyGoal(goal)
+                                userManager.widgets.stepsDailyGoal = goal
                             }
                             .padding(vertical = 10.dp),
                         contentAlignment = Alignment.Center

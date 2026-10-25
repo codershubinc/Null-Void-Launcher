@@ -13,7 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.BluetoothStyle
+import com.codershubinc.nullvoidlauncher.data.model.BluetoothStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.bluetooth.BluetoothHelper
@@ -55,8 +55,8 @@ fun BluetoothWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getBluetoothFont() }
-    val onlyConnected = showOnlyIfConnected ?: remember(prefVersion) { userManager.getBluetoothShowOnlyIfConnected() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.bluetoothFont }
+    val onlyConnected = showOnlyIfConnected ?: remember(prefVersion) { userManager.widgets.bluetoothOnlyConnected }
 
     var bluetoothInfo by remember {
         mutableStateOf(previewInfo ?: BluetoothHelper.getBluetoothInfo(context))

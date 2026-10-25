@@ -156,7 +156,7 @@ private fun WidgetHubScreen(
                 icon = Icons.Rounded.AutoAwesome,
                 title = "Appearance & Styling",
                 subtitle = "Glassmorphism, blur intensity, corner radius & sync fonts",
-                badgeText = userManager.getWidgetPreset(),
+                badgeText = userManager.widgets.preset,
                 onClick = { onNavigate(WidgetSubPage.APPEARANCE) }
             )
         }
@@ -176,8 +176,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Schedule,
                 title = "Clock Widget",
-                subtitle = "Style: ${userManager.getClockStyle().name} • Font: ${userManager.getClockFont().label}",
-                isActive = userManager.getShowClockWidget(),
+                subtitle = "Style: ${userManager.widgets.clockStyle.name} • Font: ${userManager.widgets.clockFont.label}",
+                isActive = userManager.widgets.showClock,
                 onClick = { onNavigate(WidgetSubPage.CLOCK) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -186,8 +186,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.MusicNote,
                 title = "Music Widget",
-                subtitle = "Style: ${userManager.getMusicStyle().name} • Font: ${userManager.getMusicFont().label}",
-                isActive = userManager.getShowMusicWidget(),
+                subtitle = "Style: ${userManager.widgets.musicStyle.name} • Font: ${userManager.widgets.musicFont.label}",
+                isActive = userManager.widgets.showMusic,
                 onClick = { onNavigate(WidgetSubPage.MUSIC) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -196,8 +196,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Wifi,
                 title = "Network / Wi-Fi Widget",
-                subtitle = "Style: ${userManager.getNetworkStyle().name} • Font: ${userManager.getNetworkFont().label}",
-                isActive = userManager.getShowNetworkWidget(),
+                subtitle = "Style: ${userManager.widgets.networkStyle.name} • Font: ${userManager.widgets.networkFont.label}",
+                isActive = userManager.widgets.showNetwork,
                 onClick = { onNavigate(WidgetSubPage.NETWORK) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -206,8 +206,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.BatteryChargingFull,
                 title = "Battery & Power Widget",
-                subtitle = "Style: ${userManager.getPowerStyle().name} • Font: ${userManager.getPowerFont().label}",
-                isActive = userManager.getShowPowerWidget(),
+                subtitle = "Style: ${userManager.widgets.powerStyle.name} • Font: ${userManager.widgets.powerFont.label}",
+                isActive = userManager.widgets.showPower,
                 onClick = { onNavigate(WidgetSubPage.POWER) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -216,8 +216,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Bluetooth,
                 title = "Bluetooth Widget",
-                subtitle = "Style: ${userManager.getBluetoothStyle().name} • Font: ${userManager.getBluetoothFont().label}",
-                isActive = userManager.getShowBluetoothWidget(),
+                subtitle = "Style: ${userManager.widgets.bluetoothStyle.name} • Font: ${userManager.widgets.bluetoothFont.label}",
+                isActive = userManager.widgets.showBluetooth,
                 onClick = { onNavigate(WidgetSubPage.BLUETOOTH) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -226,8 +226,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Star,
                 title = "Favorites Widget",
-                subtitle = "Style: ${userManager.getFavoritesStyle().name} • Font: ${userManager.getFavoritesFont().label}",
-                isActive = userManager.getShowFavoritesWidget(),
+                subtitle = "Style: ${userManager.widgets.favoritesStyle.name} • Font: ${userManager.widgets.favoritesFont.label}",
+                isActive = userManager.widgets.showFavorites,
                 onClick = { onNavigate(WidgetSubPage.FAVORITES) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -236,8 +236,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.CalendarToday,
                 title = "Day Widget",
-                subtitle = "Style: ${userManager.getDayStyle().name} • Font: ${userManager.getDayFont().label}",
-                isActive = userManager.getShowDayWidget(),
+                subtitle = "Style: ${userManager.widgets.dayStyle.name} • Font: ${userManager.widgets.dayFont.label}",
+                isActive = userManager.widgets.showDay,
                 onClick = { onNavigate(WidgetSubPage.DAY) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -246,8 +246,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Storage,
                 title = "Storage Widget",
-                subtitle = "Style: ${userManager.getStorageStyle().name} • Font: ${userManager.getStorageFont().label}",
-                isActive = userManager.getShowStorageWidget(),
+                subtitle = "Style: ${userManager.widgets.storageStyle.name} • Font: ${userManager.widgets.storageFont.label}",
+                isActive = userManager.widgets.showStorage,
                 onClick = { onNavigate(WidgetSubPage.STORAGE) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -256,8 +256,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.WbSunny,
                 title = "Weather Widget",
-                subtitle = "Style: ${userManager.getWeatherStyle().name} • Font: ${userManager.getWeatherFont().label}",
-                isActive = userManager.getShowWeatherWidget(),
+                subtitle = "Style: ${userManager.widgets.weatherStyle.name} • Font: ${userManager.widgets.weatherFont.label}",
+                isActive = userManager.widgets.showWeather,
                 onClick = { onNavigate(WidgetSubPage.WEATHER) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -266,8 +266,8 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.AutoMirrored.Rounded.DirectionsWalk,
                 title = "Steps & Google Fit Widget",
-                subtitle = "Style: ${userManager.getStepsStyle().name} • Goal: ${userManager.getStepsDailyGoal()} steps",
-                isActive = userManager.getShowStepsWidget(),
+                subtitle = "Style: ${userManager.widgets.stepsStyle.name} • Goal: ${userManager.widgets.stepsDailyGoal} steps",
+                isActive = userManager.widgets.showSteps,
                 onClick = { onNavigate(WidgetSubPage.STEPS) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -298,7 +298,7 @@ private fun WidgetHubScreen(
                 icon = Icons.Rounded.Tune,
                 title = "Quick Control Deck",
                 subtitle = "Flashlight, ringer modes and device controls",
-                isActive = userManager.getShowControlDeck(),
+                isActive = userManager.controlDeck.showControlDeck,
                 onClick = { onNavigate(WidgetSubPage.CONTROL_DECK) }
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.05f))
@@ -307,9 +307,9 @@ private fun WidgetHubScreen(
             WidgetTweakRowItem(
                 icon = Icons.Rounded.Search,
                 title = "App Drawer Theme",
-                subtitle = "Style: ${userManager.getDrawerStyle().name} • Spotlight, Grid, Terminal...",
+                subtitle = "Style: ${userManager.drawer.drawerStyle.name} • Spotlight, Grid, Terminal...",
                 isActive = true,
-                badgeText = userManager.getDrawerStyle().name,
+                badgeText = userManager.drawer.drawerStyle.name,
                 onClick = { onNavigate(WidgetSubPage.DRAWER) }
             )
         }

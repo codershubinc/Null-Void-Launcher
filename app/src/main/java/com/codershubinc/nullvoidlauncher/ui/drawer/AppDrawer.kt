@@ -10,7 +10,7 @@
 package com.codershubinc.nullvoidlauncher.ui.drawer
 
 import androidx.compose.runtime.Composable
-import com.codershubinc.nullvoidlauncher.data.DrawerStyle
+import com.codershubinc.nullvoidlauncher.data.model.DrawerStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.ui.widgets.globleSearch.ElegantSearchScreen
@@ -29,8 +29,8 @@ fun AppDrawer(
     userManager: UserManager,
     onClose: () -> Unit = {}
 ) {
-    val drawerStyle = userManager.getDrawerStyle()
-    val drawerFont = userManager.getDrawerFont()
+    val drawerStyle = userManager.drawer.drawerStyle
+    val drawerFont = userManager.drawer.drawerFont
 
     when (drawerStyle) {
         DrawerStyle.SPOTLIGHT -> {

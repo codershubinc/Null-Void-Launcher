@@ -8,7 +8,7 @@ import android.os.PowerManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.codershubinc.nullvoidlauncher.data.PowerStyle
+import com.codershubinc.nullvoidlauncher.data.model.PowerStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.power.PowerHelper
@@ -50,7 +50,7 @@ fun PowerWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getPowerFont() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.powerFont }
     var powerInfo by remember { mutableStateOf(previewInfo ?: PowerHelper.getPowerInfo(context)) }
 
     DisposableEffect(previewInfo) {

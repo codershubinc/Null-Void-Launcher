@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.PowerStyle
+import com.codershubinc.nullvoidlauncher.data.model.PowerStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.power.PowerInfoState
@@ -24,9 +24,9 @@ fun PowerWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showPower by remember { mutableStateOf(userManager.getShowPowerWidget()) }
-    var powerStyle by remember { mutableStateOf(userManager.getPowerStyle()) }
-    var powerFont by remember { mutableStateOf(userManager.getPowerFont()) }
+    var showPower by remember { mutableStateOf(userManager.widgets.showPower) }
+    var powerStyle by remember { mutableStateOf(userManager.widgets.powerStyle) }
+    var powerFont by remember { mutableStateOf(userManager.widgets.powerFont) }
 
     val previewPower = remember {
         PowerInfoState(
@@ -51,7 +51,7 @@ fun PowerWidgetTweaksPage(
             visible = showPower,
             onVisibleChange = {
                 showPower = it
-                userManager.saveShowPowerWidget(it)
+                userManager.widgets.showPower = it
             }
         )
 
@@ -90,7 +90,7 @@ fun PowerWidgetTweaksPage(
                 selectedStyle = powerStyle,
                 onStyleSelected = {
                     powerStyle = it
-                    userManager.savePowerStyle(it)
+                    userManager.widgets.powerStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -99,7 +99,7 @@ fun PowerWidgetTweaksPage(
                 selectedFont = powerFont,
                 onFontSelected = {
                     powerFont = it
-                    userManager.savePowerFont(it)
+                    userManager.widgets.powerFont = it
                 }
             )
         }

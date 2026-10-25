@@ -59,8 +59,8 @@ fun ElegantStepsWidget(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    val cornerRadius = userManager.getWidgetCornerRadius()
-    val glassEffect = userManager.getWidgetGlassEffect()
+    val cornerRadius = userManager.widgets.cornerRadius
+    val glassEffect = userManager.widgets.glassEffect
     val shape = RoundedCornerShape(cornerRadius.dp)
 
     val progress = stepsInfo.progress

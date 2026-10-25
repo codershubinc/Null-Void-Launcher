@@ -9,7 +9,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.codershubinc.nullvoidlauncher.data.DayStyle
+import com.codershubinc.nullvoidlauncher.data.model.DayStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.ui.widgets.day.*
@@ -42,8 +42,8 @@ fun DayWidget(
         }
     }
 
-    val effectiveStyle = style ?: remember(prefVersion) { userManager.getDayStyle() }
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getDayFont() }
+    val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.dayStyle }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.dayFont }
 
     var currentDay by remember { mutableStateOf(dayText ?: "") }
 

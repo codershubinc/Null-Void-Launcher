@@ -45,9 +45,16 @@ fun NetworkUsageScreen(
     // Live update loop every 2 seconds for real-time speeds & counters
     LaunchedEffect(Unit) {
         while (true) {
-            networkInfo = NetworkHelper.getNetworkInfo(context)
-            dailyLogs = NetworkUsageTracker.getDailyLogs(context)
-            monthlyLogs = NetworkUsageTracker.getMonthlyLogs(context)
+            val (info, dLogs, mLogs) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                Triple(
+                    NetworkHelper.getNetworkInfo(context),
+                    NetworkUsageTracker.getDailyLogs(context),
+                    NetworkUsageTracker.getMonthlyLogs(context)
+                )
+            }
+            networkInfo = info
+            dailyLogs = dLogs
+            monthlyLogs = mLogs
             delay(2.seconds)
         }
     }

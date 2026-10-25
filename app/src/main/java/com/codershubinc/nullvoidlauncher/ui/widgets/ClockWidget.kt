@@ -14,7 +14,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.codershubinc.nullvoidlauncher.data.ClockStyle
+import com.codershubinc.nullvoidlauncher.data.model.ClockStyle
 import com.codershubinc.nullvoidlauncher.ui.widgets.clock.*
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -55,7 +55,7 @@ fun ClockWidget(
         }
     }
 
-    val effectiveFont = font ?: remember(prefVersion) { userManager.getClockFont() }
+    val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.clockFont }
     var timeText by remember { mutableStateOf(previewTimeText ?: "") }
     var amPmTimeText by remember { mutableStateOf("") }
     var dayText by remember { mutableStateOf(previewDayText ?: "") }

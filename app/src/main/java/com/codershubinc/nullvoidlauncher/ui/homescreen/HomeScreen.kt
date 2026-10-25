@@ -29,10 +29,10 @@ import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.model.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 
-import com.codershubinc.nullvoidlauncher.ui.focus.FocusModeScreen
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.SettingsScreen
 import com.codershubinc.nullvoidlauncher.ui.drawer.AppDrawer
@@ -47,14 +47,14 @@ fun HomeScreen() {
 
     val userManager = remember { UserManager(context) }
     val scope = rememberCoroutineScope()
-    var githubUsername by remember { mutableStateOf(userManager.getUsername()) }
-    var currentTheme by remember { mutableStateOf(userManager.getLauncherTheme()) }
-    var showWallpaper by remember { mutableStateOf(userManager.getShowWallpaper()) }
-    var wallpaperUri by remember { mutableStateOf(userManager.getWallpaperUri()) }
-    var wallpaperBlur by remember { mutableStateOf(userManager.getWallpaperBlur()) }
-    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.getWallpaperBlurIntensity()) }
-    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.getWallpaperBlurColor())) }
-    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.getWallpaperBlurColorAlpha()) }
+    var githubUsername by remember { mutableStateOf(userManager.github.username) }
+    var currentTheme by remember { mutableStateOf(userManager.theme.launcherTheme) }
+    var showWallpaper by remember { mutableStateOf(userManager.wallpaper.showWallpaper) }
+    var wallpaperUri by remember { mutableStateOf(userManager.wallpaper.wallpaperUri) }
+    var wallpaperBlur by remember { mutableStateOf(userManager.wallpaper.blur) }
+    var wallpaperBlurIntensity by remember { mutableFloatStateOf(userManager.wallpaper.blurIntensity) }
+    var wallpaperBlurColor by remember { mutableStateOf(Color(userManager.wallpaper.blurColor)) }
+    var wallpaperBlurColorAlpha by remember { mutableFloatStateOf(userManager.wallpaper.blurColorAlpha) }
 
     var allApps by remember { mutableStateOf(emptyList<AppInfo>()) }
 
@@ -96,6 +96,7 @@ fun HomeScreen() {
             val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.downloadApk(
                 context = context,
                 downloadUrl = downloadUrl,
+                expectedSha256 = info.expectedSha256,
                 onProgress = { progress, downloaded, total ->
                     updateDownloadProgress = progress
                     updateDownloadedBytes = downloaded
@@ -126,9 +127,9 @@ fun HomeScreen() {
         // Periodic Background Check for updates
         if (com.codershubinc.nullvoidlauncher.utils.AppUpdater.shouldCheckForPeriodicUpdate(userManager)) {
             val result = com.codershubinc.nullvoidlauncher.utils.AppUpdater.checkForUpdates(context)
-            userManager.saveLastUpdateCheckTime(System.currentTimeMillis())
+            userManager.updates.lastUpdateCheckTime = System.currentTimeMillis()
             result.onSuccess { info ->
-                if (info.isUpdateAvailable && info.latestVersion != userManager.getSkippedVersion()) {
+                if (info.isUpdateAvailable && info.latestVersion != userManager.updates.skippedVersion) {
                     pendingUpdateInfo = info
                 }
             }
@@ -152,7 +153,6 @@ fun HomeScreen() {
 
     var isDrawerOpen by remember { mutableStateOf(false) }
     var isSettingsOpen by remember { mutableStateOf(false) }
-    var isFocusModeOpen by remember { mutableStateOf(false) }
     var isAboutOpen by remember { mutableStateOf(false) }
     var isWidgetSettingsOpen by remember { mutableStateOf(false) }
     var targetWidgetSubPage by remember { mutableStateOf<com.codershubinc.nullvoidlauncher.ui.settings.WidgetSubPage?>(null) }
@@ -169,13 +169,12 @@ fun HomeScreen() {
         }
     }
 
-    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || targetWidgetSubPage != null || isSettingsOpen || isFocusModeOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
+    BackHandler(enabled = isDrawerOpen || isWidgetSettingsOpen || targetWidgetSubPage != null || isSettingsOpen || isAboutOpen || isNetworkUsageOpen || isBluetoothSettingsOpen || pagerState.currentPage == 0) {
         if (targetWidgetSubPage != null) targetWidgetSubPage = null
         else if (isBluetoothSettingsOpen) isBluetoothSettingsOpen = false
         else if (isNetworkUsageOpen) isNetworkUsageOpen = false
         else if (isWidgetSettingsOpen) isWidgetSettingsOpen = false
         else if (isSettingsOpen) isSettingsOpen = false
-        else if (isFocusModeOpen) isFocusModeOpen = false
         else if (isAboutOpen) isAboutOpen = false
         else if (isDrawerOpen) isDrawerOpen = false
         else if (pagerState.currentPage == 0) {
@@ -242,8 +241,8 @@ fun HomeScreen() {
                         }
                     },
                     onWallpaperChanged = {
-                        wallpaperUri = userManager.getWallpaperUri()
-                        showWallpaper = userManager.getShowWallpaper()
+                        wallpaperUri = userManager.wallpaper.wallpaperUri
+                        showWallpaper = userManager.wallpaper.showWallpaper
                     },
                     onOpenNetworkUsage = { isNetworkUsageOpen = true },
                     onOpenBluetoothSettings = { isBluetoothSettingsOpen = true },
@@ -277,7 +276,7 @@ fun HomeScreen() {
                 allApps = allApps,
                 onUsernameUpdated = { newName -> 
                     githubUsername = newName
-                    scope.launch { userManager.fetchGithubProfile(newName, true) }
+                    scope.launch { userManager.github.fetchGithubProfile(newName, true) }
                 },
                 onThemeUpdated = { newTheme ->
                     currentTheme = newTheme
@@ -307,15 +306,6 @@ fun HomeScreen() {
                 onOpenAbout = { isAboutOpen = true },
                 onClose = { isSettingsOpen = false }
             )
-        }
-
-        AnimatedVisibility(
-            visible = isFocusModeOpen,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            FocusModeScreen(onClose = { isFocusModeOpen = false })
         }
 
         AnimatedVisibility(

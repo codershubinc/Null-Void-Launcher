@@ -26,9 +26,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.ControlDeckAction
-import com.codershubinc.nullvoidlauncher.data.ControlDeckIconStyle
-import com.codershubinc.nullvoidlauncher.data.ControlDeckStyle
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckAction
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckIconStyle
+import com.codershubinc.nullvoidlauncher.data.model.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlDeckIconProvider
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlHelper
@@ -53,10 +53,10 @@ fun QuickControlDeckWidget(
 
     val deckState by ControlHelper.deckState.collectAsState()
 
-    val style = overrideStyle ?: remember { userManager.getControlDeckStyle() }
-    val iconStyle = overrideIconStyle ?: remember { userManager.getControlDeckIconStyle() }
-    val actions = overrideActions ?: remember { userManager.getControlDeckActions() }
-    val isCompact = overrideCompact ?: remember { userManager.getControlDeckCompact() }
+    val style = overrideStyle ?: remember { userManager.controlDeck.style }
+    val iconStyle = overrideIconStyle ?: remember { userManager.controlDeck.iconStyle }
+    val actions = overrideActions ?: remember { userManager.controlDeck.actions }
+    val isCompact = overrideCompact ?: remember { userManager.controlDeck.compact }
 
     val containerModifier = when (style) {
         ControlDeckStyle.GLASS -> {

@@ -11,20 +11,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CloudDownload
+import androidx.compose.material.icons.rounded.FontDownload
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
+import com.codershubinc.nullvoidlauncher.data.fonts.FontDownloadState
+import com.codershubinc.nullvoidlauncher.data.fonts.FontManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
+import com.codershubinc.nullvoidlauncher.ui.settings.fonts.GoogleFontsDialog
 
 val WidgetSettingsAccent = Color(0xFF3D5AFE)
 
@@ -164,6 +173,11 @@ fun WidgetFontSelector(
     selectedFont: WidgetFont,
     onFontSelected: (WidgetFont) -> Unit
 ) {
+    val context = LocalContext.current
+    var showGoogleFontsDialog by remember { mutableStateOf(false) }
+    val downloadStates by FontManager.downloadStates.collectAsState()
+    val downloadVersion by FontManager.downloadVersion.collectAsState()
+
     Text(
         text = "Font",
         color = Color.White.copy(alpha = 0.7f),
@@ -173,10 +187,22 @@ fun WidgetFontSelector(
     )
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         WidgetFont.entries.forEach { f ->
             val isSelected = selectedFont == f
+            val isGoogleFont = f.isGoogleFont
+            val familyName = f.googleFontFamily
+            val isDownloaded = remember(f, downloadVersion) { FontManager.isFontDownloaded(f) }
+            val isDownloading = familyName != null && downloadStates[familyName] == FontDownloadState.DOWNLOADING
+
+            val label = if (f == WidgetFont.CUSTOM) {
+                "Custom (${FontManager.getCustomFontFamilyName()})"
+            } else {
+                f.label
+            }
+
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
@@ -186,17 +212,72 @@ fun WidgetFontSelector(
                         if (isSelected) WidgetSettingsAccent else Color.White.copy(alpha = 0.08f),
                         RoundedCornerShape(10.dp)
                     )
-                    .clickable { onFontSelected(f) }
+                    .clickable {
+                        if (isGoogleFont && familyName != null && !isDownloaded && !isDownloading) {
+                            Toast.makeText(context, "Downloading font '${f.label}'...", Toast.LENGTH_SHORT).show()
+                            FontManager.downloadFont(f)
+                        }
+                        onFontSelected(f)
+                    }
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isDownloading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(10.dp),
+                            color = Color.White,
+                            strokeWidth = 1.5.dp
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    } else if (isGoogleFont && familyName != null && !isDownloaded) {
+                        Icon(
+                            imageVector = Icons.Rounded.CloudDownload,
+                            contentDescription = "Download font",
+                            tint = Color.White.copy(alpha = 0.6f),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
+                    Text(
+                        text = label,
+                        color = Color.White,
+                        fontFamily = f.toFontFamily(),
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+
+        // + Google Fonts Button
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White.copy(alpha = 0.12f))
+                .border(1.dp, WidgetSettingsAccent.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                .clickable { showGoogleFontsDialog = true }
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = f.label,
+                    text = "Google Fonts",
                     color = Color.White,
-                    fontFamily = f.toFontFamily(),
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp
                 )
             }
         }
+    }
+
+    if (showGoogleFontsDialog) {
+        GoogleFontsDialog(onDismiss = { showGoogleFontsDialog = false })
     }
 }

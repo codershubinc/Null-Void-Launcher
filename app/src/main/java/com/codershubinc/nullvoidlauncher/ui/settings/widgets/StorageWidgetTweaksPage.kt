@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.codershubinc.nullvoidlauncher.data.StorageStyle
+import com.codershubinc.nullvoidlauncher.data.model.StorageStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.widgets.StorageWidget
@@ -24,9 +24,9 @@ fun StorageWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showStorage by remember { mutableStateOf(userManager.getShowStorageWidget()) }
-    var storageStyle by remember { mutableStateOf(userManager.getStorageStyle()) }
-    var storageFont by remember { mutableStateOf(userManager.getStorageFont()) }
+    var showStorage by remember { mutableStateOf(userManager.widgets.showStorage) }
+    var storageStyle by remember { mutableStateOf(userManager.widgets.storageStyle) }
+    var storageFont by remember { mutableStateOf(userManager.widgets.storageFont) }
 
     val previewStorage = remember {
         StorageInfoState(
@@ -51,7 +51,7 @@ fun StorageWidgetTweaksPage(
             visible = showStorage,
             onVisibleChange = {
                 showStorage = it
-                userManager.saveShowStorageWidget(it)
+                userManager.widgets.showStorage = it
             }
         )
 
@@ -90,7 +90,7 @@ fun StorageWidgetTweaksPage(
                 selectedStyle = storageStyle,
                 onStyleSelected = {
                     storageStyle = it
-                    userManager.saveStorageStyle(it)
+                    userManager.widgets.storageStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -99,7 +99,7 @@ fun StorageWidgetTweaksPage(
                 selectedFont = storageFont,
                 onFontSelected = {
                     storageFont = it
-                    userManager.saveStorageFont(it)
+                    userManager.widgets.storageFont = it
                 }
             )
         }

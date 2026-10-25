@@ -29,11 +29,11 @@ fun AppearanceTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var radius by remember { mutableFloatStateOf(userManager.getWidgetCornerRadius()) }
-    var blurIntensity by remember { mutableFloatStateOf(userManager.getWidgetBlurIntensity()) }
-    var glassEffect by remember { mutableStateOf(userManager.getWidgetGlassEffect()) }
-    var widgetColor by remember { mutableIntStateOf(userManager.getWidgetColor()) }
-    var preset by remember { mutableStateOf(userManager.getWidgetPreset()) }
+    var radius by remember { mutableFloatStateOf(userManager.widgets.cornerRadius) }
+    var blurIntensity by remember { mutableFloatStateOf(userManager.widgets.blurIntensity) }
+    var glassEffect by remember { mutableStateOf(userManager.widgets.glassEffect) }
+    var widgetColor by remember { mutableIntStateOf(userManager.widgets.color) }
+    var preset by remember { mutableStateOf(userManager.widgets.preset) }
 
     WidgetPageScaffold(
         title = "Widget Appearance",
@@ -61,7 +61,7 @@ fun AppearanceTweaksPage(
                             .background(if (isSelected) WidgetSettingsAccent else Color.White.copy(alpha = 0.08f))
                             .clickable {
                                 preset = p
-                                userManager.saveWidgetPreset(p)
+                                userManager.widgets.preset = p
                             }
                             .padding(horizontal = 16.dp, vertical = 9.dp)
                     ) {
@@ -88,7 +88,7 @@ fun AppearanceTweaksPage(
                     checked = glassEffect,
                     onCheckedChange = {
                         glassEffect = it
-                        userManager.saveWidgetGlassEffect(it)
+                        userManager.widgets.glassEffect = it
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
@@ -103,7 +103,7 @@ fun AppearanceTweaksPage(
                 value = radius,
                 onValueChange = {
                     radius = it
-                    userManager.saveWidgetCornerRadius(it)
+                    userManager.widgets.cornerRadius = it
                 },
                 valueRange = 0f..50f,
                 colors = SliderDefaults.colors(thumbColor = WidgetSettingsAccent, activeTrackColor = WidgetSettingsAccent)
@@ -115,7 +115,7 @@ fun AppearanceTweaksPage(
                 value = blurIntensity,
                 onValueChange = {
                     blurIntensity = it
-                    userManager.saveWidgetBlurIntensity(it)
+                    userManager.widgets.blurIntensity = it
                 },
                 valueRange = 0f..100f,
                 colors = SliderDefaults.colors(thumbColor = WidgetSettingsAccent, activeTrackColor = WidgetSettingsAccent)
@@ -136,7 +136,7 @@ fun AppearanceTweaksPage(
                             .background(c)
                             .clickable {
                                 widgetColor = c.toArgb()
-                                userManager.saveWidgetColor(c.toArgb())
+                                userManager.widgets.color = c.toArgb()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -163,14 +163,20 @@ fun AppearanceTweaksPage(
                             .background(Color.White.copy(alpha = 0.08f))
                             .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(10.dp))
                             .clickable {
-                                userManager.saveClockFont(f)
-                                userManager.saveDayFont(f)
-                                userManager.saveMusicFont(f)
-                                userManager.saveFavoritesFont(f)
-                                userManager.saveStorageFont(f)
-                                userManager.saveNetworkFont(f)
-                                userManager.savePowerFont(f)
-                                userManager.saveBluetoothFont(f)
+                                if (f.isGoogleFont && f.googleFontFamily != null && !com.codershubinc.nullvoidlauncher.data.fonts.FontManager.isFontDownloaded(f)) {
+                                    com.codershubinc.nullvoidlauncher.data.fonts.FontManager.downloadFont(f)
+                                }
+                                userManager.widgets.clockFont = f
+                                userManager.widgets.dayFont = f
+                                userManager.widgets.musicFont = f
+                                userManager.widgets.favoritesFont = f
+                                userManager.widgets.storageFont = f
+                                userManager.widgets.networkFont = f
+                                userManager.widgets.powerFont = f
+                                userManager.widgets.bluetoothFont = f
+                                userManager.widgets.weatherFont = f
+                                userManager.widgets.stepsFont = f
+                                userManager.drawer.drawerFont = f
                             }
                             .padding(horizontal = 14.dp, vertical = 9.dp)
                     ) {

@@ -1,7 +1,7 @@
 package com.codershubinc.nullvoidlauncher.ui.widgets
 
 import androidx.compose.runtime.Composable
-import com.codershubinc.nullvoidlauncher.data.BottomBarStyle
+import com.codershubinc.nullvoidlauncher.data.model.BottomBarStyle
 import com.codershubinc.nullvoidlauncher.ui.widgets.bottombar.PixelBottomBar
 
 import androidx.compose.ui.Modifier

@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.codershubinc.nullvoidlauncher.data.model.WeatherStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.data.WeatherStyle
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.weather.WeatherInfoState
 import com.codershubinc.nullvoidlauncher.ui.widgets.WeatherWidget
@@ -24,9 +24,9 @@ fun WeatherWidgetTweaksPage(
     userManager: UserManager,
     onBack: () -> Unit
 ) {
-    var showWeather by remember { mutableStateOf(userManager.getShowWeatherWidget()) }
-    var weatherStyle by remember { mutableStateOf(userManager.getWeatherStyle()) }
-    var weatherFont by remember { mutableStateOf(userManager.getWeatherFont()) }
+    var showWeather by remember { mutableStateOf(userManager.widgets.showWeather) }
+    var weatherStyle by remember { mutableStateOf(userManager.widgets.weatherStyle) }
+    var weatherFont by remember { mutableStateOf(userManager.widgets.weatherFont) }
 
     val previewWeather = remember {
         WeatherInfoState(
@@ -51,7 +51,7 @@ fun WeatherWidgetTweaksPage(
             visible = showWeather,
             onVisibleChange = {
                 showWeather = it
-                userManager.saveShowWeatherWidget(it)
+                userManager.widgets.showWeather = it
             }
         )
 
@@ -90,7 +90,7 @@ fun WeatherWidgetTweaksPage(
                 selectedStyle = weatherStyle,
                 onStyleSelected = {
                     weatherStyle = it
-                    userManager.saveWeatherStyle(it)
+                    userManager.widgets.weatherStyle = it
                 },
                 getLabel = { it.name }
             )
@@ -99,7 +99,7 @@ fun WeatherWidgetTweaksPage(
                 selectedFont = weatherFont,
                 onFontSelected = {
                     weatherFont = it
-                    userManager.saveWeatherFont(it)
+                    userManager.widgets.weatherFont = it
                 }
             )
         }

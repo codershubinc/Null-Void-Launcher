@@ -39,8 +39,8 @@ fun GridFavoritesWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
-    val widgetColor = Color(userManager.getWidgetColor())
-    val cornerRadius = userManager.getWidgetCornerRadius()
+    val widgetColor = Color(userManager.widgets.color)
+    val cornerRadius = userManager.widgets.cornerRadius
 
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
@@ -53,7 +53,7 @@ fun GridFavoritesWidget(
         }
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.getFavorites()
+            val savedFavs = userManager.drawer.favorites
             favoriteApps = if (savedFavs.isNotEmpty()) {
                 savedFavs.mapNotNull { pkg -> all.find { it.componentName.flattenToString() == pkg } }
             } else all.take(4)
@@ -95,8 +95,7 @@ fun GridFavoritesWidget(
                                     .background(widgetColor.copy(alpha = widgetColor.alpha.coerceAtMost(0.18f)))
                                     .border(1.dp, Color.White.copy(alpha = 0.12f), tileShape)
                                     .clickable {
-                                        val la = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-                                        la.startMainActivity(app.componentName, app.userHandle, null, null)
+                                        com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -104,7 +103,7 @@ fun GridFavoritesWidget(
                                     app = app,
                                     context = context,
                                     size = 28,
-                                    iconStyle = userManager.getIconStyle()
+                                    iconStyle = userManager.theme.iconStyle
                                 )
                             }
                         }

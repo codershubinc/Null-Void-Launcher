@@ -44,9 +44,9 @@ fun ElegantNetworkWidget(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val userManager = remember { UserManager(context) }
-    val widgetColor = Color(userManager.getWidgetColor())
-    val cornerRadius = userManager.getWidgetCornerRadius()
-    val glassEffect = userManager.getWidgetGlassEffect()
+    val widgetColor = Color(userManager.widgets.color)
+    val cornerRadius = userManager.widgets.cornerRadius
+    val glassEffect = userManager.widgets.glassEffect
     val shape = RoundedCornerShape(cornerRadius.dp)
 
     val onlineAccent = Color(0xFF8CA6FF)
