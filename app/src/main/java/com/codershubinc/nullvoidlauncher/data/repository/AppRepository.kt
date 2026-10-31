@@ -36,10 +36,91 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 object AppIconCache {
     val cache = LruCache<ComponentName, ImageBitmap>(200)
+}
+
+object AppRepository {
+    private val _appsVersion = MutableStateFlow(0)
+    val appsVersion: StateFlow<Int> = _appsVersion.asStateFlow()
+
+    fun notifyAppsChanged() {
+        AppIconCache.cache.evictAll()
+        _appsVersion.value++
+    }
+}
+
+/**
+ * Checks if a stored favorite key (which may be a ComponentName or packageName) matches an app.
+ * Resilient against app updates where the launcher activity class name changes.
+ */
+fun isAppKeyMatching(key: String, app: AppInfo): Boolean {
+    val compStr = app.componentName.flattenToString()
+    val pkg = app.packageName
+    return key == compStr || key == pkg || key.substringBefore('/') == pkg
+}
+
+/**
+ * Checks if an app matches any key in a collection of favorite keys.
+ */
+fun isAppInFavorites(app: AppInfo, favorites: Collection<String>): Boolean {
+    return favorites.any { isAppKeyMatching(it, app) }
+}
+
+/**
+ * Resolves a stored favorite key to an installed AppInfo.
+ * Resilient to app updates where the launcher activity class name changes.
+ */
+fun findAppForFavoriteKey(key: String, installedApps: List<AppInfo>): AppInfo? {
+    // 1. Exact ComponentName match first
+    val exact = installedApps.find { it.componentName.flattenToString() == key }
+    if (exact != null) return exact
+
+    // 2. Fallback to package name match (handling app updates where the main activity was renamed)
+    val targetPkg = key.substringBefore('/')
+    return installedApps.find { it.packageName == targetPkg }
+}
+
+/**
+ * Resolves the full list of favorite AppInfo objects from SharedPreferences.
+ * Automatically heals outdated component names when apps update, and updates
+ * SharedPreferences to ensure persistent favorites consistency.
+ */
+fun resolveFavoriteApps(
+    userManager: com.codershubinc.nullvoidlauncher.data.UserManager,
+    installedApps: List<AppInfo>
+): List<AppInfo> {
+    val savedFavs = userManager.drawer.favorites
+    if (savedFavs.isEmpty()) {
+        return installedApps.take(5)
+    }
+
+    val resolvedList = mutableListOf<AppInfo>()
+    val updatedKeys = mutableListOf<String>()
+    var needsMigration = false
+
+    for (favKey in savedFavs) {
+        val app = findAppForFavoriteKey(favKey, installedApps)
+        if (app != null) {
+            resolvedList.add(app)
+            val currentCanonical = app.componentName.flattenToString()
+            updatedKeys.add(currentCanonical)
+            if (favKey != currentCanonical) {
+                needsMigration = true
+            }
+        }
+    }
+
+    if (needsMigration) {
+        userManager.drawer.favorites = updatedKeys
+    }
+
+    return if (resolvedList.isNotEmpty()) resolvedList else installedApps.take(5)
 }
 
 private fun drawableToBitmap(drawable: Drawable): Bitmap {

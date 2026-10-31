@@ -22,9 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codershubinc.nullvoidlauncher.data.UserManager
-import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
-import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
+import com.codershubinc.nullvoidlauncher.data.repository.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -40,6 +39,8 @@ fun ElegantFavoritesWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
+    val prefVersion = rememberPrefVersion(userManager)
+    val appsVersion by AppRepository.appsVersion.collectAsState()
     
     val widgetColor = Color(userManager.widgets.color)
     val cornerRadius = userManager.widgets.cornerRadius
@@ -49,7 +50,7 @@ fun ElegantFavoritesWidget(
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(previewApps ?: emptyList()) }
     var isVisible by remember { mutableStateOf(previewApps != null) }
 
-    LaunchedEffect(previewApps) {
+    LaunchedEffect(previewApps, prefVersion, appsVersion) {
         if (previewApps != null) {
             favoriteApps = previewApps
             isVisible = true
@@ -57,15 +58,7 @@ fun ElegantFavoritesWidget(
         }
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.drawer.favorites
-            
-            favoriteApps = if (savedFavs.isNotEmpty()) {
-                savedFavs.mapNotNull { pkg ->
-                    all.find { it.componentName.flattenToString() == pkg }
-                }
-            } else {
-                all.take(4) // Assume first 4 for demo
-            }
+            favoriteApps = resolveFavoriteApps(userManager, all)
         }
         isVisible = true
     }

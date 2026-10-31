@@ -18,9 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
-import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
-import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
+import com.codershubinc.nullvoidlauncher.data.repository.*
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -41,6 +39,7 @@ fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
     }
     val userManager = remember { UserManager(context) }
     val prefVersion = rememberPrefVersion(userManager)
+    val appsVersion by AppRepository.appsVersion.collectAsState()
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
 
     LaunchedEffect(Unit) {
@@ -55,18 +54,10 @@ fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
         }
     }
 
-    LaunchedEffect(prefVersion) {
+    LaunchedEffect(prefVersion, appsVersion) {
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
-            val savedFavs = userManager.drawer.favorites
-            
-            favoriteApps = if (savedFavs.isNotEmpty()) {
-                savedFavs.mapNotNull { pkg ->
-                    all.find { it.componentName.flattenToString() == pkg }
-                }
-            } else {
-                all.take(5)
-            }
+            favoriteApps = resolveFavoriteApps(userManager, all)
         }
     }
 

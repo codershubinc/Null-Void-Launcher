@@ -1,6 +1,9 @@
 package com.codershubinc.nullvoidlauncher.ui.homescreen
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.LauncherApps
 import android.os.UserHandle
 import androidx.activity.compose.BackHandler
@@ -31,6 +34,7 @@ import coil.request.ImageRequest
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.model.LauncherTheme
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.data.repository.AppRepository
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
 
 import com.codershubinc.nullvoidlauncher.ui.github.GithubProfileScreen
@@ -113,6 +117,7 @@ fun HomeScreen() {
                 getInstalledApps(context)
             }
             allApps = apps
+            AppRepository.notifyAppsChanged()
         }
     }
 
@@ -141,8 +146,26 @@ fun HomeScreen() {
             override fun onPackagesUnavailable(packageNames: Array<out String>?, user: UserHandle?, replacing: Boolean) = refreshApps()
         }
         launcherApps.registerCallback(callback)
+
+        val packageReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                refreshApps()
+            }
+        }
+        val packageFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        context.registerReceiver(packageReceiver, packageFilter)
+
         onDispose {
             launcherApps.unregisterCallback(callback)
+            try {
+                context.unregisterReceiver(packageReceiver)
+            } catch (_: Exception) {}
         }
     }
 

@@ -18,6 +18,7 @@ import com.codershubinc.nullvoidlauncher.data.model.FavoritesStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
+import com.codershubinc.nullvoidlauncher.data.repository.resolveFavoriteApps
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.widgets.FavoritesWidget
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +37,8 @@ fun FavoritesWidgetTweaksPage(
     var previewApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            previewApps = getInstalledApps(context).take(4)
+            val all = getInstalledApps(context)
+            previewApps = resolveFavoriteApps(userManager, all)
         }
     }
 

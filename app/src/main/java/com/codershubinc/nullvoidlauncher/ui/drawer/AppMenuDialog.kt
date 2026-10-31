@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.isAppKeyMatching
 
 @Composable
 fun AppMenuDialog(
@@ -50,8 +52,8 @@ fun AppMenuDialog(
     onDismiss: () -> Unit
 ) {
     val appKey = app.componentName.flattenToString()
-    val isFav = favoritesList.contains(appKey)
-    val isHid = hiddenApps.contains(appKey)
+    val isFav = isAppInFavorites(app, favoritesList)
+    val isHid = hiddenApps.any { isAppKeyMatching(it, app) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -110,11 +112,9 @@ fun AppMenuDialog(
                     title = if (isFav) "Remove from Favorites" else "Add to Favorites",
                     subtitle = if (isFav) "Remove from quick launcher dock" else "Pin to quick launcher dock"
                 ) {
-                    val current = favoritesList.toMutableList()
-                    if (isFav) {
-                        current.remove(appKey)
-                    } else {
-                        if (!current.contains(appKey)) current.add(appKey)
+                    val current = favoritesList.filterNot { isAppKeyMatching(it, app) }.toMutableList()
+                    if (!isFav) {
+                        current.add(appKey)
                     }
                     userManager.drawer.favorites = current
                     onFavoritesChanged(current)
@@ -127,8 +127,12 @@ fun AppMenuDialog(
                     title = if (isHid) "Unhide Application" else "Hide Application",
                     subtitle = if (isHid) "Restore app to main drawer" else "Hide app from drawer search"
                 ) {
-                    userManager.drawer.toggleHiddenApp(appKey)
-                    onHiddenAppsChanged(userManager.drawer.hiddenApps)
+                    val current = hiddenApps.filterNot { isAppKeyMatching(it, app) }.toMutableSet()
+                    if (!isHid) {
+                        current.add(appKey)
+                    }
+                    userManager.drawer.hiddenApps = current
+                    onHiddenAppsChanged(current)
                     onDismiss()
                 }
 

@@ -53,8 +53,7 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.fonts.FontManager
 import com.codershubinc.nullvoidlauncher.data.model.*
 import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
-import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
-import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.*
 import com.codershubinc.nullvoidlauncher.ui.components.ModernCard
 import com.codershubinc.nullvoidlauncher.ui.network.NetworkUsageScreen
 import com.codershubinc.nullvoidlauncher.ui.settings.fonts.GoogleFontsDialog
@@ -99,6 +98,13 @@ fun SettingsScreen(
     var hideStatusBar by remember(prefVersion) { mutableStateOf(userManager.theme.hideStatusBar) }
     var autoCheckUpdates by remember(prefVersion) { mutableStateOf(userManager.updates.autoCheckUpdates) }
     var selectedFavorites by remember(prefVersion) { mutableStateOf(userManager.drawer.favorites.toSet()) }
+    val selectedFavoritesCount = remember(selectedFavorites, allApps) {
+        if (allApps.isNotEmpty()) {
+            allApps.count { isAppInFavorites(it, selectedFavorites) }
+        } else {
+            selectedFavorites.size
+        }
+    }
 
     var isNetworkUsageOpen by remember { mutableStateOf(false) }
     var showGoogleFontsDialog by remember { mutableStateOf(false) }
@@ -239,7 +245,7 @@ fun SettingsScreen(
                                 Spacer(modifier = Modifier.height(20.dp))
 
                                 NavigationAndGesturesCard(
-                                    selectedFavoritesCount = selectedFavorites.size,
+                                    selectedFavoritesCount = selectedFavoritesCount,
                                     doubleTapAction = doubleTapAction,
                                     onDoubleTapActionChange = {
                                         doubleTapAction = it
@@ -333,7 +339,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(20.dp))
 
                             NavigationAndGesturesCard(
-                                selectedFavoritesCount = selectedFavorites.size,
+                                selectedFavoritesCount = selectedFavoritesCount,
                                 doubleTapAction = doubleTapAction,
                                 onDoubleTapActionChange = {
                                     doubleTapAction = it
@@ -846,7 +852,24 @@ private fun FavoriteAppsPickerPage(
 ) {
     val context = LocalContext.current
     var query by remember { mutableStateOf("") }
-    var currentSelection by remember { mutableStateOf(selectedFavorites) }
+    var currentSelection by remember(selectedFavorites, allApps) {
+        val canonicalKeys = if (allApps.isNotEmpty()) {
+            selectedFavorites.mapNotNull { key ->
+                findAppForFavoriteKey(key, allApps)?.componentName?.flattenToString()
+            }.toSet()
+        } else {
+            selectedFavorites
+        }
+        mutableStateOf(if (canonicalKeys.isNotEmpty() || selectedFavorites.isEmpty()) canonicalKeys else selectedFavorites)
+    }
+
+    val selectedCount = remember(currentSelection, allApps) {
+        if (allApps.isNotEmpty()) {
+            allApps.count { isAppInFavorites(it, currentSelection) }
+        } else {
+            currentSelection.size
+        }
+    }
 
     val filteredApps = remember(allApps, query) {
         if (query.isBlank()) allApps
@@ -905,17 +928,17 @@ private fun FavoriteAppsPickerPage(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (currentSelection.size == 5) Color(0xFF00E676).copy(alpha = 0.15f) else AccentColor.copy(alpha = 0.15f))
+                    .background(if (selectedCount == 5) Color(0xFF00E676).copy(alpha = 0.15f) else AccentColor.copy(alpha = 0.15f))
                     .border(
                         1.dp,
-                        if (currentSelection.size == 5) Color(0xFF00E676).copy(alpha = 0.4f) else AccentColor.copy(alpha = 0.4f),
+                        if (selectedCount == 5) Color(0xFF00E676).copy(alpha = 0.4f) else AccentColor.copy(alpha = 0.4f),
                         RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = "${currentSelection.size}/5",
-                    color = if (currentSelection.size == 5) Color(0xFF00E676) else Color.White,
+                    text = "$selectedCount/5",
+                    color = if (selectedCount == 5) Color(0xFF00E676) else Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -981,7 +1004,7 @@ private fun FavoriteAppsPickerPage(
                 key = { it.componentName.flattenToString() }
             ) { app ->
                 val pkg = app.componentName.flattenToString()
-                val isSelected = currentSelection.contains(pkg)
+                val isSelected = isAppInFavorites(app, currentSelection)
 
                 Row(
                     modifier = Modifier
@@ -995,10 +1018,10 @@ private fun FavoriteAppsPickerPage(
                         )
                         .clickable {
                             if (isSelected) {
-                                currentSelection = currentSelection - pkg
+                                currentSelection = currentSelection.filterNot { isAppKeyMatching(it, app) }.toSet()
                             } else {
-                                if (currentSelection.size < 5) {
-                                    currentSelection = currentSelection + pkg
+                                if (selectedCount < 5) {
+                                    currentSelection = (currentSelection.filterNot { isAppKeyMatching(it, app) } + pkg).toSet()
                                 }
                             }
                         }
@@ -1064,14 +1087,17 @@ private fun FavoriteAppsPickerPage(
                 .clip(RoundedCornerShape(18.dp))
                 .background(AccentColor)
                 .clickable {
-                    onFavoritesChanged(currentSelection)
+                    val finalKeys = currentSelection.mapNotNull { key ->
+                        findAppForFavoriteKey(key, allApps)?.componentName?.flattenToString() ?: key
+                    }.toSet()
+                    onFavoritesChanged(finalKeys)
                     onBack()
                 }
                 .padding(vertical = 15.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Apply Selection (${currentSelection.size}/5)",
+                text = "Apply Selection ($selectedCount/5)",
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold

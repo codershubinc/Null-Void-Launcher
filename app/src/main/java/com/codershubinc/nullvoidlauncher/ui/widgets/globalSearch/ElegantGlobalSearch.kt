@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.isAppKeyMatching
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -388,8 +390,8 @@ fun ElegantSearchScreen(
                             app = app,
                             context = context,
                             iconStyle = userManager.theme.iconStyle,
-                            isFavorite = favoritesList.contains(app.componentName.flattenToString()),
-                            isHidden = hiddenApps.contains(app.componentName.flattenToString()),
+                            isFavorite = isAppInFavorites(app, favoritesList),
+                            isHidden = hiddenApps.any { isAppKeyMatching(it, app) },
                             onAppClick = {
                                 com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                                 keyboardController?.hide()

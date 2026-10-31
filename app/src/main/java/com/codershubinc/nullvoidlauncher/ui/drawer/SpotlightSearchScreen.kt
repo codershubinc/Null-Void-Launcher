@@ -49,6 +49,8 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.isAppKeyMatching
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 
@@ -108,7 +110,7 @@ fun SpotlightSearchScreen(
     val topHits = remember(searchQuery, filteredApps, favoritesList) {
         if (searchQuery.trim().isEmpty()) {
             // Show favorite apps as top hits when search bar is idle
-            filteredApps.filter { favoritesList.contains(it.componentName.flattenToString()) }.take(5)
+            filteredApps.filter { isAppInFavorites(it, favoritesList) }.take(5)
         } else {
             // Best matching hits
             filteredApps.take(3)
@@ -400,8 +402,8 @@ fun SpotlightSearchScreen(
                         context = context,
                         font = font,
                         iconStyle = userManager.theme.iconStyle,
-                        isFavorite = favoritesList.contains(app.componentName.flattenToString()),
-                        isHidden = hiddenApps.contains(app.componentName.flattenToString()),
+                        isFavorite = isAppInFavorites(app, favoritesList),
+                        isHidden = hiddenApps.any { isAppKeyMatching(it, app) },
                         onClick = {
                             com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp(context, app)
                             keyboardController?.hide()

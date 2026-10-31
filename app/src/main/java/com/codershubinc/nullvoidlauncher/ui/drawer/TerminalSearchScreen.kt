@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 
@@ -239,7 +240,7 @@ fun TerminalSearchScreen(
                     items = filteredApps,
                     key = { _, app -> app.componentName.flattenToString() + app.userHandle.hashCode() }
                 ) { index, app ->
-                    val isFav = favoritesList.contains(app.componentName.flattenToString())
+                    val isFav = isAppInFavorites(app, favoritesList)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
