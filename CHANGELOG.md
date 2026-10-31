@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5] - 2026-11-01 — Favorite Apps Resolution Patch & Settings Redesign
+
+The **v0.1.5** release is an immediate patch release addressing a critical favorite apps disappearing bug across package updates, along with a comprehensive overhaul of the Settings screen UI/UX.
+
+### Fixed
+- **Favorite Apps Vanishing on Package Updates**:
+  - Resolved an issue where apps updated via Google Play or package installers disappeared from home screen dock widgets (`DockFavoritesWidget`, `ElegantFavoritesWidget`, `GridFavoritesWidget`, `RetroFavoritesWidget`, `PixelBottomBar`).
+  - Added resilient matching logic (`isAppKeyMatching`, `findAppForFavoriteKey`) that matches by canonical `ComponentName` first and falls back to package name (`packageName`) when an update modifies the launcher Activity class name.
+  - Implemented auto-healing in `resolveFavoriteApps` that automatically updates saved preferences to the new canonical `ComponentName` when an app is detected with a changed launcher Activity.
+  - Fixed `FavoriteAppsPickerPage` where updated apps showed as unselected while holding a stale slot in `selectedCount`, which previously blocked users from selecting or re-adding the updated app.
+  - Added reactive package change broadcast receiver (`ACTION_PACKAGE_ADDED`, `ACTION_PACKAGE_REPLACED`, `ACTION_PACKAGE_REMOVED`, `ACTION_PACKAGE_CHANGED`) in `HomeScreen` and connected `AppRepository.appsVersion` flow with icon cache invalidation to trigger instant re-evaluation across all favorite widgets.
+  - Updated `AppMenuDialog`, `SpotlightSearchScreen`, `GridSearchScreen`, `TerminalSearchScreen`, `MinimalSearchScreen`, and `ElegantGlobalSearch` to use `isAppInFavorites` and cleanly remove any stale keys on toggle.
+
+### Changed & Improved
+- **Settings Screen UI/UX Overhaul**:
+  - Redesigned the main `SettingsScreen` layout with modern grouped card sections, decluttering controls into clear categories.
+  - Extracted wallpaper personalization into a dedicated `WallpaperSettingsPage` sub-screen with live preview, preset selection, blur intensity controls, tint color picker, and auto-wallpaper timing options.
+  - Refined edge-to-edge system insets and bottom bar padding across subpages.
+
+---
+
 ## [0.1.4] - 2026-11-01 — Architecture Modularization, On-Demand Typography & Release Polish
 
 The **v0.1.4** release is a major architectural overhaul focusing on modularization, APK size optimization through dynamic Google Fonts, deterministic home navigation state, decoupling of hardware telemetry from UI, and UI bug fixes.

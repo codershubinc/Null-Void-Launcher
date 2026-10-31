@@ -39,6 +39,7 @@ class ExampleUnitTest {
         val v013 = AppVersion.parse("v0.1.3")
         val v013Beta = AppVersion.parse("v0.1.3-beta")
         val v014 = AppVersion.parse("v0.1.4")
+        val v015 = AppVersion.parse("v0.1.5")
 
         assertEquals(0, v012.major)
         assertEquals(1, v012.minor)
@@ -48,6 +49,11 @@ class ExampleUnitTest {
         assertEquals(1, v014.minor)
         assertEquals(4, v014.patch)
 
+        assertEquals(0, v015.major)
+        assertEquals(1, v015.minor)
+        assertEquals(5, v015.patch)
+
+        assertTrue(v015 > v014)
         assertTrue(v014 > v013)
         assertTrue(v013 > v012)
         assertTrue(v013 > v013Beta)
