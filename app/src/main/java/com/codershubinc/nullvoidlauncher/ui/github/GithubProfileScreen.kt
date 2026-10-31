@@ -123,6 +123,7 @@ fun GithubProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState)
         ) {

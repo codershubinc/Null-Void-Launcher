@@ -120,7 +120,9 @@ object PowerHelper {
             addAction(Intent.ACTION_BATTERY_CHANGED)
             addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         }
-        appContext.registerReceiver(receiver, filter)
+        try {
+            appContext.registerReceiver(receiver, filter)
+        } catch (_: Exception) {}
 
         awaitClose {
             try {

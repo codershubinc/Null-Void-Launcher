@@ -103,6 +103,8 @@ fun TerminalSearchScreen(
             .fillMaxSize()
             .background(Color(0xFF050B05))
             .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier

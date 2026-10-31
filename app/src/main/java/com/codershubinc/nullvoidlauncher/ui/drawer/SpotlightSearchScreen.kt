@@ -120,6 +120,8 @@ fun SpotlightSearchScreen(
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.82f))
             .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier

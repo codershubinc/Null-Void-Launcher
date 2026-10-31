@@ -86,6 +86,7 @@ fun NetworkUsageScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 14.dp)
         ) {
             // Header Bar

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
 import com.codershubinc.nullvoidlauncher.data.repository.getInstalledApps
@@ -31,9 +32,15 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
     val context = LocalContext.current
-    var amPmTimeText by remember { mutableStateOf("") }
-    var dayText by remember { mutableStateOf("") }
+    val initialNow = remember { Date() }
+    var amPmTimeText by remember {
+        mutableStateOf(SimpleDateFormat("hh:mm", Locale.getDefault()).format(initialNow).replace(" ", ""))
+    }
+    var dayText by remember {
+        mutableStateOf(SimpleDateFormat("EEEE", Locale.getDefault()).format(initialNow))
+    }
     val userManager = remember { UserManager(context) }
+    val prefVersion = rememberPrefVersion(userManager)
     var favoriteApps by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
 
     LaunchedEffect(Unit) {
@@ -48,7 +55,7 @@ fun PixelBottomBar(modifier: Modifier = Modifier, onOpenDrawer: () -> Unit) {
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(prefVersion) {
         withContext(Dispatchers.IO) {
             val all = getInstalledApps(context)
             val savedFavs = userManager.drawer.favorites

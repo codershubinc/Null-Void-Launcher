@@ -62,7 +62,9 @@ fun PowerWidget(
             addAction(Intent.ACTION_BATTERY_CHANGED)
             addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         }
-        context.registerReceiver(receiver, filter)
+        try {
+            context.registerReceiver(receiver, filter)
+        } catch (_: Exception) {}
 
         onDispose {
             try {

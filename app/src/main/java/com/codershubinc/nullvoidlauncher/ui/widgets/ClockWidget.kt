@@ -47,17 +47,18 @@ fun ClockWidget(
     val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.clockFont }
-    var timeText by remember { mutableStateOf(previewTimeText ?: "") }
-    var amPmTimeText by remember { mutableStateOf("") }
-    var dayText by remember { mutableStateOf(previewDayText ?: "") }
-    var dateText by remember { mutableStateOf("") }
-    var dayOfMonth by remember { mutableStateOf(previewDayOfMonth ?: "") }
-    var monthName by remember { mutableStateOf(previewMonthName ?: "") }
+    val initialNow = remember { Date() }
+    var timeText by remember { mutableStateOf(previewTimeText ?: SimpleDateFormat("HH:mm", Locale.getDefault()).format(initialNow)) }
+    var amPmTimeText by remember { mutableStateOf(SimpleDateFormat("hh:mm a", Locale.getDefault()).format(initialNow).replace(" ", "")) }
+    var dayText by remember { mutableStateOf(previewDayText ?: SimpleDateFormat("EEEE", Locale.getDefault()).format(initialNow).uppercase()) }
+    var dateText by remember { mutableStateOf(SimpleDateFormat("dd MMMM, yyyy", Locale.getDefault()).format(initialNow).uppercase()) }
+    var dayOfMonth by remember { mutableStateOf(previewDayOfMonth ?: SimpleDateFormat("dd", Locale.getDefault()).format(initialNow)) }
+    var monthName by remember { mutableStateOf(previewMonthName ?: SimpleDateFormat("MMMM", Locale.getDefault()).format(initialNow).lowercase()) }
     var batteryLevel by remember { mutableIntStateOf(previewBatteryLevel ?: 85) }
     var batteryStatus by remember { mutableStateOf(previewBatteryStatus ?: "DISCHARGING") }
-    var currentYear by remember { mutableStateOf("") }
+    var currentYear by remember { mutableStateOf(SimpleDateFormat("yyyy", Locale.getDefault()).format(initialNow)) }
 
-    LaunchedEffect(previewTimeText) {
+    LaunchedEffect(previewTimeText, previewDayText, previewMonthName, previewDayOfMonth, previewBatteryLevel, previewBatteryStatus) {
         if (previewTimeText != null) {
             timeText = previewTimeText
             dayText = previewDayText ?: "FRIDAY"
@@ -109,8 +110,14 @@ fun ClockWidget(
                 }
             }
         }
-        context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        onDispose { context.unregisterReceiver(batteryReceiver) }
+        try {
+            context.registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        } catch (_: Exception) {}
+        onDispose {
+            try {
+                context.unregisterReceiver(batteryReceiver)
+            } catch (_: Exception) {}
+        }
     }
 
     fun openDefaultClockApp() {

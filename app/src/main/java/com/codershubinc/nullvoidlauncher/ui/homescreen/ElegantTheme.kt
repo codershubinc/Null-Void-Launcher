@@ -73,6 +73,7 @@ fun ElegantTheme(
                     Modifier.statusBarsPadding()
                 }
             )
+            .navigationBarsPadding()
             .padding(horizontal = if (isTablet) 12.dp else 0.dp)
     ) {
         // TELEMETRY STACK (Bluetooth + Network + Control Deck)

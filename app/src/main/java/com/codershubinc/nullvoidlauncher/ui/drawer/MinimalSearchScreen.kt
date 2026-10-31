@@ -100,6 +100,8 @@ fun MinimalSearchScreen(
             .fillMaxSize()
             .background(Color(0xFF040404))
             .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier

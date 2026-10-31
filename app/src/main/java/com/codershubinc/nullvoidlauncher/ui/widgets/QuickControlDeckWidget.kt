@@ -30,6 +30,7 @@ import com.codershubinc.nullvoidlauncher.data.model.ControlDeckAction
 import com.codershubinc.nullvoidlauncher.data.model.ControlDeckIconStyle
 import com.codershubinc.nullvoidlauncher.data.model.ControlDeckStyle
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
 import com.codershubinc.nullvoidlauncher.system.controls.ControlDeckState
 import com.codershubinc.nullvoidlauncher.system.controls.ControlHelper
 import com.codershubinc.nullvoidlauncher.ui.controls.ControlDeckIconProvider
@@ -45,6 +46,7 @@ fun QuickControlDeckWidget(
 ) {
     val context = LocalContext.current
     val userManager = remember { UserManager(context) }
+    val prefVersion = rememberPrefVersion(userManager)
 
     // Ensure listeners & observers are registered
     DisposableEffect(Unit) {
@@ -54,10 +56,10 @@ fun QuickControlDeckWidget(
 
     val deckState by ControlHelper.deckState.collectAsState()
 
-    val style = overrideStyle ?: remember { userManager.controlDeck.style }
-    val iconStyle = overrideIconStyle ?: remember { userManager.controlDeck.iconStyle }
-    val actions = overrideActions ?: remember { userManager.controlDeck.actions }
-    val isCompact = overrideCompact ?: remember { userManager.controlDeck.compact }
+    val style = overrideStyle ?: remember(prefVersion) { userManager.controlDeck.style }
+    val iconStyle = overrideIconStyle ?: remember(prefVersion) { userManager.controlDeck.iconStyle }
+    val actions = overrideActions ?: remember(prefVersion) { userManager.controlDeck.actions }
+    val isCompact = overrideCompact ?: remember(prefVersion) { userManager.controlDeck.compact }
 
     val containerModifier = when (style) {
         ControlDeckStyle.GLASS -> {

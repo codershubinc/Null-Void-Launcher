@@ -159,6 +159,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = if (isTablet) 64.dp else 24.dp)
                 .then(
                     if (isTablet) Modifier.widthIn(max = 800.dp).align(Alignment.TopCenter)

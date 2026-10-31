@@ -135,6 +135,8 @@ fun ElegantSearchScreen(
             .fillMaxSize()
             .background(Color(0xFF070709))
             .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier

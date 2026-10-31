@@ -36,7 +36,9 @@ fun DayWidget(
     val effectiveStyle = style ?: remember(prefVersion) { userManager.widgets.dayStyle }
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.dayFont }
 
-    var currentDay by remember { mutableStateOf(dayText ?: "") }
+    var currentDay by remember {
+        mutableStateOf(dayText ?: SimpleDateFormat("EEEE", Locale.getDefault()).format(Date()).uppercase())
+    }
 
     LaunchedEffect(dayText) {
         if (dayText == null) {

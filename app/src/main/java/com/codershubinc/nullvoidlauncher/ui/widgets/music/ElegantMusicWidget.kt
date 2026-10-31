@@ -197,7 +197,7 @@ fun ElegantMusicWidget(
                 Spacer(modifier = Modifier.width(12.dp))
             }
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 val displayTitle = when {
                     !hasPermission -> "Music Sync Disabled"
                     track != null -> track?.title ?: "Playing"

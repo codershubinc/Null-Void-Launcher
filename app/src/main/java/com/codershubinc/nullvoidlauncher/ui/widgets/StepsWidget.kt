@@ -45,7 +45,6 @@ fun StepsWidget(
     val dailyGoal = remember(prefVersion) { userManager.widgets.stepsDailyGoal }
 
     val liveStepsInfo by StepsHelper.stepsState.collectAsState()
-    Log.d("StepsWidget", "Live steps info: $liveStepsInfo")
     val stepsInfo = previewInfo ?: remember(liveStepsInfo, dailyGoal) {
         if (liveStepsInfo.dailyGoal != dailyGoal) {
             liveStepsInfo.copy(dailyGoal = dailyGoal)

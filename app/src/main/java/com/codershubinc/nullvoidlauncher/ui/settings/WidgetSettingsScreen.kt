@@ -129,6 +129,7 @@ private fun WidgetHubScreen(
             .fillMaxSize()
             .background(Color(0xFF080808))
             .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(24.dp)
             .verticalScroll(scrollState)
     ) {

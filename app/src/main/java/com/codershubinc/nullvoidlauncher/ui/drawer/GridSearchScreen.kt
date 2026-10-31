@@ -100,6 +100,8 @@ fun GridSearchScreen(
             .fillMaxSize()
             .background(Color(0xFF09090D))
             .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier

@@ -103,7 +103,9 @@ fun BluetoothWidget(
             addAction("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED")
         }
 
-        context.registerReceiver(receiver, filter)
+        try {
+            context.registerReceiver(receiver, filter)
+        } catch (_: Exception) {}
 
         onDispose {
             try {

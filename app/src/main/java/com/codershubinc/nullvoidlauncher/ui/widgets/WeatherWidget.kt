@@ -11,8 +11,8 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.model.WeatherStyle
 import com.codershubinc.nullvoidlauncher.data.prefs.rememberPrefVersion
-import com.codershubinc.nullvoidlauncher.ui.weather.WeatherHelper
-import com.codershubinc.nullvoidlauncher.ui.weather.WeatherInfoState
+import com.codershubinc.nullvoidlauncher.system.weather.WeatherHelper
+import com.codershubinc.nullvoidlauncher.system.weather.WeatherInfoState
 import com.codershubinc.nullvoidlauncher.ui.widgets.weather.ElegantWeatherWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.weather.MinimalWeatherWidget
 import com.codershubinc.nullvoidlauncher.ui.widgets.weather.RetroWeatherWidget
@@ -33,7 +33,7 @@ fun WeatherWidget(
     val prefVersion = rememberPrefVersion(userManager)
 
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.weatherFont }
-    val weather = remember { previewInfo ?: WeatherHelper.getWeatherInfo() }
+    val weather = previewInfo ?: remember { WeatherHelper.getWeatherInfo() }
 
     val gestureModifier = if (onLongClick != null) {
         Modifier.pointerInput(Unit) {
@@ -60,17 +60,17 @@ fun WeatherWidget(
 
 // Backward-compatible delegates
 @Composable
-fun ElegantWeather(weather: WeatherInfoState, font: WidgetFont, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
+fun ElegantWeather(weather: WeatherInfoState, font: WidgetFont = WidgetFont.DEFAULT, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
     ElegantWeatherWidget(weather, font, modifier, onClick)
 
 @Composable
-fun MinimalWeather(weather: WeatherInfoState, font: WidgetFont, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
+fun MinimalWeather(weather: WeatherInfoState, font: WidgetFont = WidgetFont.DEFAULT, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
     MinimalWeatherWidget(weather, font, modifier, onClick)
 
 @Composable
-fun TerminalWeather(weather: WeatherInfoState, font: WidgetFont, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
+fun TerminalWeather(weather: WeatherInfoState, font: WidgetFont = WidgetFont.MONOSPACE, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
     TerminalWeatherWidget(weather, font, modifier, onClick)
 
 @Composable
-fun RetroWeather(weather: WeatherInfoState, font: WidgetFont, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
+fun RetroWeather(weather: WeatherInfoState, font: WidgetFont = WidgetFont.MONOSPACE, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) =
     RetroWeatherWidget(weather, font, modifier, onClick)

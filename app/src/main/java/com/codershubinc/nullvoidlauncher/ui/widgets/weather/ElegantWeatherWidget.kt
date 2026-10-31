@@ -19,12 +19,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
-import com.codershubinc.nullvoidlauncher.ui.weather.WeatherInfoState
+import com.codershubinc.nullvoidlauncher.system.weather.WeatherInfoState
 
 @Composable
 fun ElegantWeatherWidget(
     weather: WeatherInfoState,
-    font: WidgetFont,
+    font: WidgetFont = WidgetFont.DEFAULT,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {

@@ -38,7 +38,7 @@ fun NetworkWidget(
 
     val effectiveFont = font ?: remember(prefVersion) { userManager.widgets.networkFont }
     val effectiveShowUsage = showUsage ?: remember(prefVersion) { userManager.widgets.showNetworkUsageOnWidget }
-    var networkInfo by remember { mutableStateOf(previewInfo ?: NetworkInfoState()) }
+    var networkInfo by remember { mutableStateOf(previewInfo ?: NetworkHelper.getNetworkInfo(context)) }
 
     LaunchedEffect(previewInfo) {
         if (previewInfo != null) {
