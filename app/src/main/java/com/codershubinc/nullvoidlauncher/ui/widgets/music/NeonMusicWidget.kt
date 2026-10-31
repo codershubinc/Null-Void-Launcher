@@ -53,6 +53,7 @@ fun NeonMusicWidget(
     val shape = RoundedCornerShape(cornerRadius.dp)
 
     var track by remember { mutableStateOf(previewTrack) }
+    var tapCount by remember { mutableIntStateOf(0) }
     var hasPermission by remember { mutableStateOf(MediaService.isPermissionGranted(context)) }
 
     LaunchedEffect(previewTrack) {
@@ -65,6 +66,18 @@ fun NeonMusicWidget(
             val live = withContext(Dispatchers.IO) { MediaService.instance?.getMediaSessionInfo() }
             track = live
             delay(1000.milliseconds)
+        }
+    }
+
+    LaunchedEffect(tapCount) {
+        if (tapCount > 0) {
+            delay(300.milliseconds)
+            when (tapCount) {
+                1 -> MediaService.instance?.togglePlayPause()
+                2 -> MediaService.instance?.next()
+                3 -> MediaService.instance?.previous()
+            }
+            tapCount = 0
         }
     }
 
@@ -102,7 +115,13 @@ fun NeonMusicWidget(
                         addCategory(android.content.Intent.CATEGORY_APP_MUSIC)
                         flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
                     }
-                    try { context.startActivity(musicIntent) } catch (_: Exception) {}
+                    try {
+                        context.startActivity(musicIntent)
+                    } catch (e: Exception) {
+                        tapCount++
+                    }
+                } else {
+                    tapCount++
                 }
             }
             .padding(horizontal = 16.dp, vertical = 12.dp),

@@ -21,6 +21,10 @@ The **v0.1.5** release is an immediate patch release addressing a critical favor
   - Updated `AppMenuDialog`, `SpotlightSearchScreen`, `GridSearchScreen`, `TerminalSearchScreen`, `MinimalSearchScreen`, and `ElegantGlobalSearch` to use `isAppInFavorites` and cleanly remove any stale keys on toggle.
 
 ### Changed & Improved
+- **Music Player Widgets Enhancement & Restructuring**:
+  - Added debounced tap gesture support across **all** music player styles (`Minimal`, `Vinyl`, `Neon`, and `Retro`): single tap toggles play/pause, double tap skips to next track, and triple tap returns to previous track.
+  - Added dedicated Previous (`SkipPrevious`) transport button to `VinylMusicWidget`.
+  - Comprehensively restructured `RetroMusicWidget` into an authentic vintage audio cassette deck featuring a top status tape header with playback indicator, dual-spool reel window with film border, animated amber VU audio meters, and dedicated tactile transport buttons.
 - **Settings Screen UI/UX Overhaul**:
   - Redesigned the main `SettingsScreen` layout with modern grouped card sections, decluttering controls into clear categories.
   - Extracted wallpaper personalization into a dedicated `WallpaperSettingsPage` sub-screen with live preview, preset selection, blur intensity controls, tint color picker, and auto-wallpaper timing options.

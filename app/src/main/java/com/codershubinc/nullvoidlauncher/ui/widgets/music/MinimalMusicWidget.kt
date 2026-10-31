@@ -44,6 +44,7 @@ fun MinimalMusicWidget(
     val cornerRadius = userManager.widgets.cornerRadius
 
     var track by remember { mutableStateOf<MusicTrack?>(previewTrack) }
+    var tapCount by remember { mutableIntStateOf(0) }
     var hasPermission by remember { mutableStateOf(previewTrack != null || MediaService.isPermissionGranted(context)) }
 
     LaunchedEffect(previewTrack) {
@@ -56,6 +57,18 @@ fun MinimalMusicWidget(
             hasPermission = MediaService.isPermissionGranted(context)
             track = withContext(Dispatchers.IO) { MediaService.instance?.getMediaSessionInfo() }
             delay(1000.milliseconds)
+        }
+    }
+
+    LaunchedEffect(tapCount) {
+        if (tapCount > 0) {
+            delay(300.milliseconds)
+            when (tapCount) {
+                1 -> MediaService.instance?.togglePlayPause()
+                2 -> MediaService.instance?.next()
+                3 -> MediaService.instance?.previous()
+            }
+            tapCount = 0
         }
     }
 
@@ -81,7 +94,11 @@ fun MinimalMusicWidget(
                     }
                     try {
                         context.startActivity(musicIntent)
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        tapCount++
+                    }
+                } else {
+                    tapCount++
                 }
             }
             .padding(horizontal = 20.dp, vertical = 12.dp),
