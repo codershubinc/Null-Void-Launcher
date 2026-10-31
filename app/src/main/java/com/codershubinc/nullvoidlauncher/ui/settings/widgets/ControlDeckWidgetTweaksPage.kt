@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -244,7 +245,7 @@ fun ControlDeckWidgetTweaksPage(
             HorizontalDivider(color = Color.White.copy(alpha = 0.05f), modifier = Modifier.padding(vertical = 8.dp))
 
             ControlActionRow(
-                icon = Icons.Rounded.VolumeUp,
+                icon = Icons.AutoMirrored.Rounded.VolumeUp,
                 title = "Ringer Mode Switch",
                 subtitle = "Cycle Ring ➔ Vibrate ➔ Silent modes (Long-press opens Sound)",
                 accentColor = Color(0xFF3D5AFE),

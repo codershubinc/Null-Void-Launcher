@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Chat
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -178,8 +180,8 @@ private fun getCustomIcon(packageName: String): ImageVector? {
         packageName.contains("note") || packageName.contains("keep") -> Icons.Rounded.EditNote
         packageName.contains("drive") || packageName.contains("file") -> Icons.Rounded.Folder
         packageName.contains("store") || packageName.contains("vending") -> Icons.Rounded.Storefront
-        packageName.contains("whatsapp") -> Icons.Rounded.Chat
-        packageName.contains("telegram") -> Icons.Rounded.Send
+        packageName.contains("whatsapp") -> Icons.AutoMirrored.Rounded.Chat
+        packageName.contains("telegram") -> Icons.AutoMirrored.Rounded.Send
         packageName.contains("facebook") || packageName.contains("fb") -> Icons.Rounded.People
         packageName.contains("instagram") -> Icons.Rounded.Camera
         packageName.contains("twitter") || packageName.contains(" x ") -> Icons.Rounded.Tag

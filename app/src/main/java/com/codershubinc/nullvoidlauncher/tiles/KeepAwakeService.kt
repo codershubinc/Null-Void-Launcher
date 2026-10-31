@@ -58,6 +58,7 @@ class KeepAwakeService : Service() {
         return null
     }
 
+    @Suppress("DEPRECATION")
     private fun acquireWakeLock() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(

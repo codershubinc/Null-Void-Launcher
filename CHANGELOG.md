@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-11-01 — Architecture Modularization, On-Demand Typography & Release Polish
+
+The **v0.1.4** release is a major architectural overhaul focusing on modularization, APK size optimization through dynamic Google Fonts, deterministic home navigation state, decoupling of hardware telemetry from UI, and UI bug fixes.
+
+### Added
+- **On-Demand Google Fonts & Dynamic Typography Engine**:
+  - Eliminated bundled static `.ttf` font files from APK resources, drastically shrinking application download size.
+  - Added [`FontManager`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/data/fonts/FontManager.kt) & [`GoogleFontDownloader`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/data/fonts/GoogleFontDownloader.kt) for on-demand streaming of Google Fonts with local disk caching.
+  - Expanded typography selection with 9 curated fonts (`Inter`, `Poppins`, `Fira Code`, `Space Grotesk`, `Bebas Neue`, `Lobster`, `Comfortaa`, `Roboto Slab`, and Custom Google Font support).
+  - Instant UI reactivity: Linked font download state directly into [`rememberPrefVersion`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/data/prefs/RememberPrefVersion.kt) so active widgets update immediately upon download completion.
+- **System Telemetry & Decoupled Hardware Layer**:
+  - Extracted hardware, sensor, and telemetry logic out of `ui/` into a dedicated [`com.codershubinc.nullvoidlauncher.system`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/system/) package (`steps`, `bluetooth`, `network`, `power`, `weather`, `controls`).
+  - Added reactive `observePowerInfo()` Flow via `callbackFlow` in [`PowerHelper`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/system/power/PowerHelper.kt).
+- **Modular Weather Widget Suite**:
+  - Standardized weather widget architecture into standalone style composables under [`ui.widgets.weather`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/widgets/weather/) (`Elegant`, `Minimal`, `Retro`, `Terminal`).
+- **Composable Decomposition of Large Screens**:
+  - Modularized [`StepsWidgetTweaksPage`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/settings/widgets/StepsWidgetTweaksPage.kt) into dedicated components (`StepsGoalSection`, `StepsSyncSourceSection`, `StepsHealthConnectSection`, `StepsDebugLogsSection`).
+  - Modularized [`BluetoothSettingsScreen`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/bluetooth/BluetoothSettingsScreen.kt) into [`BluetoothDeviceRow`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/bluetooth/components/BluetoothDeviceRow.kt) and [`BluetoothHeaderCard`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/bluetooth/components/BluetoothHeaderCard.kt).
+  - Modularized [`GithubProfileScreen`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/github/GithubProfileScreen.kt) into [`GithubProfileHeader`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/github/components/GithubProfileHeader.kt), [`GithubStatsGrid`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/github/components/GithubStatsGrid.kt), and [`EditUsernameDialog`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/github/components/EditUsernameDialog.kt).
+
+### Changed & Improved
+- **Modular UserManager Architecture**:
+  - Split `UserManager` into focused preference sub-managers (`ThemePrefs`, `WidgetPrefs`, `ControlDeckPrefs`, `WallpaperPrefs`, `AppDrawerPrefs`, `UpdatePrefs`, `GithubRepository`) using Kotlin property delegates while preserving 100% backward-compatible keys and facade methods.
+- **Home Navigation Overhaul (`HomeOverlay`)**:
+  - Replaced 8 independent boolean flags in [`HomeScreen`](file:///home/swap/Github/NullVoidLauncher/app/src/main/java/com/codershubinc/nullvoidlauncher/ui/homescreen/HomeScreen.kt) with a unified `HomeOverlay` sealed interface and consolidated `UpdateDownloadState`.
+- **UI Bug Fixes & Navigation Polish**:
+  - Fixed back navigation inside `WidgetSettingsScreen` so pressing Back within a specific widget tweak subpage returns to the Widget Hub instead of abruptly closing the entire overlay.
+  - Modernized Bluetooth battery parcelable intent decoding via `IntentCompat.getParcelableExtra`.
+  - Replaced deprecated `Icons.Rounded` with `Icons.AutoMirrored` counterparts and resolved all compilation warnings.
+  - Fixed package name typo `globleSearch` &rarr; `globalSearch` and removed dead stubs (`OnlyWidgets.kt`, `SearchWidget.kt`).
+
+---
+
 ## [0.1.3] - 2026-10-03 — Automated Release Pipeline & In-App Release Updater
 
 The **v0.1.3** patch release introduces a production-grade release engineering pipeline (`build.sh`), an automated background update engine that periodically checks GitHub Releases, and an interactive update dialog with snooze and in-app installation capabilities.

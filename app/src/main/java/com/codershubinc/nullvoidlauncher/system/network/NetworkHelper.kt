@@ -140,6 +140,7 @@ object NetworkHelper {
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
 
         // Extract WifiInfo if available
+        @Suppress("DEPRECATION")
         val wifiInfo: WifiInfo? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             (caps.transportInfo as? WifiInfo) ?: wifiManager?.connectionInfo
         } else {

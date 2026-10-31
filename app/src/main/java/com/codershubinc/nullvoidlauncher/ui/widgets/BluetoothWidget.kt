@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.IntentCompat
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -81,7 +82,7 @@ fun BluetoothWidget(
 
                 val action = intent.action
                 if (action == "android.bluetooth.device.action.BATTERY_LEVEL_CHANGED") {
-                    val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                    val device = IntentCompat.getParcelableExtra(intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
                     val level = intent.getIntExtra("android.bluetooth.device.extra.BATTERY_LEVEL", -1)
                     if (device != null && level in 0..100) {
                         BluetoothHelper.updateCachedBattery(device.address, level)

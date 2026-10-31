@@ -3,19 +3,23 @@ package com.codershubinc.nullvoidlauncher.data.prefs
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.codershubinc.nullvoidlauncher.data.UserManager
+import com.codershubinc.nullvoidlauncher.data.fonts.FontManager
 
 /**
  * Encapsulates the SharedPreferences.OnSharedPreferenceChangeListener lifecycle
- * in a single Composable helper to trigger UI recomposition when preferences change.
+ * and FontManager download state in a single Composable helper to trigger UI
+ * recomposition when preferences change or on-demand fonts finish downloading.
  */
 @Composable
 fun rememberPrefVersion(userManager: UserManager): Int {
     var prefVersion by remember { mutableIntStateOf(0) }
+    val fontVersion by FontManager.downloadVersion.collectAsState()
 
     DisposableEffect(userManager) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
@@ -27,5 +31,5 @@ fun rememberPrefVersion(userManager: UserManager): Int {
         }
     }
 
-    return prefVersion
+    return prefVersion + fontVersion
 }

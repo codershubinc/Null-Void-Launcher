@@ -1,5 +1,6 @@
 package com.codershubinc.nullvoidlauncher.ui.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,6 +53,10 @@ fun WidgetSettingsScreen(
     onClose: () -> Unit
 ) {
     var activeSubPage by remember(initialPage) { mutableStateOf(initialPage) }
+
+    BackHandler(enabled = activeSubPage != WidgetSubPage.NONE && initialPage == WidgetSubPage.NONE) {
+        activeSubPage = WidgetSubPage.NONE
+    }
 
     val handleBack: () -> Unit = {
         if (initialPage != WidgetSubPage.NONE) {

@@ -314,7 +314,7 @@ fun AboutScreen(userManager: UserManager, onClose: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "© 2026- Swapnil Ingle",
+                    text = "© 2026- Swapnil Ingle @codershubinc",
                     color = Color.White.copy(alpha = 0.3f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium

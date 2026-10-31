@@ -131,6 +131,7 @@ object BluetoothHelper {
         }
 
         val bm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        @Suppress("DEPRECATION")
         val adapter = bm?.adapter ?: BluetoothAdapter.getDefaultAdapter()
 
         if (adapter == null || !adapter.isEnabled) {
