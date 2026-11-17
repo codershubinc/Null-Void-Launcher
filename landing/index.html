@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="narrative">
+  <meta name="design-style" content="showroom">
+  <title>NullVoid Launcher — Minimalist Open-Source Android Launcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body>
+  <!-- Full-width Sticky Navbar Shell -->
+  <header id="site-header" class="header-shell">
+    <div class="nav-container">
+      <div class="brand-mark">
+        <span class="brand-glyph" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </span>
+        <span class="brand-name">NullVoid Launcher</span>
+      </div>
+
+      <div class="top-meta">
+        <a href="https://github.com/codershubinc/Null-Void-Launcher" target="_blank" rel="noopener noreferrer" class="nav-star-chip" aria-label="GitHub Repository Stars">
+          <i data-lucide="star" width="14" height="14" class="star-icon" aria-hidden="true"></i>
+          <span class="star-label">Star</span>
+          <span id="gh-stars-count" class="star-count">—</span>
+        </a>
+        <span class="meta-tag">v0.1.5</span>
+        <span class="meta-tag hide-mobile">GPL-3.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-shell">
+
+    <main>
+      <section class="hero" aria-labelledby="hero-heading">
+        <p class="hero-eyebrow">Kotlin · Jetpack Compose · Material 3</p>
+        <h1 id="hero-heading" class="hero-title">Quietly capable Android.</h1>
+        <p class="hero-lede">An open-source launcher built for calm focus, subtle glassmorphism, and live hardware telemetry.</p>
+
+        <div class="hero-actions">
+          <button type="button" class="btn-primary" onclick="openReleaseModal()">
+            <i data-lucide="download" width="16" height="16" aria-hidden="true"></i>
+            <span>Download APK</span>
+          </button>
+          <button type="button" class="link-more" onclick="focusPreview()">Explore preview</button>
+        </div>
+      </section>
+
+      <!-- Release Modal -->
+      <div id="release-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-card">
+          <div class="modal-header">
+            <h2 id="modal-title" class="modal-title">Latest Release</h2>
+            <button type="button" class="modal-close" onclick="closeReleaseModal()" aria-label="Close">
+              <i data-lucide="x" width="18" height="18" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="modal-body" class="modal-body">
+            <div class="modal-loading">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Fetching latest release…</span>
+            </div>
+          </div>
+
+          <div id="modal-footer" class="modal-footer" hidden>
+            <a id="modal-download" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary modal-download-btn">
+              <i data-lucide="download" width="16" height="16" aria-hidden="true"></i>
+              <span>Download APK</span>
+            </a>
+            <a id="modal-gh-link" href="#" target="_blank" rel="noopener noreferrer" class="link-more">View on GitHub</a>
+          </div>
+        </div>
+      </div>
+
+      <section id="device-preview" class="showcase-stage" aria-label="Interactive launcher preview">
+        <div class="showcase-glow" aria-hidden="true"></div>
+
+        <div class="preview-tabs" role="tablist" aria-label="Launcher screen modes">
+          <button type="button" class="preview-tab" role="tab" id="tab-home" aria-selected="true" aria-controls="slide-0" onclick="goToSlide(0)">Homescreen</button>
+          <button type="button" class="preview-tab" role="tab" id="tab-telemetry" aria-selected="false" aria-controls="slide-1" onclick="goToSlide(1)">Telemetry</button>
+          <button type="button" class="preview-tab" role="tab" id="tab-drawer" aria-selected="false" aria-controls="slide-2" onclick="goToSlide(2)">App Drawer</button>
+        </div>
+
+        <div class="carousel-wrapper">
+          <button type="button" class="carousel-nav-btn prev" aria-label="Previous screenshot" onclick="prevSlide()">
+            <i data-lucide="chevron-left" width="20" height="20" aria-hidden="true"></i>
+          </button>
+
+          <div class="device-frame">
+            <div class="device-screen">
+              <div class="carousel-track" id="carousel-track">
+                <!-- Slide 1: Homescreen -->
+                <div class="carousel-slide" id="slide-0">
+                  <img src="img/home_screen.jpg" alt="NullVoid Launcher homescreen" class="screen-screenshot" loading="lazy">
+                </div>
+
+                <!-- Slide 2: Hardware Telemetry -->
+                <div class="carousel-slide" id="slide-1">
+                  <img src="img/developer_github_page.jpg" alt="NullVoid Launcher telemetry and developer feed" class="screen-screenshot" loading="lazy">
+                </div>
+
+                <!-- Slide 3: Smart App Drawer -->
+                <div class="carousel-slide" id="slide-2">
+                  <img src="img/drawer_spotlight.jpg" alt="NullVoid Launcher app drawer spotlight" class="screen-screenshot" loading="lazy">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="carousel-nav-btn next" aria-label="Next screenshot" onclick="nextSlide()">
+            <i data-lucide="chevron-right" width="20" height="20" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- Carousel Indicators / Dots -->
+        <div class="carousel-dots" role="tablist" aria-label="Carousel pagination">
+          <button type="button" class="carousel-dot is-active" aria-label="Slide 1: Homescreen" onclick="goToSlide(0)"></button>
+          <button type="button" class="carousel-dot" aria-label="Slide 2: Telemetry" onclick="goToSlide(1)"></button>
+          <button type="button" class="carousel-dot" aria-label="Slide 3: App Drawer" onclick="goToSlide(2)"></button>
+        </div>
+      </section>
+
+      <section class="features-section" aria-labelledby="features-heading">
+        <div class="section-header">
+          <h2 id="features-heading" class="section-title">Built without the noise.</h2>
+        </div>
+
+        <div class="features-grid">
+          <article class="feature-tile">
+            <div class="feature-icon" aria-hidden="true">
+              <i data-lucide="code-2" width="18" height="18"></i>
+            </div>
+            <h3 class="feature-name">Open Source</h3>
+            <p class="feature-desc">Written in 98.7% Kotlin with Jetpack Compose and Material 3 under GPL-3.0, complete with an in-app GitHub release updater.</p>
+          </article>
+
+          <article class="feature-tile">
+            <div class="feature-icon" aria-hidden="true">
+              <i data-lucide="cpu" width="18" height="18"></i>
+            </div>
+            <h3 class="feature-name">Hardware Telemetry</h3>
+            <p class="feature-desc">Live battery, storage, Wi-Fi throughput, Bluetooth battery levels, weather, and a 5-tile quick control deck at a glance.</p>
+          </article>
+
+          <article class="feature-tile">
+            <div class="feature-icon" aria-hidden="true">
+              <i data-lucide="layers" width="18" height="18"></i>
+            </div>
+            <h3 class="feature-name">Aesthetic UI</h3>
+            <p class="feature-desc">Custom font typography, glassmorphism specular highlights, monochrome outline icons, and a calculator-ready app drawer.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-bar">
+      <div class="footer-brand">
+        <span class="brand-glyph" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </span>
+        <span>NullVoid Launcher</span>
+        <span class="footer-dot" aria-hidden="true">·</span>
+        <span class="footer-author">by CodersHubInc</span>
+      </div>
+      <div class="footer-meta">
+        <a href="https://github.com/codershubinc/Null-Void-Launcher" target="_blank" rel="noopener noreferrer" class="footer-link">
+          <i data-lucide="github" width="14" height="14" aria-hidden="true"></i>
+          <span>GitHub</span>
+        </a>
+        <a href="https://github.com/codershubinc/Null-Void-Launcher/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">GPL-3.0</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
