@@ -92,14 +92,14 @@ function onBackdropClick(e) {
 }
 
 const LOCAL_FALLBACK_RELEASE = {
-  tag_name: 'v0.1.5',
-  name: 'NullVoid Launcher v0.1.5 (Singularity)',
-  published_at: '2026-11-01T00:00:00Z',
-  body: 'Singularity (Build 7) • Android 10–15 (SDK 29–37)\n• Favorite Apps vanishing on package updates resolution\n• Music player enhancements & Settings UI overhaul\n• Hardware telemetry with glassmorphism UI',
+  tag_name: 'v0.1.6',
+  name: 'NullVoid Launcher v0.1.6 (Event Horizon)',
+  published_at: '2026-11-22T00:00:00Z',
+  body: 'Event Horizon (Build 8) • Android 10–15 (SDK 29–37)\n• Fast prefix-matching Spotlight search\n• Top Hits quick row across all app menu and drawer themes\n• Resilient favorites resolution and performance polish',
   html_url: 'https://github.com/codershubinc/Null-Void-Launcher/releases/latest',
   assets: [
     {
-      name: 'NullVoidLauncher-v0.1.5.apk',
+      name: 'NullVoidLauncher-v0.1.6.apk',
       size: 15728640,
       download_count: 0,
       browser_download_url: 'https://github.com/codershubinc/Null-Void-Launcher/releases/latest'
