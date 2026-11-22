@@ -159,4 +159,39 @@ class ExampleUnitTest {
         val noHits = com.codershubinc.nullvoidlauncher.data.repository.getTopHits("xyz", visibleApps, favorites)
         assertTrue(noHits.isEmpty())
     }
+
+    @Test
+    fun testAppUpdater_parseChecksumForFile() {
+        val checksumsFile = """
+            2abd1bbfa5a695ab7b511b67ab8e8f5ce4491b8116588b33691d70dfec8917b0  nullvoidlauncher-v0.1.6-debug.apk
+            1b8d0d25dfd9a58396eac671c9546d5d5d0ec8bac272298efcb85132f3152ff0  nullvoidlauncher-v0.1.6-release.apk
+        """.trimIndent()
+
+        // Exact matching for release APK
+        val releaseSha = com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile(
+            checksumsFile,
+            "nullvoidlauncher-v0.1.6-release.apk"
+        )
+        assertEquals("1b8d0d25dfd9a58396eac671c9546d5d5d0ec8bac272298efcb85132f3152ff0", releaseSha)
+
+        // Exact matching for debug APK
+        val debugSha = com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile(
+            checksumsFile,
+            "nullvoidlauncher-v0.1.6-debug.apk"
+        )
+        assertEquals("2abd1bbfa5a695ab7b511b67ab8e8f5ce4491b8116588b33691d70dfec8917b0", debugSha)
+
+        // Fallback when filename is not explicitly mentioned in content
+        val singleSha = "SHA256: 1b8d0d25dfd9a58396eac671c9546d5d5d0ec8bac272298efcb85132f3152ff0"
+        val matchedFallback = com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile(
+            singleSha,
+            "arbitrary-file.apk"
+        )
+        assertEquals("1b8d0d25dfd9a58396eac671c9546d5d5d0ec8bac272298efcb85132f3152ff0", matchedFallback)
+
+        // Null / blank safety
+        assertNull(com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile(null, "file.apk"))
+        assertNull(com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile("   ", "file.apk"))
+        assertNull(com.codershubinc.nullvoidlauncher.utils.AppUpdater.parseChecksumForFile("no sha here", "file.apk"))
+    }
 }

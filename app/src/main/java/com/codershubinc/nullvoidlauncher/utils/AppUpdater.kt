@@ -112,6 +112,7 @@ object AppUpdater {
                 var apkDownloadUrl: String? = null
                 var apkName: String? = null
                 var apkSize = 0L
+                var checksumDownloadUrl: String? = null
 
                 val assets = json.optJSONArray("assets")
                 if (assets != null) {
@@ -120,17 +121,44 @@ object AppUpdater {
                         val name = asset.optString("name", "")
                         val downloadUrl = asset.optString("browser_download_url", "")
                         val contentType = asset.optString("content_type", "")
-                        if (name.endsWith(".apk", ignoreCase = true) || contentType.contains("package-archive")) {
+                        val lowerName = name.lowercase()
+
+                        if (apkDownloadUrl == null && (lowerName.endsWith(".apk") || contentType.contains("package-archive"))) {
                             apkDownloadUrl = downloadUrl
                             apkName = name
                             apkSize = asset.optLong("size", 0L)
-                            break
+                        } else if (lowerName == "sha256sums" || lowerName == "sha256sum" ||
+                            lowerName.endsWith(".sha256") || lowerName.endsWith(".sha256sum") ||
+                            lowerName.contains("checksum")
+                        ) {
+                            checksumDownloadUrl = downloadUrl
                         }
                     }
                 }
 
-                val shaRegex = Regex("(?i)\\b([a-f0-9]{64})\\b")
-                val expectedSha = shaRegex.find(releaseNotes)?.groupValues?.get(1)
+                var expectedSha: String? = null
+
+                // 1. Primary source: Generated checksum file uploaded as release asset (e.g., SHA256SUMS)
+                if (!checksumDownloadUrl.isNullOrEmpty()) {
+                    try {
+                        val req = Request.Builder()
+                            .url(checksumDownloadUrl)
+                            .header("User-Agent", Constants.Github.USER_AGENT)
+                            .build()
+                        val resp = httpClient.newCall(req).execute()
+                        if (resp.isSuccessful) {
+                            val checksumText = resp.body?.string()
+                            expectedSha = parseChecksumForFile(checksumText, apkName)
+                        }
+                    } catch (_: Exception) {
+                        // Fall back to release notes if network fails to fetch checksum file
+                    }
+                }
+
+                // 2. Secondary fallback: Parse release notes markdown body
+                if (expectedSha == null) {
+                    expectedSha = parseChecksumForFile(releaseNotes, apkName)
+                }
 
                 Result.success(
                     UpdateInfo(
@@ -218,6 +246,24 @@ object AppUpdater {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    fun parseChecksumForFile(content: String?, targetFileName: String?): String? {
+        if (content.isNullOrBlank()) return null
+        val shaRegex = Regex("(?i)\\b([a-f0-9]{64})\\b")
+
+        // 1. Try matching line containing the exact target filename
+        if (!targetFileName.isNullOrBlank()) {
+            for (line in content.lines()) {
+                if (line.contains(targetFileName, ignoreCase = true)) {
+                    val match = shaRegex.find(line)?.groupValues?.get(1)
+                    if (match != null) return match
+                }
+            }
+        }
+
+        // 2. Fallback to first 64-char hex match found
+        return shaRegex.find(content)?.groupValues?.get(1)
     }
 
     fun calculateSha256(file: File): String {
