@@ -23,6 +23,20 @@ NullVoid Launcher is a highly customizable, modern Android launcher built entire
 - **⭐ Favorites Widget**: Quick access to pinned applications directly from the homescreen.
 - **📦 Github Integration & In-App Updater**: Check your GitHub developer telemetry profile and seamlessly download and install releases directly from GitHub Releases.
 
+## 🌌 Release Codenames
+
+| Version | Codename | Build | Focus / Theme |
+| :---: | :---: | :---: | :--- |
+| **`v0.1.6`** | **Event Horizon** | `Build 8` | Fast prefix matching & cross-theme Top Hits quick rows |
+| **`v0.1.5`** | **Dark Matter** | `Build 7` | Self-healing favorite apps, cassette audio deck, wallpaper hub |
+| **`v0.1.4`** | **Nebula** | `Build 6` | Modularized hardware architecture & on-demand Google Fonts |
+| **`v0.1.3`** | **Singularity** | `Build 5` | Automated release pipeline & background in-app updater |
+| **`v0.1.2`** | **Quantum** | `Build 4` | Health Connect steps integration & Quick Control Deck overhaul |
+| **`v0.1.1`** | **Supernova** | `Build 3` | Quick Control Deck, weather telemetry, drawer calculator |
+| **`v0.1.0`** | **Genesis** | `Build 2` | First stable milestone, 6 telemetry styles, biometrics lock |
+
+*See [`CODENAMES.md`](CODENAMES.md) for the full celestial lore and release chronicles.*
+
 ## 🛠️ Tech Stack
 
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
