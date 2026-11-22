@@ -17,9 +17,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -50,6 +52,9 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.getTopHits
+import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp
 import kotlinx.coroutines.delay
 
 /**
@@ -93,6 +98,10 @@ fun GridSearchScreen(
             val query = searchQuery.trim().lowercase()
             visibleApps.filter { it.label.lowercase().contains(query) }
         }
+    }
+
+    val topHits = remember(searchQuery, visibleApps, favoritesList) {
+        getTopHits(searchQuery, visibleApps, favoritesList)
     }
 
     Box(
@@ -181,7 +190,52 @@ fun GridSearchScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Top Hits / Quick Apps Row
+            if (topHits.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = if (searchQuery.isEmpty()) "FAVORITES" else "TOP HITS",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 11.sp,
+                    letterSpacing = 1.2.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = font.toFontFamily()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(topHits, key = { it.componentName.flattenToString() + "_top" }) { app ->
+                        GridTopHitChip(
+                            app = app,
+                            context = context,
+                            font = font,
+                            iconStyle = userManager.theme.iconStyle,
+                            onClick = {
+                                safeLaunchApp(context, app)
+                                keyboardController?.hide()
+                                onClose()
+                            },
+                            onLongClick = { selectedAppForMenu = app }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = if (searchQuery.isNotEmpty()) "MATCHING APPS (${filteredApps.size})" else "ALL APPS (${filteredApps.size})",
+                color = Color.White.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = font.toFontFamily()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Grid of Apps (4 columns)
             LazyVerticalGrid(
@@ -244,5 +298,44 @@ fun GridSearchScreen(
                 onDismiss = { selectedAppForMenu = null }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun GridTopHitChip(
+    app: AppInfo,
+    context: Context,
+    font: WidgetFont,
+    iconStyle: com.codershubinc.nullvoidlauncher.data.IconStyle,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.07f))
+            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            LazyAppIcon(app = app, context = context, iconStyle = iconStyle)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = app.label,
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = font.toFontFamily(),
+            maxLines = 1
+        )
     }
 }

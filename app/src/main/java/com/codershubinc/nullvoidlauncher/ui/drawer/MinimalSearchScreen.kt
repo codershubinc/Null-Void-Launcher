@@ -18,6 +18,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,7 +47,9 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.getTopHits
 import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 
@@ -94,6 +98,10 @@ fun MinimalSearchScreen(
             val query = searchQuery.trim().lowercase()
             visibleApps.filter { it.label.lowercase().contains(query) }
         }
+    }
+
+    val topHits = remember(searchQuery, visibleApps, favoritesList) {
+        getTopHits(searchQuery, visibleApps, favoritesList)
     }
 
     Box(
@@ -196,7 +204,49 @@ fun MinimalSearchScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Minimal Top Hits Row
+            if (topHits.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = if (searchQuery.isEmpty()) "top hits • favorites" else "top hits",
+                    color = Color.White.copy(alpha = 0.4f),
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp,
+                    fontFamily = font.toFontFamily(),
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(topHits, key = { it.componentName.flattenToString() + "_top" }) { app ->
+                        MinimalTopHitChip(
+                            app = app,
+                            font = font,
+                            onClick = {
+                                safeLaunchApp(context, app)
+                                keyboardController?.hide()
+                                onClose()
+                            },
+                            onLongClick = { selectedAppForMenu = app }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = if (searchQuery.isNotEmpty()) "matching (${filteredApps.size})" else "all (${filteredApps.size})",
+                color = Color.White.copy(alpha = 0.3f),
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                fontFamily = font.toFontFamily()
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Pure text list
             LazyColumn(
@@ -258,5 +308,32 @@ fun MinimalSearchScreen(
                 onDismiss = { selectedAppForMenu = null }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun MinimalTopHitChip(
+    app: AppInfo,
+    font: WidgetFont,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.White.copy(alpha = 0.07f))
+            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = app.label.lowercase(),
+            color = Color.White.copy(alpha = 0.9f),
+            fontSize = 13.sp,
+            fontFamily = font.toFontFamily(),
+            fontWeight = FontWeight.Normal,
+            maxLines = 1
+        )
     }
 }

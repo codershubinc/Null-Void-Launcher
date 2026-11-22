@@ -49,6 +49,7 @@ import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.getTopHits
 import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
 import com.codershubinc.nullvoidlauncher.data.repository.isAppKeyMatching
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
@@ -107,14 +108,8 @@ fun SpotlightSearchScreen(
         }
     }
 
-    val topHits = remember(searchQuery, filteredApps, favoritesList) {
-        if (searchQuery.trim().isEmpty()) {
-            // Show favorite apps as top hits when search bar is idle
-            filteredApps.filter { isAppInFavorites(it, favoritesList) }.take(5)
-        } else {
-            // Best matching hits
-            filteredApps.take(3)
-        }
+    val topHits = remember(searchQuery, visibleApps, favoritesList) {
+        getTopHits(searchQuery, visibleApps, favoritesList)
     }
 
     Box(

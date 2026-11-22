@@ -60,9 +60,13 @@ object AppRepository {
  * Resilient against app updates where the launcher activity class name changes.
  */
 fun isAppKeyMatching(key: String, app: AppInfo): Boolean {
-    val compStr = app.componentName.flattenToString()
+    val compStr = try {
+        app.componentName.flattenToString()
+    } catch (_: Throwable) {
+        null
+    }
     val pkg = app.packageName
-    return key == compStr || key == pkg || key.substringBefore('/') == pkg
+    return (compStr != null && key == compStr) || key == pkg || key.substringBefore('/') == pkg
 }
 
 /**
@@ -121,6 +125,33 @@ fun resolveFavoriteApps(
     }
 
     return if (resolvedList.isNotEmpty()) resolvedList else installedApps.take(5)
+}
+
+/**
+ * Resolves top hit applications based on the search query.
+ * When search query is empty, returns the user's favorite apps.
+ * When searching, returns apps whose labels start with the search query (fast prefix matching).
+ * If no direct prefix matches exist, falls back to matching words starting with the query.
+ */
+fun getTopHits(
+    searchQuery: String,
+    visibleApps: List<AppInfo>,
+    favoritesList: Collection<String>,
+    limit: Int = 8
+): List<AppInfo> {
+    val trimmed = searchQuery.trim()
+    return if (trimmed.isEmpty()) {
+        visibleApps.filter { isAppInFavorites(it, favoritesList) }.take(limit)
+    } else {
+        val prefixMatches = visibleApps.filter { it.label.trim().startsWith(trimmed, ignoreCase = true) }
+        if (prefixMatches.isNotEmpty()) {
+            prefixMatches.take(limit)
+        } else {
+            visibleApps.filter { app ->
+                app.label.split(' ', '-', '_', '.').any { it.startsWith(trimmed, ignoreCase = true) }
+            }.take(limit)
+        }
+    }
 }
 
 private fun drawableToBitmap(drawable: Drawable): Bitmap {

@@ -18,6 +18,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,7 +47,9 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.WidgetFont
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
+import com.codershubinc.nullvoidlauncher.data.repository.getTopHits
 import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
+import com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 
@@ -95,6 +99,10 @@ fun TerminalSearchScreen(
             val query = searchQuery.trim().lowercase()
             visibleApps.filter { it.label.lowercase().contains(query) }
         }
+    }
+
+    val topHits = remember(searchQuery, visibleApps, favoritesList) {
+        getTopHits(searchQuery, visibleApps, favoritesList)
     }
 
     val termColor = Color(0xFF00FF66)
@@ -217,6 +225,39 @@ fun TerminalSearchScreen(
                 }
             }
 
+            // Terminal Top Hits Row
+            if (topHits.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = if (searchQuery.isEmpty()) ">> [TOP_HITS: PINNED]" else ">> [TOP_HITS: PREFIX_MATCH]",
+                    color = termColor.copy(alpha = 0.85f),
+                    fontFamily = font.toFontFamily(),
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(topHits, key = { it.componentName.flattenToString() + "_top" }) { app ->
+                        TerminalTopHitChip(
+                            app = app,
+                            font = font,
+                            termColor = termColor,
+                            onClick = {
+                                safeLaunchApp(context, app)
+                                keyboardController?.hide()
+                                onClose()
+                            },
+                            onLongClick = { selectedAppForMenu = app }
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // Status Row
@@ -300,5 +341,33 @@ fun TerminalSearchScreen(
                 onDismiss = { selectedAppForMenu = null }
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TerminalTopHitChip(
+    app: AppInfo,
+    font: WidgetFont,
+    termColor: Color,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(Color(0xFF0F2613))
+            .border(1.dp, termColor.copy(alpha = 0.45f), RoundedCornerShape(6.dp))
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = "./" + app.label.lowercase().replace(" ", "_"),
+            color = termColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = font.toFontFamily(),
+            maxLines = 1
+        )
     }
 }

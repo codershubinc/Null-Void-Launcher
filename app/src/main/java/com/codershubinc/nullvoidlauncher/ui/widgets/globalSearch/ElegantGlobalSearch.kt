@@ -13,6 +13,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -41,8 +43,10 @@ import androidx.compose.ui.unit.sp
 import com.codershubinc.nullvoidlauncher.data.UserManager
 import com.codershubinc.nullvoidlauncher.data.repository.AppInfo
 import com.codershubinc.nullvoidlauncher.data.repository.LazyAppIcon
+import com.codershubinc.nullvoidlauncher.data.repository.getTopHits
 import com.codershubinc.nullvoidlauncher.data.repository.isAppInFavorites
 import com.codershubinc.nullvoidlauncher.data.repository.isAppKeyMatching
+import com.codershubinc.nullvoidlauncher.data.repository.safeLaunchApp
 import com.codershubinc.nullvoidlauncher.utils.MathEvaluator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -106,6 +110,10 @@ fun ElegantSearchScreen(
             val query = searchQuery.trim().lowercase()
             visibleApps.filter { it.label.lowercase().contains(query) }
         }
+    }
+
+    val topHits = remember(searchQuery, visibleApps, favoritesList) {
+        getTopHits(searchQuery, visibleApps, favoritesList)
     }
 
     // Generate Alphabet Fast Scroller indices
@@ -280,6 +288,39 @@ fun ElegantSearchScreen(
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Top Hits / Fast Prefix Launcher Row
+            if (topHits.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = if (searchQuery.isEmpty()) "FAVORITE PROTOCOLS" else "TOP HITS",
+                    color = Color(0xFFC5A35E).copy(alpha = 0.85f),
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Serif,
+                    letterSpacing = 2.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(topHits, key = { it.componentName.flattenToString() + "_top" }) { app ->
+                        ElegantTopHitChip(
+                            app = app,
+                            context = context,
+                            iconStyle = userManager.theme.iconStyle,
+                            onClick = {
+                                safeLaunchApp(context, app)
+                                keyboardController?.hide()
+                                onClose()
+                            },
+                            onLongClick = { selectedAppForMenu = app }
                         )
                     }
                 }
@@ -594,5 +635,44 @@ fun ElegantAppRow(
                     .padding(end = 4.dp)
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ElegantTopHitChip(
+    app: AppInfo,
+    context: Context,
+    iconStyle: com.codershubinc.nullvoidlauncher.data.IconStyle = com.codershubinc.nullvoidlauncher.data.IconStyle.DEFAULT,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF161512))
+            .border(1.dp, Color(0xFFC5A35E).copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            LazyAppIcon(app = app, context = context, iconStyle = iconStyle)
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = app.label.uppercase(),
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.Serif,
+            letterSpacing = 0.5.sp,
+            maxLines = 1
+        )
     }
 }
