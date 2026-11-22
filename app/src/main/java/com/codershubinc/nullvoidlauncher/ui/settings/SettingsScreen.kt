@@ -834,7 +834,7 @@ private fun SystemCard(
             icon = Icons.Rounded.Info,
             iconBg = Color(0xFF6D4C41),
             title = "About NullVoid Launcher",
-            subtitle = "v${Constants.App.VERSION} • ${Constants.System.CODENAME}",
+            subtitle = "${Constants.App.VERSION.let { if (it.startsWith("v")) it else "v$it" }} • ${Constants.System.CODENAME}",
             onClick = onOpenAbout
         )
     }

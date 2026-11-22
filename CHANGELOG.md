@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2026-11-22 — Event Horizon: Fast Prefix Matching & Cross-Theme Top Hits Search
+
+The **v0.1.6 (Event Horizon)** release introduces blazing-fast prefix matching for Spotlight search and expands the Top Hits quick-launch row across all 5 app menu and drawer themes.
+
+### Added
+- **Top Hits Section Across All App Menu / Drawer Themes**:
+  - **Elegant Theme**: Added a luxury gold-bordered `FAVORITE PROTOCOLS` / `TOP HITS` row with serif chips and custom launcher protocol typography.
+  - **App Grid Theme**: Added a `FAVORITES` / `TOP HITS` quick chip row positioned between the search bar and 4-column application grid.
+  - **Terminal (CLI) Theme**: Added a monospace green `>> [TOP_HITS: PREFIX_MATCH]` pill row for executing binaries (`./app_name`) instantly.
+  - **Minimal Theme**: Added a clean, distraction-free `top hits` chip row directly below the search input.
+
+### Changed & Improved
+- **Fast Prefix Matching Engine for Spotlight & Drawers**:
+  - Restructured top hits resolution in `getTopHits` to prioritize apps starting directly with the search query (`startsWith(query, ignoreCase = true)`).
+  - Added intelligent fallback to word-boundary matching within app labels when no direct prefix matches exist.
+  - Preserved comprehensive substring search in matching results (`visibleApps.filter { contains(query) }`), maintaining full search coverage while enabling instant top hit launching.
+- **Unit Testing**:
+  - Added unit test coverage in `ExampleUnitTest` verifying prefix matching, whitespace trimming, case-insensitivity, word fallbacks, and favorites retrieval.
+
+---
+
 ## [0.1.5] - 2026-11-01 — Favorite Apps Resolution Patch & Settings Redesign
 
 The **v0.1.5** release is an immediate patch release addressing a critical favorite apps disappearing bug across package updates, along with a comprehensive overhaul of the Settings screen UI/UX.
