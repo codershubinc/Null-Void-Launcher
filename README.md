@@ -25,15 +25,16 @@ NullVoid Launcher is a highly customizable, modern Android launcher built entire
 
 ## 🌌 Release Codenames
 
-| Version | Codename | Build | Focus / Theme |
-| :---: | :---: | :---: | :--- |
-| **`v0.1.6`** | **Event Horizon** | `Build 8` | Fast prefix matching & cross-theme Top Hits quick rows |
-| **`v0.1.5`** | **Dark Matter** | `Build 7` | Self-healing favorite apps, cassette audio deck, wallpaper hub |
-| **`v0.1.4`** | **Nebula** | `Build 6` | Modularized hardware architecture & on-demand Google Fonts |
-| **`v0.1.3`** | **Singularity** | `Build 5` | Automated release pipeline & background in-app updater |
-| **`v0.1.2`** | **Quantum** | `Build 4` | Health Connect steps integration & Quick Control Deck overhaul |
-| **`v0.1.1`** | **Supernova** | `Build 3` | Quick Control Deck, weather telemetry, drawer calculator |
-| **`v0.1.0`** | **Genesis** | `Build 2` | First stable milestone, 6 telemetry styles, biometrics lock |
+| Version | GitHub Release Title | Codename | Build | Focus / Theme |
+| :---: | :--- | :---: | :---: | :--- |
+| **`v0.1.6`** | `v0.1.6 Event Horizon` | **Event Horizon** | `Build 8` | Fast prefix matching & cross-theme Top Hits quick rows |
+| **`v0.1.5`** | `v0.1.5 Patch Release` | **Dark Matter** | `Build 7` | Self-healing favorite apps, cassette audio deck, wallpaper hub |
+| **`v0.1.4`** | `v0.1.4 Singularity` | **Singularity** | `Build 6` | Modularized hardware architecture & on-demand Google Fonts |
+| **`v0.1.3`** | `v0.1.3 Maintenance release.` | **Pulsar** | `Build 5` | Automated release pipeline & background in-app updater |
+| **`v0.1.2`** | `v0.1.2 Feature realese.` | **Quantum** | `Build 4` | Health Connect steps integration & Quick Control Deck overhaul |
+| **`v0.1.1`** | `v0.1.1` | **Supernova** | `Build 3` | Quick Control Deck, weather telemetry, drawer calculator |
+| **`v0.1.0`** | `First Stable Release 🚀` | **Genesis** | `Build 2` | First stable milestone, 6 telemetry styles, biometrics lock |
+| **`v0.0.1`** | `The Elegant Beginning` | **Void Zero** | `Build 1` | Pre-release alpha: initial Jetpack Compose launcher prototype |
 
 *See [`CODENAMES.md`](CODENAMES.md) for the full celestial lore and release chronicles.*
 
